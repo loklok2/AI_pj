@@ -38,6 +38,6 @@ def remove_backgrounds_in_folder(folder_path):
 if __name__ == "__main__":
     # 사용자에게 폴더 경로를 입력받기
     folder_path = input("Enter the path to the folder containing images: ")
-
+    print("")
     # 배경 제거 작업 수행
     remove_backgrounds_in_folder(folder_path)
