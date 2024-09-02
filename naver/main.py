@@ -4,6 +4,10 @@ from PyQt6.QtCore import QThread, pyqtSignal
 from playwright.sync_api import sync_playwright
 import pandas as pd
 import os
+import requests
+from PIL import Image
+from io import BytesIO
+import re
 
 class CrawlerThread(QThread):
     update_status = pyqtSignal(str)
@@ -22,18 +26,33 @@ class CrawlerThread(QThread):
 
             # 스크롤을 통해 Lazy Loading 이미지 로드
             for _ in range(10):
+                if page.is_closed():
+                    break
                 page.mouse.wheel(0, 1000)
                 self.sleep(1)
 
             items = page.query_selector_all('//div[contains(@class, "product_item__")]')
             data = []
             for item in items:
-                name = item.query_selector('//div[contains(@class, "product_title__")]/a').inner_text()
-                price = item.query_selector('//strong[contains(@class, "product_price__")]/span').inner_text()
-                # ... (다른 정보들 크롤링)
-                thumbnail_url = item.query_selector('//div[contains(@class, "thumbnail_thumb_wrap__")]/a/img').get_attribute('src')
-                data.append([name, price, thumbnail_url])
-                self.update_status.emit(f"상품 크롤링 중: {name}")
+                name_element = item.query_selector('//div[contains(@class, "product_title__")]/a')
+                price_element = item.query_selector('//strong[contains(@class, "product_price__")]/span')
+                thumbnail_element = item.query_selector('//div[contains(@class, "thumbnail_thumb_wrap__")]/a/img')
+
+                if name_element and price_element and thumbnail_element:
+                    name = name_element.inner_text()
+                    price = price_element.inner_text()
+                    thumbnail_url = thumbnail_element.get_attribute('src')
+                    
+                    # 파일 이름에서 특수 문자 제거
+                    safe_name = re.sub(r'[\\/*?:"<>|]', "", name)
+                    
+                    # 이미지 다운로드 및 PNG로 저장
+                    response = requests.get(thumbnail_url)
+                    img = Image.open(BytesIO(response.content))
+                    img.save(f'images/{safe_name}.png', 'PNG')
+                    
+                    data.append([name, price, f'images/{safe_name}.png'])
+                    self.update_status.emit(f"상품 크롤링 중: {name}")
 
             df = pd.DataFrame(data, columns=['Name', 'Price', 'Thumbnail'])
             df.to_excel('products.xlsx', index=False)
@@ -79,6 +98,8 @@ class MainWindow(QMainWindow):
         self.result_text.append(result)
 
 if __name__ == "__main__":
+    if not os.path.exists('images'):
+        os.makedirs('images')
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
