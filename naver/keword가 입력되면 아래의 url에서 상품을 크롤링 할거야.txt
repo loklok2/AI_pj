@@ -1,0 +1,15 @@
+keword가 입력되면 아래의 url에서 상품을 크롤링 할거야
+https://search.shopping.naver.com/search/all?bt=-1&frm=NVSCPRO&query={keyword}
+
+크롤링할 정보: 이름, 가격, 판매처수, 옵션정보, 별점, 리뷰 수, 등록일, 썸네일, 배송비
+
+1.PyQT6와 playwright를 써서 키워드가 입력되면 크롤링 되게 해줘
+2. 크롤링 현황과 결과를 GUI에서 볼 수 있어야해
+3. 엑셀로 export 할 수 있어야해
+5. 썸네일 이미지도 다운로드 해줘
+6. 이미지가 스크롤해서 이미지가 보일떄 Lazy Loading 되고 있어
+(한번에 많은 양을 스크롤하면 안돼. 화면에 보여야 이미지가 로딩돼)
+7. className의 끝이 계속 변경되어 XPath를 사용해줘
+8. networkidle상태에 도달하지 않아 로딩확인을 다른 방법으로 해줘
+
+상품의 HTML 구조를 첨부할게
