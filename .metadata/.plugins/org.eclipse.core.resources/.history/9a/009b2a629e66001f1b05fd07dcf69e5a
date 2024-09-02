@@ -1,0 +1,9 @@
+package com.choice.shop.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.choice.shop.domain.ProductImage;
+
+public interface ProductImageRepository extends JpaRepository<ProductImage, Integer> {
+
+}

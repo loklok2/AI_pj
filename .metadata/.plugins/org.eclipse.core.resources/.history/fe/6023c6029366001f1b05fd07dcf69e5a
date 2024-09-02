@@ -1,0 +1,7 @@
+package com.choice.shop.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CommnetRepository extends JpaRepository<T, ID> {
+
+}

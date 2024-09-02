@@ -1,0 +1,39 @@
+package com.choice.config;
+
+
+import lombok.Value;
+
+@Component
+public class JWTUtil {
+    
+    private static final long ACCESS_TOKEN_MSEC = 60 * (60 * 1000); // 60분 유지
+    private static String jwtKey;
+
+    @Value("${jwt.secret}")
+    public void setJwtKey(String key) {
+        jwtKey = key;
+    }
+
+    public static String getJWT(String username) {
+        return "Bearer " + JWT.create()
+                .withClaim("username", username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_MSEC))
+                .sign(Algorithm.HMAC256(jwtKey));
+    }
+
+    public static String getClaim(String token, String claim) {
+        return JWT.require(Algorithm.HMAC256(jwtKey))
+                .build()
+                .verify(token.replace("Bearer ", ""))
+                .getClaim(claim)
+                .asString();
+    }
+
+    public static boolean isExpired(String token) {
+        return JWT.require(Algorithm.HMAC256(jwtKey))
+                .build()
+                .verify(token.replace("Bearer ", ""))
+                .getExpiresAt()
+                .before(new Date());
+    }
+}

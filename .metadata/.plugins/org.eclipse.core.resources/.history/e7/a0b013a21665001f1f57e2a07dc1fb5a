@@ -1,0 +1,24 @@
+package com.choice.config;
+
+import org.springframework.security.oauth2.core.user.OAuth2User;
+
+public class CustomMyUtil {
+
+    public static String getUsernameFromOAuth2User(OAuth2User user) {
+        String providerName = getProviderName(user);
+        String name = user.getName();
+        if (providerName == null || name == null) {
+            return null;
+        }
+        return providerName + "_" + name;
+    }
+
+    private static String getProviderName(OAuth2User user) {
+        String userString = user.toString();
+        if (userString.contains("google")) return "Google";
+        if (userString.contains("facebook")) return "Facebook";
+        if (userString.contains("naver")) return "Naver";
+        if (userString.contains("kakao")) return "Kakao";
+        return null;
+    }
+}

@@ -1,0 +1,21 @@
+package com.choice.auth.controller;
+
+import com.choice.auth.dto.MemberSignupRequestDto;
+import com.choice.auth.service.AuthService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@RequestBody MemberSignupRequestDto requestDto) {
+        authService.registerUser(requestDto);
+        return ResponseEntity.ok("회원가입 성공! 이메일 인증을 진행해주세요.");
+    }
+}
