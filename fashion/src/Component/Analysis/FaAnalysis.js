@@ -11,29 +11,55 @@ const FaAnalysis = () => {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [chartData, setChartData] = useState(null); // 도넛 차트를 위한 데이터 상태
+    const [imageFile, setImageFile] = useState(null); // 업로드된 이미지를 저장할 상태
 
     const handleClick = () => {
         fileInputRef.current.click();
     };
 
+    const handleImageChange = (e) => {
+        setImageFile(e.target.files[0]);
+    };
+
     const handleAnalyzeClick = () => {
+        if (!imageFile) {
+            alert('이미지를 업로드 해주세요.');
+            return;
+        }
+
         setLoading(true);
-        // 분석 과정 시뮬레이션
-        setTimeout(() => {
+
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        fetch('http://localhost:5000/predict', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
             setLoading(false);
-            // 도넛 차트를 위한 목업 데이터 설정
+
+            // 서버에서 받은 데이터를 차트 데이터로 변환
+            const chartLabels = data.predictions.map(prediction => prediction.class);
+            const chartDataValues = data.predictions.map(prediction => prediction.probability * 100); // 퍼센트로 변환
+
             setChartData({
-                labels: ['클래스1', '클래스2', '클래스3'],
+                labels: chartLabels,
                 datasets: [
                     {
                         label: 'Probability',
-                        data: [95, 85, 75], // 예시 확률 값 (퍼센트)
+                        data: chartDataValues,
                         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                         hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                     },
                 ],
             });
-        }, 3000); // 3초 동안 처리 지연을 시뮬레이션
+        })
+        .catch(error => {
+            setLoading(false);
+            console.error('Error:', error);
+        });
     };
 
     const handleReload = () => {
@@ -72,7 +98,7 @@ const FaAnalysis = () => {
                             type="file" 
                             ref={fileInputRef} 
                             style={{ display: 'none' }} 
-                            onChange={(e) => console.log(e.target.files[0])}
+                            onChange={handleImageChange}
                         />
                     </div>
                     <button 
