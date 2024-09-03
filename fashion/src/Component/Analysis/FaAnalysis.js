@@ -3,22 +3,34 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faReplyAll } from '@fortawesome/free-solid-svg-icons';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import '../../CSS/FaAnalysis.css';
+import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const FaAnalysis = () => {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
-    const [chartData, setChartData] = useState(null); // 도넛 차트를 위한 데이터 상태
-    const [imageFile, setImageFile] = useState(null); // 업로드된 이미지를 저장할 상태
+    const [chartData, setChartData] = useState(null);
+    const [imageFile, setImageFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const handleClick = () => {
         fileInputRef.current.click();
     };
 
     const handleImageChange = (e) => {
-        setImageFile(e.target.files[0]);
+        const file = e.target.files[0];
+        setImageFile(file);
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setPreviewUrl(null);
+        }
     };
 
     const handleAnalyzeClick = () => {
@@ -32,7 +44,7 @@ const FaAnalysis = () => {
         const formData = new FormData();
         formData.append('image', imageFile);
 
-        fetch('http://localhost:5000/predict', {
+        fetch('http://localhost:5000/style_predict', {
             method: 'POST',
             body: formData
         })
@@ -40,9 +52,8 @@ const FaAnalysis = () => {
         .then(data => {
             setLoading(false);
 
-            // 서버에서 받은 데이터를 차트 데이터로 변환
-            const chartLabels = data.predictions.map(prediction => prediction.class);
-            const chartDataValues = data.predictions.map(prediction => prediction.probability * 100); // 퍼센트로 변환
+            const chartLabels = data.predictions.map(prediction => prediction[0]);
+            const chartDataValues = data.predictions.map(prediction => prediction[1] * 100);
 
             setChartData({
                 labels: chartLabels,
@@ -63,7 +74,7 @@ const FaAnalysis = () => {
     };
 
     const handleReload = () => {
-        window.location.reload(); // 페이지 리로드
+        window.location.reload();
     };
 
     return (
@@ -85,12 +96,25 @@ const FaAnalysis = () => {
                         <FontAwesomeIcon 
                             icon={faReplyAll} 
                             onClick={handleReload} 
-                            style={{ cursor: 'pointer', marginLeft: '255px' }} 
+                            style={{ cursor: 'pointer', marginLeft: '250px' }} 
                         />
                     </div>
-                    <div className="fa-analysis-unique-upload-box" onClick={handleClick}>
+                    <div 
+                        className="fa-analysis-unique-upload-box" 
+                        onClick={handleClick}
+                    >
                         {loading ? (
                             <FontAwesomeIcon icon={faSpinner} spin />
+                        ) : previewUrl ? (
+                            <img 
+                                src={previewUrl} 
+                                alt="Preview" 
+                                style={{ 
+                                    width: '100%', 
+                                    height: '100%', 
+                                    objectFit: 'contain'
+                                }} 
+                            />
                         ) : (
                             <p>클릭하여 이미지를 업로드</p>
                         )}
@@ -104,13 +128,12 @@ const FaAnalysis = () => {
                     <button 
                         className="fa-analysis-unique-analyze-button" 
                         onClick={handleAnalyzeClick}
-                        disabled={loading} // 로딩 중일 때는 버튼 비활성화
+                        disabled={loading}
                     >
                         {loading ? "분석 중..." : "분석하기"}
                     </button>
                 </div>
 
-                {/* 도넛 차트 섹션 */}
                 {chartData && (
                     <div className="fa-analysis-unique-description-section">
                         <div style={{ width: '400px', margin: '15px auto 0 auto' }}>
