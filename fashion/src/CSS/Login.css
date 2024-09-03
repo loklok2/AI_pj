@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
 /* 로그인 외부 네모 박스 */
 .custom-login-outer {
     display: flex;
@@ -18,7 +20,7 @@
     background-color: #fff;
     padding: 30px; /* 패딩 조정 */
     border: 1px solid #a7a7a7; /* 테두리 */
-    border-radius: 10px; /* 모서리를 둥글게 */
+    border-radius: 5px; /* 모서리를 둥글게 */
 }
 
 /* 로그인 헤더 */
@@ -26,6 +28,7 @@
     text-align: center;
     margin-top: 20px;
     margin-bottom: 20px;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 로그인 제목 */
@@ -33,6 +36,7 @@
     font-size: 24px; /* 폰트 크기 */
     font-weight: bold;
     margin-bottom: 10px;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 로그인 노트 */
@@ -40,11 +44,13 @@
     font-size: 12px; /* 폰트 크기 */
     color: #a7a7a7;
     margin-bottom: 20px; /* 간격 조정 */
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 로그인 폼 컨테이너 */
 .custom-login-form-container {
     width: 80%;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 폼 그룹 */
@@ -52,6 +58,7 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 15px; /* 간격 조정 */
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 폼 레이블 */
@@ -60,6 +67,7 @@
     font-size: 14px; /* 폰트 크기 */
     font-weight: bold;
     margin-bottom: 8px;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 폼 입력 */
@@ -70,12 +78,14 @@
     border-radius: 3px;
     font-size: 14px;
     color: #555;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 입력 필드 포커스 시 테두리 색상 변경 */
 .custom-form-input:focus {
     border-color: #007BFF;
     outline: none;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 제출 버튼 컨테이너 */
@@ -83,6 +93,7 @@
     display: flex;
     justify-content: center;
     margin-top: 40px; /* 간격 조정 */
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 제출 버튼 */
@@ -92,10 +103,11 @@
     background-color: #000;
     color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     transition: background-color 0.3s ease;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 제출 버튼 호버 상태 */
@@ -108,14 +120,17 @@
     margin-top: 20px; /* 간격 조정 */
     margin-bottom: 25px; /* 간격 조정 */
     text-align: center;
-    font-size: 14px; /* 폰트 크기 */
+    font-size: 16px; /* 폰트 크기 */
+    font-family: "Noto Sans KR", sans-serif;
+    
 }
 
 /* 가입하기 링크 */
 .custom-signup-link {
-    color: #3c6aff;
+    color: #444444;
     text-decoration: none;
     font-weight: bold;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 /* 가입하기 링크 호버 상태 */

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
 .signup-container {
   display: flex;
   flex-direction: column;
@@ -6,28 +8,33 @@
   min-height: 100vh;
   background-color: #fff;
   padding: 20px;
+  
 }
 
 .signup-header {
   text-align: center;
   margin-bottom: 20px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .signup-title {
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 10px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .signup-description {
   font-size: 18px;
   margin-bottom: 3px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .signup-note {
   font-size: 14px;
   color: #a7a7a7;
   margin-bottom: 5px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .signup-form-container {
@@ -38,6 +45,7 @@
   width: 100%;
   max-width: 800px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .form-group {
@@ -46,12 +54,14 @@
   align-items: center;
   margin-top: 30px;
   margin-bottom: 30px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .form-label {
   font-size: 18px;
   font-weight: bold;
   margin-left: 40px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .form-input {
@@ -63,11 +73,13 @@
   font-size: 14px;
   color: #555;
   margin-left: -80px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .short-input {
   max-width: 250px; /* 아이디와 이메일 입력칸의 길이를 줄임 */
   margin-left: -80px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .inline-button {
@@ -81,11 +93,13 @@
   cursor: pointer;
   white-space: nowrap;
   margin-left: -180px; /* 음수 마진으로 입력칸과 버튼 사이의 간격을 줄임 */
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .form-input:focus {
   border-color: #000;
   outline: none;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .form-select {
@@ -96,7 +110,9 @@
   border-radius: 3px;
   font-size: 14px;
   color: #555;
-  margin-left: -80px
+  margin-left: -80px;
+  font-family: "Noto Sans KR", sans-serif;
+  
 }
 
 .submit-button-container {
@@ -104,6 +120,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .submit-button {
@@ -116,8 +133,10 @@
   cursor: pointer;
   font-size: 14px;
   margin-top: 20px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .submit-button:hover {
   background-color: #333;
+  font-family: "Noto Sans KR", sans-serif;
 }

@@ -1,7 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../CSS/Signup.css';
 
 const Signup = () => {
+    const navigate = useNavigate();
+
+    const handleSignup = () => {
+        // 여기서 폼 제출, 유효성 검사 등을 처리할 수 있습니다.
+        // 회원가입이 성공적으로 완료된 후 완료 페이지로 이동합니다.
+        navigate('/completion');
+    };
+
     return (
         <div className="signup-container">
             <div className="signup-header">
@@ -77,7 +86,7 @@ const Signup = () => {
                 </div>
             </div>
             <div className="submit-button-container">
-                <button className="submit-button">가입하기</button>
+                <button className="submit-button" onClick={handleSignup}>가입하기</button>
             </div>
         </div>
     );
