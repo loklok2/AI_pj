@@ -26,10 +26,11 @@ public class Member {
 
     @Id // 기본 키 설정
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가 설정
-    private Long userId; // 사용자 ID
+    private Long userId; // 사용자 식별자
 
-    private String username; // 사용자 이름
+    private String username; // 사용자 아이디
     private String password; // 비밀번호
+    private String name; // 이름
     private String gender; // 성별
 
     @Temporal(TemporalType.DATE) // 날짜 타입 설정

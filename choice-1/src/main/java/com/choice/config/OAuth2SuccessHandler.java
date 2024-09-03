@@ -10,7 +10,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import com.choice.auth.entity.Member;
-import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
 
 import jakarta.servlet.ServletException;

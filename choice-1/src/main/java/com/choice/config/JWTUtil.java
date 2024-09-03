@@ -13,6 +13,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 public class JWTUtil {
     // JWT 토큰의 유효기간을 30분으로 설정 (밀리초 단위)
     private static final long ACCESS_TOKEN_MSEC = 60 * (60 * 1000); // 60분 유지
+
+    // 리프레시 토큰의 유효기간을 1주일로 설정 (밀리초 단위)
+    private static final long REFRESH_TOKEN_MSEC = 14 * 24 * 60 * 60 * 1000L; // 14일 유지
     
     // JWT 토큰 서명에 사용되는 비밀 키를 외부에서 주입받기 위해 @Value 애너테이션 사용
     private static String jwtKey;
@@ -61,4 +64,27 @@ public class JWTUtil {
                 .getExpiresAt()
                 .before(new Date());
     }
+
+    // 리프레시 토큰을 생성하는 메서드
+    public static String getRefreshToken(String username) {
+        return PREFIX + JWT.create()
+        .withClaim(CLAIM_NAME, username)
+        .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_MSEC))
+        .sign(Algorithm.HMAC256(jwtKey));
+    }
+    
+    // 리프레시 토큰이 만료되었는지 확인하는 메서드
+    public static boolean isExpiredRefreshToken(String token) {
+        try {
+            String tok = getJWTSource(token);
+            JWT.require(Algorithm.HMAC256(jwtKey))
+            .build()
+            .verify(tok);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
 }

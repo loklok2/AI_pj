@@ -16,6 +16,7 @@ public class MemberSignupRequestDTO {
     private String address;    // 주소
     private String phone;      // 전화번호
     private String nickname;   // 닉네임
-    private String role;       // 사용자 역할
+    // private String role;    // 사용자 역할은 기본값으로 MEMBER로 설정
+    
 }
 
