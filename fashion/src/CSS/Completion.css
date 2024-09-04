@@ -11,7 +11,7 @@
 
 .completion-box {
     text-align: center;
-    padding: 30px;
+    padding: 60px;
     border: 1px solid #ccc;
     border-radius: 3px;
     background-color: #fff;
@@ -29,6 +29,14 @@
 .completion-message {
     font-size: 16px;
     color: #333;
+    margin-bottom: 30px;
+    font-family: "Noto Sans KR", sans-serif;
+}
+
+.completion-messages {
+    font-size: 16px;
+    color: #333;
+    margin-top: -30px;
     margin-bottom: 30px;
     font-family: "Noto Sans KR", sans-serif;
 }

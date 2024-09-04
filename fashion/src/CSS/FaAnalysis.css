@@ -8,7 +8,7 @@
 }
 
 .fa-analysis-unique-header {
-    margin-top: 50px; /* 기존보다 위로 올림 */
+    margin-top: 100px; 
     margin-bottom: 5px;
     font-family: "Noto Sans KR", sans-serif;
 }
@@ -51,10 +51,11 @@
     margin-top: 20px;
     margin-bottom: 10px;
     font-family: "Noto Sans KR", sans-serif;
+    font-weight: bold;
 }
 
 .fa-analysis-unique-upload-section p {
-    font-size: 14px;
+    font-size: 16px;
     color: gray;
     margin-bottom: 20px;
     font-family: "Noto Sans KR", sans-serif;
@@ -81,6 +82,7 @@
     width: 100%;
     padding: 10px 0;
     margin-top: 20px;
+    margin-bottom: 150px;
     background-color: black;
     color: white;
     border: none;
@@ -107,6 +109,7 @@
 
 .fa-analysis-unique-header .fa-analysis-unique-divider {
     border-top: 1px solid #ccc;
-    margin: 30px 0; /* 분리선 위아래 여백 축소 */
+    margin-bottom: 40px; 
+    margin-top: 100px; 
     font-family: "Noto Sans KR", sans-serif;
 }

@@ -27,7 +27,7 @@ const Signup = () => {
                         type="text"
                         placeholder="아이디 입력(5-20)"
                     />
-                    <button className="inline-button">중복확인</button>
+                    <button className="inline-button">중복 확인</button>
                 </div>
                 <div className="form-group">
                     <label htmlFor="password" className="form-label">비밀번호</label>
@@ -55,15 +55,15 @@ const Signup = () => {
                         type="email"
                         placeholder="이메일을 입력해주세요."
                     />
-                    <button className="inline-button">인증하기</button>
+                    <button className="inline-button">중복 확인</button>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="verification" className="form-label">인증 번호</label>
+                    <label htmlFor="aderss" className="form-label">주소</label>
                     <input
-                        id="verification"
+                        id="aderss"
                         className="form-input"
                         type="text"
-                        placeholder="인증 번호를 입력해주세요."
+                        placeholder="주소를 입력해주세요."
                     />
                 </div>
                 <div className="form-group">

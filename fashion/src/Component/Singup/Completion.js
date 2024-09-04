@@ -18,6 +18,7 @@ const Completion = () => {
             <div className="completion-box">
                 <h2 className="completion-title">회원가입 완료</h2>
                 <p className="completion-message">TRENDFLOW에 회원으로 가입해주셔서 감사합니다.</p>
+                <p className="completion-messages">이메일 인증 완료 후 로그인 이용이 가능합니다.</p>
                 <div className="completion-buttons">
                     <button className="completion-button" onClick={goToMain}>메인</button>
                     <button className="completion-button" onClick={goToLogin}>로그인</button>

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faReplyAll } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faRotateRight, faCircleXmark } from '@fortawesome/free-solid-svg-icons'; 
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
@@ -77,6 +77,15 @@ const FaAnalysis = () => {
         window.location.reload();
     };
 
+    const handleRemoveImage = (e) => {
+        e.stopPropagation(); // 이벤트 전파를 막아 부모 요소의 onClick 이벤트가 발생하지 않도록 합니다.
+        setImageFile(null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = null; // 파일 입력 값을 초기화합니다.
+        }
+    };
+
     return (
         <div className="fa-analysis-unique-container">
             <div className="fa-analysis-unique-header">
@@ -92,29 +101,43 @@ const FaAnalysis = () => {
                 <div className="fa-analysis-unique-upload-section">
                     <h2>옷 업로드</h2>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <p>* 여권상의 사진을 권장하지 않습니다. 명확한 사진을 업로드 해주세요.</p>
+                        <p>* 명확한 사진을 업로드 해주세요.</p>
                         <FontAwesomeIcon 
-                            icon={faReplyAll} 
+                            icon={faRotateRight}  
                             onClick={handleReload} 
-                            style={{ cursor: 'pointer', marginLeft: '250px' }} 
+                            style={{ cursor: 'pointer', marginLeft: '430px', marginTop:'-15px'}} 
                         />
                     </div>
                     <div 
                         className="fa-analysis-unique-upload-box" 
                         onClick={handleClick}
+                        style={{ position: 'relative' }}
                     >
                         {loading ? (
                             <FontAwesomeIcon icon={faSpinner} spin />
                         ) : previewUrl ? (
-                            <img 
-                                src={previewUrl} 
-                                alt="Preview" 
-                                style={{ 
-                                    width: '100%', 
-                                    height: '100%', 
-                                    objectFit: 'contain'
-                                }} 
-                            />
+                            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                <img 
+                                    src={previewUrl} 
+                                    alt="Preview" 
+                                    style={{ 
+                                        width: '100%', 
+                                        height: '100%', 
+                                        objectFit: 'contain'
+                                    }} 
+                                />
+                                <FontAwesomeIcon 
+                                    icon={faCircleXmark} 
+                                    onClick={handleRemoveImage} 
+                                    style={{ 
+                                        position: 'absolute', 
+                                        top: '10px', 
+                                        right: '10px', 
+                                        cursor: 'pointer', 
+                                        fontSize: '24px'
+                                    }} 
+                                />
+                            </div>
                         ) : (
                             <p>클릭하여 이미지를 업로드</p>
                         )}
