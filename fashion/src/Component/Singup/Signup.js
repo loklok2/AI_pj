@@ -18,7 +18,19 @@ const Signup = () => {
                 <p className="signup-description">모든 입력은 필수 사항 입니다.</p>
                 <p className="signup-note">* 현재 입력된 사용자의 정보는 어떠한 상업적 이용이 없음을 알려드립니다.</p>
             </div>
+
             <div className="signup-form-container">
+
+            <div className="form-group">
+                    <label htmlFor="username" className="form-label">이름</label>
+                    <input
+                        id="username"
+                        className="form-input"
+                        type="username"
+                        placeholder="이름을 입력해주세요."
+                    />
+                </div>
+
                 <div className="form-group">
                     <label htmlFor="username" className="form-label">아이디</label>
                     <input

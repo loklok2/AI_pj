@@ -6,6 +6,11 @@ import Login from './Component/Login/Login'; // 로그인 페이지 컴포넌트
 import FaAnalysis from './Component/Analysis/FaAnalysis'; // 패션 분석 페이지 컴포넌트
 import Completion from './Component/Singup/Completion'; // 회원가입 완료 페이지 컴포넌트
 import Board from './Component/Question/Board'; // Q&A 보드 페이지 컴포넌트
+import Writing from './Component/Question/Writing'; // Writing 페이지 컴포넌트
+import View from './Component/Question/View'; // View 컴포넌트 추가
+import Modify from './Component/Question/Modify'; // Modify 컴포넌트 추가
+import User from './Component/Login/User'; // 아이디 찾기 컴포넌트
+import Pass from './Component/Login/Pass'; // 비밀번호 찾기 컴포넌트
 
 function App() {
   return (
@@ -17,6 +22,11 @@ function App() {
         <Route path="/analysis" element={<FaAnalysis />} /> {/* 패션 분석 페이지 */}
         <Route path="/completion" element={<Completion />} /> {/* 회원가입 완료 페이지 */}
         <Route path="/qna" element={<Board />} /> {/* Q&A 보드 페이지 */}
+        <Route path="/write" element={<Writing />} /> {/* Q&A 보드 게시글 작성 페이지 */}
+        <Route path="/qna/:id" element={<View />} /> {/* 상세 페이지 View */}
+        <Route path="/qna/modify/:id" element={<Modify />} /> {/* Modify 페이지 */}
+        <Route path="/find-username" element={<User />} /> {/* 아이디 찾기 페이지 */}
+        <Route path="/find-password" element={<Pass />} /> {/* 비밀번호 찾기 페이지 */}
       </Routes>
     </Router>
   );

@@ -1,7 +1,5 @@
-import React from 'react'
+import React from 'react';
 import '../../CSS/Login.css';
-
-
 
 const Login = () => {
     return (
@@ -36,6 +34,11 @@ const Login = () => {
                 <div className="custom-signup-redirect">
                     <span>아직 계정이 없으신가요? </span>
                     <a href="/signup" className="custom-signup-link">가입하기</a>
+                </div>
+                <div className="custom-signup-redirects">
+                    <span>계정을 잊으버리셨나요?</span>
+                    <a href="/find-username" className="custom-signup-link"> 아이디 찾기 </a>
+                    <a href="/find-password" className="custom-signup-link">/ 비밀번호 찾기</a>
                 </div>
             </div>
         </div>
