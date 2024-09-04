@@ -1,8 +1,12 @@
 package com.choice.shopping.repository;
 
-import com.choice.shopping.entity.QboardImg;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.choice.shopping.entity.QboardImg;
+
 public interface QboardImgRepository extends JpaRepository<QboardImg, Long> {
-    // 필요한 경우 추가적인 쿼리 메서드를 정의할 수 있음
+    // QboardImg 테이블에서 qboardId를 기준으로 모든 이미지를 찾는 메서드
+    List<QboardImg> findByQboardId(Long qboardId);
 }

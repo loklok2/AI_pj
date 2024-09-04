@@ -28,4 +28,3 @@ public class Comment {
     private LocalDateTime editedDate; // 댓글 수정 일자
 
 }
-

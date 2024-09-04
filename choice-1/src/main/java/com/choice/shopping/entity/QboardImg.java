@@ -5,9 +5,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Data;
 
 @Entity // 엔티티로 설정
 @Table(name = "qboard_img") // 테이블 이름 설정
+@Data
 public class QboardImg {
 
     @Id // 기본 키 설정
@@ -18,6 +20,4 @@ public class QboardImg {
     private String qimgName; // 이미지 이름
     private byte[] qimgData; // 이미지 데이터
 
-
 }
-

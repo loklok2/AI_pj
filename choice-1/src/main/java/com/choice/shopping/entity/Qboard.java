@@ -8,9 +8,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity // 엔티티로 설정
 @Table(name = "qboard") // 테이블 이름 설정
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Qboard {
 
     @Id // 기본 키 설정
@@ -30,4 +38,3 @@ public class Qboard {
 
     // Getters and Setters (생략 가능)
 }
-
