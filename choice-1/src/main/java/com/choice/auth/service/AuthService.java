@@ -60,7 +60,6 @@ public class AuthService {
         Member member = Member.builder()
                 .username(requestDto.getUsername())
                 .password(encodedPassword)
-                .gender(requestDto.getGender())
                 .birthDate(requestDto.getBirthDate())
                 .address(requestDto.getAddress())
                 .phone(requestDto.getPhone())
@@ -121,7 +120,7 @@ public class AuthService {
     @Transactional
     public void deleteUnverifiedMembers() {
         LocalDateTime cutoffTime = LocalDateTime.now().minusHours(24);
-        List<Token> expiredTokens = tokenRepository.findByTokenTypeAndCreatedAtBefore(
+        List<Token> expiredTokens = tokenRepository.findByTokenTypeAndCreateDate(
                 TokenType.EMAIL_VERIFICATION.name(), cutoffTime);
 
         for (Token token : expiredTokens) {

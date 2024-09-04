@@ -31,15 +31,17 @@ public class Member {
     private String username; // 사용자 아이디
     private String password; // 비밀번호
     private String name; // 이름
-    private String gender; // 성별
+    // private String gender; // 성별 체크버튼?
 
     @Temporal(TemporalType.DATE) // 날짜 타입 설정
-    private Date birthDate; // 생년월일
+    private String birthDate; // 생년월일 920101-
 
     private String address; // 주소
     private String phone; // 전화번호
     private String email; // 이메일
     private String nickname; // 닉네임
+
+    private String style; // 스타일
     private String role; // 사용자 역할
 
     @Column(name = "join_date", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

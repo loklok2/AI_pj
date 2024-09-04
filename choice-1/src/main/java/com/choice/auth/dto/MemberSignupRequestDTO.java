@@ -12,7 +12,7 @@ public class MemberSignupRequestDTO {
     private String password;   // 비밀번호
     private String email;      // 이메일
     private String gender;     // 성별
-    private Date birthDate;    // 생년월일
+    private String birthDate;    // 생년월일
     private String address;    // 주소
     private String phone;      // 전화번호
     private String nickname;   // 닉네임

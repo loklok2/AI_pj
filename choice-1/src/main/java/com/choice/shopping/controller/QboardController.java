@@ -13,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/qboard")
@@ -42,6 +45,7 @@ public class QboardController {
         return ResponseEntity.ok(qboards);
     }
 
+
     @PutMapping("/{id}")
     public ResponseEntity<Qboard> updateQboard(
             @PathVariable Long id,
@@ -54,6 +58,7 @@ public class QboardController {
         return ResponseEntity.ok(updatedQboard);
     }
 
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteQboard(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         qboardService.deleteQboard(id, userDetails.getUsername());

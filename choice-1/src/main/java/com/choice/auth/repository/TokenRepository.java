@@ -16,6 +16,6 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     Optional<Token> findByTokenValue(String tokenValue);
 
     // 토큰 유형과 생성 시간으로 토큰을 검색하는 메서드 선언
-    List<Token> findByTokenTypeAndCreatedAtBefore(String tokenType, LocalDateTime dateTime);
+    List<Token> findByTokenTypeAndCreateDate(String tokenType, LocalDateTime dateTime);
 
 }
