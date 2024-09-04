@@ -25,7 +25,7 @@ const Board = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState('전체'); // 카테고리 필터 상태 추가
-  const itemsPerPage = 13;
+  const itemsPerPage = 10;
 
   // 페이지 변경 함수
   const handlePageChange = (pageNumber) => {

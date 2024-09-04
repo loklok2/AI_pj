@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Signup.css';
 
 const Signup = () => {
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 창 상태 관리
 
     const handleSignup = () => {
-        // 여기서 폼 제출, 유효성 검사 등을 처리할 수 있습니다.
-        // 회원가입이 성공적으로 완료된 후 완료 페이지로 이동합니다.
-        navigate('/completion');
+        // 회원가입 처리 로직 추가 (폼 제출, 유효성 검사 등)
+        // 성공적으로 회원가입이 완료되면 모달 창을 엽니다.
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        // 모달 창을 닫고 로그인 화면으로 이동합니다.
+        setIsModalOpen(false);
+        navigate('/login');
     };
 
     return (
@@ -20,27 +27,27 @@ const Signup = () => {
             </div>
 
             <div className="signup-form-container">
-
-            <div className="form-group">
+                <div className="form-group">
                     <label htmlFor="username" className="form-label">이름</label>
                     <input
                         id="username"
                         className="form-input"
-                        type="username"
+                        type="text"
                         placeholder="이름을 입력해주세요."
                     />
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="username" className="form-label">아이디</label>
+                    <label htmlFor="userId" className="form-label">아이디</label>
                     <input
-                        id="username"
+                        id="userId"
                         className="form-input short-input"
                         type="text"
                         placeholder="아이디 입력(5-20)"
                     />
                     <button className="inline-button">중복 확인</button>
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="password" className="form-label">비밀번호</label>
                     <input
@@ -50,6 +57,7 @@ const Signup = () => {
                         placeholder="비밀번호를 입력해주세요.(8자 이상)"
                     />
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="phone" className="form-label">전화번호</label>
                     <input
@@ -59,6 +67,7 @@ const Signup = () => {
                         placeholder="전화번호를 입력해주세요.(ex.01011112222)"
                     />
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="email" className="form-label">이메일</label>
                     <input
@@ -69,15 +78,17 @@ const Signup = () => {
                     />
                     <button className="inline-button">중복 확인</button>
                 </div>
+
                 <div className="form-group">
-                    <label htmlFor="aderss" className="form-label">주소</label>
+                    <label htmlFor="address" className="form-label">주소</label>
                     <input
-                        id="aderss"
+                        id="address"
                         className="form-input"
                         type="text"
                         placeholder="주소를 입력해주세요."
                     />
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="birthdate" className="form-label">생년월일</label>
                     <input
@@ -87,6 +98,7 @@ const Signup = () => {
                         placeholder="생년월일을 입력해주세요.(YYYY-MM-DD)"
                     />
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="style" className="form-label">선호하는 스타일</label>
                     <select id="style" className="form-select">
@@ -97,9 +109,20 @@ const Signup = () => {
                     </select>
                 </div>
             </div>
+
             <div className="submit-button-container">
                 <button className="submit-button" onClick={handleSignup}>가입하기</button>
             </div>
+
+            {isModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>이메일 인증을 보냈습니다.</h3>
+                        <p>인증 후 로그인을 이용 해주세요.</p>
+                        <button className="close-button" onClick={handleCloseModal}>닫기</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
