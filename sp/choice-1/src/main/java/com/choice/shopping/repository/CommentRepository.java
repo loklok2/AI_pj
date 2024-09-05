@@ -8,6 +8,6 @@ import com.choice.shopping.entity.Comment;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findByQboardId(Long qboardId);
+    List<Comment> findByQboard_QboardId(Long qboardId);
 
 }

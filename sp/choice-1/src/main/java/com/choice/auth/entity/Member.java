@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,18 +30,24 @@ public class Member {
     private String username; // 사용자 아이디
     private String password; // 비밀번호
     private String name; // 이름
-    private String gender; // 성별 체크버튼?
+    private String gender; // 성별
 
-    @Temporal(TemporalType.DATE) // 날짜 타입 설정
-    private String birthDate; // 생년월일 920101-
+    @Column(length = 7)
+    private String residentRegistrationNumber; // 주민등록번호 앞 7자리
 
     private String address; // 주소
     private String phone; // 전화번호
     private String email; // 이메일
-    private String nickname; // 닉네임
+    // private String nickname; // 닉네임
 
-    private String style; // 스타일
-    private String role; // 사용자 역할
+    @Enumerated(EnumType.STRING)
+    private Style style; // 스타일
+
+    @Enumerated(EnumType.STRING)
+    private Role role; // 사용자 역할
+
+    @Builder.Default
+    private boolean enabled = false; // 이메일 인증 여부, 기본값은 false
 
     @Column(name = "join_date", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime joinDate; // 가입 일자

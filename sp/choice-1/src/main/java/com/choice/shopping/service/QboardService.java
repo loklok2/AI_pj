@@ -110,7 +110,7 @@ public class QboardService {
             throw new RuntimeException("게시글을 삭제할 권한이 없습니다.");
         }
         // 게시글 관련 이미지 모두 삭제
-        List<QboardImg> images = qboardImgRepository.findByQboardId(id); // 게시글 ID로 이미지 조회
+        List<QboardImg> images = qboardImgRepository.findByQboard_QboardId(id); // 게시글 ID로 이미지 조회
         qboardImgRepository.deleteAll(images); // 이미지 삭제
 
         qboardRepository.delete(qboard); // 게시글 삭제
@@ -139,6 +139,6 @@ public class QboardService {
 
     // 게시글 이미지 조회
     public List<QboardImg> getImagesForQboard(Long qboardId) {
-        return qboardImgRepository.findByQboardId(qboardId); // 게시글 ID로 이미지 조회
+        return qboardImgRepository.findByQboard_QboardId(qboardId); // 게시글 ID로 이미지 조회
     }
 }

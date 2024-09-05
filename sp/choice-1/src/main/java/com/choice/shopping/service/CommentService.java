@@ -74,7 +74,7 @@ public class CommentService {
 
     // 댓글 조회
     public List<Comment> getCommentsByQboardId(Long qboardId) {
-        return commentRepository.findByQboardId(qboardId);
+        return commentRepository.findByQboard_QboardId(qboardId);
     }
 
     // 관리자 여부 확인

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-
 @Component
 public class JWTUtil {
     // JWT 토큰의 유효기간을 30분으로 설정 (밀리초 단위)
@@ -16,7 +15,7 @@ public class JWTUtil {
 
     // 리프레시 토큰의 유효기간을 1주일로 설정 (밀리초 단위)
     private static final long REFRESH_TOKEN_MSEC = 14 * 24 * 60 * 60 * 1000L; // 14일 유지
-    
+
     // JWT 토큰 서명에 사용되는 비밀 키를 외부에서 주입받기 위해 @Value 애너테이션 사용
     private static String jwtKey;
 
@@ -32,7 +31,8 @@ public class JWTUtil {
 
     // 토큰에서 접두사 "Bearer "를 제거하는 메서드
     private static String getJWTSource(String token) {
-        if (token.startsWith(PREFIX)) return token.replace(PREFIX, "");
+        if (token.startsWith(PREFIX))
+            return token.replace(PREFIX, "");
         return token;
     }
 
@@ -68,23 +68,37 @@ public class JWTUtil {
     // 리프레시 토큰을 생성하는 메서드
     public static String getRefreshToken(String username) {
         return PREFIX + JWT.create()
-        .withClaim(CLAIM_NAME, username)
-        .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_MSEC))
-        .sign(Algorithm.HMAC256(jwtKey));
+                .withClaim(CLAIM_NAME, username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_MSEC))
+                .sign(Algorithm.HMAC256(jwtKey));
     }
-    
+
     // 리프레시 토큰이 만료되었는지 확인하는 메서드
     public static boolean isExpiredRefreshToken(String token) {
         try {
             String tok = getJWTSource(token);
             JWT.require(Algorithm.HMAC256(jwtKey))
-            .build()
-            .verify(tok);
+                    .build()
+                    .verify(tok);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
+    // 이메일 인증 토큰 생성
+    public static String getEmailVerificationToken(String username) {
+        return PREFIX + JWT.create()
+                .withClaim(CLAIM_NAME, username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24시간
+                .sign(Algorithm.HMAC256(jwtKey));
+    }
 
+    // 비밀번호 재설정 토큰 생성
+    public static String getPasswordResetToken(String username) {
+        return PREFIX + JWT.create()
+                .withClaim(CLAIM_NAME, username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + 30 * 60 * 1000)) // 30분
+                .sign(Algorithm.HMAC256(jwtKey));
+    }
 }

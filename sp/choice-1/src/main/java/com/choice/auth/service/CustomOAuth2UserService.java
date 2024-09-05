@@ -1,14 +1,16 @@
 package com.choice.auth.service;
 
-import com.choice.auth.entity.Member;
-import com.choice.auth.repository.MemberRepository;
+import java.util.Optional;
+
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.choice.auth.entity.Member;
+import com.choice.auth.entity.Role;
+import com.choice.auth.repository.MemberRepository;
 
 @Service
 // DefaultOAuth2UserService를 상속받아 커스텀 OAuth2 사용자 서비스 구현
@@ -47,7 +49,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .username(username)
                     .email(email)
                     .name(name)
-                    .role("MEMBER")
+                    .role(Role.MEMBER)
+                    .enabled(true) // OAuth2 로그인은 이메일 인증이 필요 없으므로 true로 설정
                     .build();
             // 새 회원 정보 저장
             memberRepository.save(member);

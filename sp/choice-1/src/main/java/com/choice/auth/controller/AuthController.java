@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.choice.auth.dto.FindUsernameRequestDTO;
 import com.choice.auth.dto.LoginRequestDTO;
 import com.choice.auth.dto.LoginResponseDTO;
-import com.choice.auth.dto.MemberSignupRequestDTO;
 import com.choice.auth.dto.PasswordResetDTO;
 import com.choice.auth.dto.ResetPasswordRequestDTO;
+import com.choice.auth.dto.SignupRequestDTO;
 import com.choice.auth.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class AuthController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody MemberSignupRequestDTO requestDto) {
+    public ResponseEntity<String> signup(@RequestBody SignupRequestDTO requestDto) {
         authService.registerUser(requestDto);
         return ResponseEntity.ok("회원가입 성공! 이메일 인증을 진행해주세요.");
     }
@@ -42,12 +42,8 @@ public class AuthController {
     // 이메일 인증
     @GetMapping("/verify")
     public ResponseEntity<String> verifyEmail(@RequestParam String token) {
-        boolean verified = authService.verifyEmail(token);
-        if (verified) {
-            return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
-        } else {
-            return ResponseEntity.badRequest().body("유효하지 않은 인증 토큰입니다.");
-        }
+        authService.verifyEmail(token);
+        return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
     }
 
     // 아이디 찾기
@@ -71,8 +67,11 @@ public class AuthController {
         return ResponseEntity.ok("비밀번호가 성공적으로 재설정되었습니다.");
     }
 
-
-    
-
+    // 리프레시 토큰 재발급
+    @PostMapping("/refresh-token")
+    public ResponseEntity<LoginResponseDTO> refreshToken(@RequestBody String refreshToken) {
+        LoginResponseDTO response = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(response);
+    }
 
 }

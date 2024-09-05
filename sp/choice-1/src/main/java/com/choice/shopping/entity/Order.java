@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.choice.auth.entity.Member;
+import com.choice.product.entity.Product;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

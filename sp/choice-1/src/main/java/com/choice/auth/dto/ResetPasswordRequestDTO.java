@@ -1,11 +1,9 @@
 package com.choice.auth.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class ResetPasswordRequestDTO {
-    private String username; // 아이디
-    private String email; // 이메일
+    private String username;
+    private String email;
 }

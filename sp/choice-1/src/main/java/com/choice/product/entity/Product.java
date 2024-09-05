@@ -20,8 +20,8 @@ public class Product {
     private String pInfo; // 상품 정보
     private Long pStock; // 상품 재고
     private Long pSell; // 상품 판매량
-    private Long pLike;
-    private Long pView;
+    private Long pLike; // 상품 좋아요
+    private Long pView; // 상품 조회수
 
     @Column(name = "p_create_date", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime pCreateDate; // 상품 생성 날짜

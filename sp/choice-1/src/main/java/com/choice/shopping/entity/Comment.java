@@ -19,7 +19,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "qboard_id")
-    private Qboard qboard; // 게시글 ID
+    private Qboard qboard; // 게시글
 
     @ManyToOne
     @JoinColumn(name = "user_id")
