@@ -18,6 +18,8 @@ import UserFind from './Component/Login/UserFind';
 import MyPages from './Component/MyPage/MyPages'; 
 import Baskets from './Component/Cart/Baskets';
 import Payment from './Component/Cart/Payment'; 
+import PayCompleted from './Component/Cart/PayCompleted'; 
+import Order from './Component/MyPage/Order'; 
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
           <Route path="/mypage" element={<MyPages />} /> {/* 마이페이지  */}
           <Route path="/cart" element={<Baskets />} /> {/* 장바구니 */}
           <Route path="/payment" element={<Payment />} /> {/* 결제 페이지 */}
+          <Route path="/paycompleted" element={<PayCompleted />} /> {/* 결제 완료 페이지 */}
+          <Route path="/order" element={<Order />} /> {/* 주문내역 페이지 */}
         </Routes>
       </div>
       <Footer /> {/* 푸터 컴포넌트 추가 */}

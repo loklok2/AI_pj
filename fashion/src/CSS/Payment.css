@@ -4,7 +4,6 @@
     width: 40%;
     margin: 0 auto;
     min-height: 120vh;
-    font-family: Arial, sans-serif;
     font-family: "Noto Sans KR", sans-serif;
   }
   
@@ -28,7 +27,7 @@
   .payment-method-info,
   .payment-summary-info {
     border-bottom: 1px solid #8f8f8f;
-    margin-bottom: 80px;
+    margin-bottom: 50px;
   }
   
   .payment-order-info h2,
@@ -72,7 +71,7 @@
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 3px;
   }
 
   .payment-input-fields {
@@ -81,7 +80,7 @@
     margin-top: -5px;
     margin-bottom: 40px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 3px;
   }
   
   .payment-method-info .payment-method-options {

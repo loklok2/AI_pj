@@ -6,7 +6,7 @@ import '../../CSS/MyPages.css';
 const MyPages = () => {
   return (
     <div className="mypages-container">
-      <h2 className="mypages-title">마이쇼핑</h2>
+      <h2 className="mypages-title">마이페이지</h2>
       <p className="mypages-subtitle">나의 정보 및 장바구니, 주문 내역을 확인해보세요.</p>
 
       {/* 사용자 정보 섹션 */}
@@ -50,8 +50,8 @@ const MyPages = () => {
       </div>
 
       <div className="mypages-order-buttons">
-        <button className="mypages-btn">장바구니 목록 확인하기</button>
-        <button className="mypages-btn">주문 내역 확인하기</button>
+        <button className="mypages-btn">장바구니 목록</button>
+        <button className="mypages-btn">주문 내역 목록</button>
       </div>
     </div>
   );

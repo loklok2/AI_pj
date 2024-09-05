@@ -114,8 +114,8 @@
 }
 
 .delete-all-btn {
-    width: 45%; /* 삭제 버튼 크기 */
-    padding: 10px;
+    width: 48%; /* 삭제 버튼 크기 */
+    padding: 12px;
     font-size: 14px;
     background-color: black;
     color: white;
@@ -124,8 +124,8 @@
 }
 
 .purchase-btn {
-    width: 53%; /* 구매 버튼 크기 */
-    padding: 10px;
+    width: 48%; /* 구매 버튼 크기 */
+    padding: 12px;
     font-size: 14px;
     background-color: black;
     color: white;

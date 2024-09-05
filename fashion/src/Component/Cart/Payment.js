@@ -1,7 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../CSS/Payment.css';
 
 const Payment = () => {
+  const navigate = useNavigate(); 
+  const handlePaymentSubmit = () => {
+    navigate('/paycompleted');
+  };
+
   return (
     <div className="payment-page-container">
       <h1 className="payment-page-title">주문/결제</h1>
@@ -68,7 +74,9 @@ const Payment = () => {
       {/* 버튼 */}
       <div className="payment-buttons">
         <button className="payment-cancel-btn">장바구니</button>
-        <button className="payment-submit-btn">결제하기</button>
+        <button className="payment-submit-btn" onClick={handlePaymentSubmit}>
+          결제하기
+        </button>
       </div>
     </div>
   );
