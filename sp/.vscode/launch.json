@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ChoiceApplication<choice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.choice.ChoiceApplication",
+            "projectName": "choice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Choice1Application<choice-1>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.choice.Choice1Application",
+            "projectName": "choice-1",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
