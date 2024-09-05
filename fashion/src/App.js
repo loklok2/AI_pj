@@ -16,6 +16,8 @@ import PassCheck from './Component/Login/PassCheck';
 import RePass from './Component/Login/RePass';
 import UserFind from './Component/Login/UserFind';
 import MyPages from './Component/MyPage/MyPages'; 
+import Baskets from './Component/Cart/Baskets';
+import Payment from './Component/Cart/Payment'; 
 
 function App() {
   return (
@@ -37,7 +39,9 @@ function App() {
           <Route path="/passcheck" element={<PassCheck />} /> {/* 패스워드 체크 페이지 */}
           <Route path="/reset-password" element={<RePass />} /> {/* 비밀번호 재설정 페이지 */}
           <Route path="/userfind" element={<UserFind />} /> {/* 아이디 찾은거 보여주는 페이지 */}
-          <Route path="/mypage" element={<MyPages />} /> {/* 마이페이지 추가 */}
+          <Route path="/mypage" element={<MyPages />} /> {/* 마이페이지  */}
+          <Route path="/cart" element={<Baskets />} /> {/* 장바구니 */}
+          <Route path="/payment" element={<Payment />} /> {/* 결제 페이지 */}
         </Routes>
       </div>
       <Footer /> {/* 푸터 컴포넌트 추가 */}

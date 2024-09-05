@@ -9,17 +9,39 @@ const Signup = () => {
         username: '',   // 사용자 아이디
         password: '',   // 비밀번호
         email: '',      // 이메일
-        birthDate: '',  // 생년월일
+        birthDate: '',  // 주민등록번호
         address: '',    // 주소
         phone: '',      // 전화번호
-        style: '',      // 선호하는 스타일 <= MemberSignupRequestDTO에는 없던데 스타일은 어떤식으로 처리 되는지..
-        // nickname: ''  // 닉네임 (추후 사용 예정)
+        style: '',      // 선호하는 스타일
     });
+    const [maskedBack, setMaskedBack] = useState(''); // 마스킹된 뒷자리 값
+    const [realBack, setRealBack] = useState(''); // 실제 뒷자리 값
     const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태 관리
 
     // 입력 값 상태 변경
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
+    };
+
+    // 주민등록번호를 두 개의 입력 필드로 나누어 처리
+    const handleIdChange = (e, part) => {
+        const value = e.target.value;
+
+        if (part === 'front') {
+            setFormData({
+                ...formData,
+                birthDate: value + formData.birthDate.slice(6)  // 앞 6자리 업데이트
+            });
+        } else if (part === 'back') {
+            setRealBack(value);  // 뒷자리 실제 값 저장
+            const maskedValue = value[0] + '*'.repeat(Math.max(0, value.length - 1)); // 첫 글자만 보이고 나머지는 '*'
+            setMaskedBack(maskedValue); // 마스킹된 값을 업데이트
+
+            setFormData({
+                ...formData,
+                birthDate: formData.birthDate.slice(0, 6) + value  // 전체 주민등록번호 업데이트
+            });
+        }
     };
 
     // 백엔드 회원가입 API 호출
@@ -144,15 +166,29 @@ const Signup = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="birthDate" className="form-label">생년월일</label>
-                    <input
-                        id="birthDate"
-                        className="form-input"
-                        type="text"
-                        placeholder="생년월일을 입력해주세요.(ex.19801101)"
-                        value={formData.birthDate}
-                        onChange={handleChange}
-                    />
+                    <label htmlFor="birthDate" className="form-label">주민등록번호</label>
+                    <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
+                        <input
+                            id="birthYear"
+                            className="form-input"
+                            type="text"
+                            placeholder="앞 6자리(ex. 900101)"
+                            value={formData.birthDate.slice(0, 6)}
+                            onChange={(e) => handleIdChange(e, 'front')}
+                            style={{ flex: 1 }}
+                            maxLength="6"
+                        />
+                        <input
+                            id="birthMonthDay"
+                            className="form-input"
+                            type="text"  
+                            placeholder="뒤 7자리"
+                            value={maskedBack}
+                            onChange={(e) => handleIdChange(e, 'back')}
+                            style={{ flex: 1 }}
+                            maxLength="7"
+                        />
+                    </div>
                 </div>
 
                 <div className="form-group">

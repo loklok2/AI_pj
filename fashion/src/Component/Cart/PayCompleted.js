@@ -1,6 +1,6 @@
 import React from 'react'
 
-const basket = () => {
+const PayCompleted = () => {
   return (
     <div>
       
@@ -8,4 +8,4 @@ const basket = () => {
   )
 }
 
-export default basket
+export default PayCompleted

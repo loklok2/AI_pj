@@ -74,7 +74,7 @@ const Board = () => {
       <table className="qna-board-table">
         <thead>
           <tr>
-            <th>아이디</th>
+            <th>번호</th>
             <th>카테고리</th>
             <th>제목</th>
             <th>작성자</th>

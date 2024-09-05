@@ -8,7 +8,6 @@
   min-height: 100vh;
   background-color: #fff;
   padding: 20px;
-  
 }
 
 .signup-header {
@@ -18,7 +17,7 @@
 }
 
 .signup-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   margin-bottom: 10px;
   font-family: "Noto Sans KR", sans-serif;
@@ -56,8 +55,6 @@
   margin-bottom: 30px;
   font-family: "Noto Sans KR", sans-serif;
 }
-
-
 
 .form-label {
   font-size: 18px;
@@ -114,7 +111,6 @@
   color: #555;
   margin-left: -80px;
   font-family: "Noto Sans KR", sans-serif;
-  
 }
 
 .submit-button-container {
@@ -178,4 +174,30 @@
 
 .close-button:hover {
   background-color: #333;
+}
+
+/* 주민등록번호 입력칸 스타일 */
+.form-row {
+  display: flex;
+  gap: 10px; /* 간격을 기본 10px로 설정 */
+  align-items: center;
+}
+
+#birthYear, #birthMonthDay {
+  max-width: 175px; /* 입력칸 너비를 150px로 설정 */
+  padding: 10px;
+  border: 1px solid #a7a7a7;
+  border-radius: 3px;
+  font-size: 14px;
+  color: #555;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+#birthYear {
+  margin-right: 80px; /* 앞자리와 뒷자리 사이에 10px 간격 추가 */
+}
+
+#birthYear:focus, #birthMonthDay:focus {
+  border-color: #000;
+  outline: none;
 }
