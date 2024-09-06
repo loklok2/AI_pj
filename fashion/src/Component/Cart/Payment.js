@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Payment.css';
 
 const Payment = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  
+  // 목업 데이터를 기본 주소로 설정
+  const [address, setAddress] = useState('서울특별시 강남구 테헤란로 123, 5층');
+
+  // 결제 완료 페이지로 이동하는 함수
   const handlePaymentSubmit = () => {
     navigate('/paycompleted');
+  };
+
+  // 장바구니 페이지로 이동하는 함수
+  const handleCartClick = () => {
+    navigate('/cart');
+  };
+
+  // 새로운 주소 입력 버튼을 클릭했을 때 주소 초기화
+  const handleNewAddress = () => {
+    setAddress(''); // 주소 필드를 비움
   };
 
   return (
@@ -28,7 +43,15 @@ const Payment = () => {
       {/* 배송지 정보 */}
       <div className="payment-delivery-info">
         <h2>배송지 정보</h2>
-        <input type="text" className="payment-input-fields" placeholder="상세 주소를 입력하세요." />
+        <input
+          type="text"
+          className="payment-input-fields"
+          placeholder="주소를 입력하세요.(상세 주소까지 입력해주세요)"
+          value={address} // 목업된 주소가 입력된 상태로 표시
+          onChange={(e) => setAddress(e.target.value)} // 사용자가 주소를 수정할 수 있도록 설정
+        />
+        <button className="add-address-btn" onClick={handleNewAddress}>새로운 주소 입력</button>
+        <hr className="divider-line" />
       </div>
 
       {/* 주문 요청 사항 */}
@@ -49,7 +72,7 @@ const Payment = () => {
           <div className="payment-method-option">신용카드</div>
           <div className="payment-method-option">가상계좌</div>
           <div className="payment-method-option">휴대폰 결제</div>
-          <div className="payment-method-option">페이팔</div>
+          <div className="payment-method-option">토스 페이</div>
           <div className="payment-method-option">카카오 페이</div>
         </div>
       </div>
@@ -72,7 +95,7 @@ const Payment = () => {
 
       {/* 버튼 */}
       <div className="payment-buttons">
-        <button className="payment-cancel-btn">장바구니</button>
+        <button className="payment-cancel-btn" onClick={handleCartClick}>장바구니</button>
         <button className="payment-submit-btn" onClick={handlePaymentSubmit}>
           결제하기
         </button>

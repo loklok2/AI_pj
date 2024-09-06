@@ -6,7 +6,8 @@
   margin: 0 auto;
   font-family: 'Noto Sans KR', sans-serif;
   text-align: center;
-  height: 90vh;
+  height: auto;
+  padding-bottom: 100px; /* 밑 공간 추가 */
 }
 
 /* 페이지 제목 및 설명 */
@@ -26,14 +27,14 @@
 /* 사용자 정보 섹션 */
 .mypages-user-info {
   display: flex;
-  justify-content: flex-start; /* 왼쪽 정렬 */
+  justify-content: flex-start;
   align-items: center;
   padding: 30px;
   margin-bottom: 100px;
   border: 1px solid #ddd;
   border-radius: 3px;
   background-color: #f9f9f9;
-  text-align: left; /* 전체 섹션 왼쪽 정렬 */
+  text-align: left;
 }
 
 .mypages-user-avatar {
@@ -44,11 +45,11 @@
   margin-right: 15px;
   display: flex;
   justify-content: center;
-  align-items: center; /* 아이콘을 동그라미 중앙에 정렬 */
+  align-items: center;
 }
 
 .mypages-user-avatar svg {
-  color: #555; /* 아이콘 색상 */
+  color: #555;
 }
 
 .mypages-user-details {
@@ -70,18 +71,26 @@
   text-decoration: underline;
 }
 
+/* 구분선 스타일 */
+.mypages-section-divider {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #000;
+  width: 100%;
+}
+
 /* 주문 상태 섹션 */
 .mypages-section-header {
-  display: flex;           /* flex 레이아웃으로 나란히 배치 */
-  justify-content: flex-start; /* 왼쪽 정렬 */
-  align-items: center;     /* 텍스트가 수직으로 중앙 정렬되도록 설정 */
-  margin-bottom: 10px;     /* 하단 여백 */
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .mypages-section-title {
   font-size: 18px;
   font-weight: bold;
-  margin-right: 10px;     /* 제목과 부제목 사이의 간격 */
+  margin-right: 10px;
 }
 
 .mypages-section-subtitle {
@@ -89,15 +98,7 @@
   color: #888;
 }
 
-/* 구분선 스타일 */
-.mypages-section-divider {
-  margin-top: 10px;
-  margin-bottom: 0px;
-  border-bottom: 2px solid #000;
-  width: 100%; /* 구분선 전체 너비 사용 */
-}
-
-/* 주문 상태 아이템 섹션 - 중앙 줄 포함 */
+/* 주문 상태 아이템 섹션 */
 .mypages-order-status {
   display: flex;
   justify-content: space-between;
@@ -107,7 +108,6 @@
   margin: 0 50px;
 }
 
-/* 배경 줄 (상태 아이템을 연결) */
 .mypages-order-status::before {
   content: '';
   position: absolute;
@@ -119,11 +119,10 @@
   z-index: 0;
 }
 
-/* 상태 아이템 */
 .mypages-status-item {
   position: relative;
   text-align: center;
-  z-index: 1; /* 상태 아이템을 줄 위에 보이도록 설정 */
+  z-index: 1;
   margin-top: 80px;
 }
 
@@ -146,6 +145,7 @@
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  margin-bottom: 100px;
 }
 
 .mypages-btn {
@@ -161,4 +161,35 @@
 .mypages-btn:hover {
   background-color: #000000;
   color: #ffffff;
+}
+
+/* 장바구니, 찜 목록, 추천 상품 섹션 */
+.mypages-cart-items,
+.mypages-wishlist-items,
+.mypages-recommended-items {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+/* 상품 아이템(이미지가 들어갈 자리) */
+.mypages-item {
+  width: 160px;
+  height: 190px;
+  background-color: #ddd;
+  margin-top: 30px;
+  margin-bottom: 80px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+}
+
+/* 각 아이템 텍스트를 위해 */
+.mypages-item::after {
+  content: "상품 이미지";
+  font-size: 12px;
+  color: #555;
 }

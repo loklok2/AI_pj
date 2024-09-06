@@ -5,6 +5,7 @@
     margin: 0 auto;
     text-align: center;
     font-family: "Noto Sans KR", sans-serif;
+    padding-bottom: 150px;
 }
 
 .basket-title {
@@ -141,3 +142,10 @@
 .purchase-btn:hover {
     background-color: #444444; /* 구매 버튼 호버 효과 */
 }
+
+.basket-total {
+    font-size: 18px;
+    margin-top: 100px;
+    margin-bottom: 20px;
+    text-align: right; /* 오른쪽 정렬 */
+  }

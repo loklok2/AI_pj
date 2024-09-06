@@ -1,11 +1,19 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';  
+import { useNavigate } from 'react-router-dom';
 import '../../CSS/MyPages.css';
 
 const MyPages = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate(); // useNavigate 훅 사용
+
+  const handleCartClick = () => {
+    navigate('/cart'); // 장바구니 페이지로 이동
+  };
+
+  const handleOrdersClick = () => {
+    navigate('/myorder'); // 주문 내역 페이지로 이동
+  };
 
   return (
     <div className="mypages-container">
@@ -52,13 +60,56 @@ const MyPages = () => {
         </div>
       </div>
 
+      {/* 장바구니 및 주문 내역 버튼 */}
       <div className="mypages-order-buttons">
-        <button className="mypages-btn" onClick={() => navigate('/cart')}>
-          장바구니 목록
+        <button className="mypages-btn" onClick={handleCartClick}>
+          장바구니 목록 확인하기
         </button>
-        <button className="mypages-btn" onClick={() => navigate('/myorder')}>
-          주문/배송 목록
+        <button className="mypages-btn" onClick={handleOrdersClick}>
+          주문 내역 확인하기
         </button>
+      </div>
+
+      {/* 장바구니 섹션 */}
+      <div className="mypages-section-header">
+        <h3 className="mypages-section-title">장바구니</h3>
+        <p className="mypages-section-subtitle">최근 30일 내의 진행 중인 장바구니 목록 입니다.</p>
+      </div>
+      <div className="mypages-section-divider"></div>
+      <div className="mypages-cart-items">
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+      </div>
+
+      {/* 찜 목록 섹션 */}
+      <div className="mypages-section-header">
+        <h3 className="mypages-section-title">찜 목록</h3>
+        <p className="mypages-section-subtitle">최근 30일 내의 진행 중인 찜 목록 입니다.</p>
+      </div>
+      <div className="mypages-section-divider"></div>
+      <div className="mypages-wishlist-items">
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+      </div>
+
+      {/* 추천 상품 섹션 */}
+      <div className="mypages-section-header">
+        <h3 className="mypages-section-title">추천 상품</h3>
+        <p className="mypages-section-subtitle">AI기반으로 추천해주는 상품입니다.</p>
+      </div>
+      <div className="mypages-section-divider"></div>
+      <div className="mypages-recommended-items">
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
+        <div className="mypages-item"></div>
       </div>
     </div>
   );
