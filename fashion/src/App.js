@@ -19,7 +19,8 @@ import MyPages from './Component/MyPage/MyPages';
 import Baskets from './Component/Cart/Baskets';
 import Payment from './Component/Cart/Payment'; 
 import PayCompleted from './Component/Cart/PayCompleted'; 
-import Order from './Component/MyPage/Order'; 
+import Order from './Component/MyPage/Order';  
+import MyOrder from './Component/MyPage/MyOrder';
 
 function App() {
   return (
@@ -41,11 +42,12 @@ function App() {
           <Route path="/passcheck" element={<PassCheck />} /> {/* 패스워드 체크 페이지 */}
           <Route path="/reset-password" element={<RePass />} /> {/* 비밀번호 재설정 페이지 */}
           <Route path="/userfind" element={<UserFind />} /> {/* 아이디 찾은거 보여주는 페이지 */}
-          <Route path="/mypage" element={<MyPages />} /> {/* 마이페이지  */}
+          <Route path="/mypage" element={<MyPages />} /> {/* 마이페이지 */}
           <Route path="/cart" element={<Baskets />} /> {/* 장바구니 */}
           <Route path="/payment" element={<Payment />} /> {/* 결제 페이지 */}
           <Route path="/paycompleted" element={<PayCompleted />} /> {/* 결제 완료 페이지 */}
           <Route path="/order" element={<Order />} /> {/* 주문내역 페이지 */}
+          <Route path="/myorder" element={<MyOrder />} /> {/* 마이페이지 주문 내역 */}
         </Routes>
       </div>
       <Footer /> {/* 푸터 컴포넌트 추가 */}

@@ -28,7 +28,6 @@ const Payment = () => {
       {/* 배송지 정보 */}
       <div className="payment-delivery-info">
         <h2>배송지 정보</h2>
-        <input type="text" className="payment-input-field" placeholder="주소를 입력하세요." />
         <input type="text" className="payment-input-fields" placeholder="상세 주소를 입력하세요." />
       </div>
 

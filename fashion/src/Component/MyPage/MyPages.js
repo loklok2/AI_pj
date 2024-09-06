@@ -1,9 +1,12 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import '../../CSS/MyPages.css';  
+import { useNavigate } from 'react-router-dom';  
+import '../../CSS/MyPages.css';
 
 const MyPages = () => {
+  const navigate = useNavigate(); 
+
   return (
     <div className="mypages-container">
       <h2 className="mypages-title">마이페이지</h2>
@@ -22,8 +25,8 @@ const MyPages = () => {
 
       {/* 주문 상태 진행 섹션 */}
       <div className="mypages-section-header">
-      <h3 className="mypages-section-title">진행 중인 주문</h3>
-      <p className="mypages-section-subtitle">최근 30일 내의 진행 중인 주문 정보가 표시됩니다.</p>
+        <h3 className="mypages-section-title">진행 중인 주문</h3>
+        <p className="mypages-section-subtitle">최근 30일 내의 진행 중인 주문 정보가 표시됩니다.</p>
       </div>
       <div className="mypages-section-divider"></div>
 
@@ -50,8 +53,12 @@ const MyPages = () => {
       </div>
 
       <div className="mypages-order-buttons">
-        <button className="mypages-btn">장바구니 목록</button>
-        <button className="mypages-btn">주문 내역 목록</button>
+        <button className="mypages-btn" onClick={() => navigate('/cart')}>
+          장바구니 목록
+        </button>
+        <button className="mypages-btn" onClick={() => navigate('/myorder')}>
+          주문/배송 목록
+        </button>
       </div>
     </div>
   );

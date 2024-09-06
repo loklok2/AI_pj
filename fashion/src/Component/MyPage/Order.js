@@ -1,7 +1,10 @@
 import React from 'react';
 import '../../CSS/Order.css'; 
+import { useNavigate } from 'react-router-dom';
 
 const Order = () => {
+  const navigate = useNavigate(); 
+
   return (
     <div className="order-page-container">
       <h2 className="order-page-title">주문 내역</h2>
@@ -32,8 +35,10 @@ const Order = () => {
       </div>
 
       <div className="order-page-buttons">
-        <button className="order-page-main-button">메인으로 돌아가기</button>
-        <button className="order-page-mypage-button">마이페이지로 돌아가기</button>
+      <button className="order-page-main-button" onClick={() => navigate('/')}>메인 홈 가기
+        </button>
+        <button className="order-page-mypage-button" onClick={() => navigate('/mypage')}>마이페이지
+        </button>
       </div>
     </div>
   );
