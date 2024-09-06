@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Payment.css';
 
 const Payment = () => {
   const navigate = useNavigate();
 
-  // 상품 목록 데이터 (기본 상품 데이터 포함)
-  const [orderItems, setOrderItems] = useState([
-    {
-      id: 1,
-      name: '엘레강스 블랙 튜브탑 with 핑크 리본 디테일',
-      price: '29,900원',
-      image: 'image-url', // 실제 이미지 URL이 있을 경우 사용 가능
-    },
-    // 추가 상품이 있을 경우 여기에 추가 가능
-  ]);
+  // 주문 상품 목록 상태 관리 (sessionStorage에서 선택된 상품 가져오기)
+  const [orderItems, setOrderItems] = useState([]);
 
   // 주소 상태 관리
   const [address, setAddress] = useState('서울특별시 강남구 테헤란로 123, 5층');
 
+  // sessionStorage에서 선택된 상품 데이터를 가져와서 주문 목록에 저장
+  useEffect(() => {
+    const selectedItems = JSON.parse(sessionStorage.getItem('selectedItems')) || [];
+    setOrderItems(selectedItems);
+  }, []);
+
   // 결제 완료 페이지로 이동하는 함수
   const handlePaymentSubmit = () => {
+    const totalPrice = calculateTotalPrice(); // 총 결제 금액 계산 함수
+    sessionStorage.setItem('totalPrice', totalPrice); // 총 결제 금액을 sessionStorage에 저장
     navigate('/paycompleted');
   };
 
@@ -38,6 +38,15 @@ const Payment = () => {
   const handleRemoveItem = (itemId) => {
     const updatedItems = orderItems.filter(item => item.id !== itemId);
     setOrderItems(updatedItems);
+    sessionStorage.setItem('selectedItems', JSON.stringify(updatedItems)); // sessionStorage 업데이트
+  };
+
+  // 총 결제 금액 계산 함수
+  const calculateTotalPrice = () => {
+    return orderItems.reduce((acc, item) => {
+      const price = parseInt(item.price.replace(/,/g, '')) || 0; // 가격에서 쉼표 제거 후 숫자로 변환
+      return acc + (price * item.quantity);
+    }, 0);
   };
 
   return (
@@ -48,21 +57,31 @@ const Payment = () => {
       {/* 주문 상품 정보 */}
       <div className="payment-order-info">
         <h2>주문 상품정보</h2>
-        {orderItems.map((item) => (
-          <div key={item.id} className="payment-order-item">
-            <div className="payment-order-item-image-placeholder">
-              {/* 실제 이미지가 있을 경우 <img> 태그로 대체 */}
+        {orderItems.length > 0 ? (
+          orderItems.map((item) => (
+            <div key={item.id} className="payment-order-item">
+              <div className="payment-order-item-image-placeholder">
+                {/* 실제 이미지가 있을 경우 <img> 태그로 대체 */}
+              </div>
+              <div className="payment-order-item-details">
+                <p className="payment-order-item-name">{item.name}</p>
+                <p className="payment-order-item-price">
+                  {/* 상품 가격 * 수량 */}
+                  {(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString()}원
+                </p>
+                <p className="payment-order-item-quantity">
+                  수량: {item.quantity}개
+                </p>
+              </div>
+              {/* X 버튼 */}
+              <button className="remove-item-btn" onClick={() => handleRemoveItem(item.id)}>
+                x
+              </button>
             </div>
-            <div className="payment-order-item-details">
-              <p className="payment-order-item-name">{item.name}</p>
-              <p className="payment-order-item-price">{item.price}</p>
-            </div>
-            {/* X 버튼 */}
-            <button className="remove-item-btn" onClick={() => handleRemoveItem(item.id)}>
-              x
-            </button>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>주문하신 상품이 없습니다.</p>
+        )}
       </div>
 
       {/* 배송지 정보 */}
@@ -106,7 +125,7 @@ const Payment = () => {
       <div className="payment-summary-info">
         <div className="payment-summary-item">
           <span>상품 가격</span>
-          <span>29,900원</span>
+          <span>{calculateTotalPrice().toLocaleString()}원</span>
         </div>
         <div className="payment-summary-item">
           <span>배송비</span>
@@ -114,7 +133,7 @@ const Payment = () => {
         </div>
         <div className="payment-summary-total">
           <span>총 결제 금액</span>
-          <span>29,900원</span>
+          <span>{calculateTotalPrice().toLocaleString()}원</span>
         </div>
       </div>
 

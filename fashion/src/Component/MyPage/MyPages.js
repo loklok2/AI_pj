@@ -63,10 +63,10 @@ const MyPages = () => {
       {/* 장바구니 및 주문 내역 버튼 */}
       <div className="mypages-order-buttons">
         <button className="mypages-btn" onClick={handleCartClick}>
-          장바구니 목록 확인하기
+          장바구니 목록 
         </button>
         <button className="mypages-btn" onClick={handleOrdersClick}>
-          주문 내역 확인하기
+          주문 내역 
         </button>
       </div>
 
