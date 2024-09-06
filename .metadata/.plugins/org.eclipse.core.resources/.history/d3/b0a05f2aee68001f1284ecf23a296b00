@@ -1,7 +1,0 @@
-package com.choice.shopping.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface QboardImgRepository extends JpaRepository<T, ID> {
-
-}

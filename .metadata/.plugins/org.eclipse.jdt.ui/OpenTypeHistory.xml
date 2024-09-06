@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<typeInfoHistroy>
-    <typeInfo handle="=choice/C:\/Users\/user\/.gradle\/caches\/modules-2\/files-2.1\/org.hibernate.orm\/hibernate-core\/6.5.2.Final\/e9e0cc47f6cd2b2553968aee66bd9e55e7485221\/hibernate-core-6.5.2.Final.jar=/gradle_used_by_scope=/main,test=/&lt;org.hibernate.type.descriptor.converter.spi(JpaAttributeConverter.class[JpaAttributeConverter" modifiers="1537" timestamp="1722398730716"/>
-    <typeInfo handle="=choice/C:\/Users\/user\/.gradle\/caches\/modules-2\/files-2.1\/org.springframework.data\/spring-data-jpa\/3.3.3\/9b89dbd19eee24c4dc4df12564efc603c614aa91\/spring-data-jpa-3.3.3.jar=/gradle_used_by_scope=/main,test=/&lt;org.springframework.data.jpa.repository(JpaRepository.class[JpaRepository" modifiers="1537" timestamp="1724720971579"/>
-</typeInfoHistroy>

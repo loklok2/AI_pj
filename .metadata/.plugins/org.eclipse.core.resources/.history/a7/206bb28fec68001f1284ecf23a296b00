@@ -1,5 +1,0 @@
-package com.choice.auth.repository;
-
-public class TokenRepository {
-
-}

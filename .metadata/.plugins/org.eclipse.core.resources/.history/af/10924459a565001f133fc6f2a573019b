@@ -1,9 +1,0 @@
-package com.choice.auth.repository;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.choice.auth.domain.Token;
-
-public interface TokenRepository extends JpaRepository<Token, Long> {
-
-}

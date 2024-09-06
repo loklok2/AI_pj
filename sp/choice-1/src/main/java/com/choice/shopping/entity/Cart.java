@@ -1,14 +1,18 @@
 package com.choice.shopping.entity;
 
-import com.choice.auth.entity.Member;
-import com.choice.product.entity.Product;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.choice.auth.entity.Member;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -22,13 +26,10 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가 설정
     private Long cartId; // 장바구니 ID
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id")
     private Member member; // 사용자 ID
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product; // 상품 ID
-
-    private Integer cartQty; // 장바구니 수량
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
 }

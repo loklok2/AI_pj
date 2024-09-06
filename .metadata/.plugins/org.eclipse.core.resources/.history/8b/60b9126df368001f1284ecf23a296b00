@@ -1,6 +1,0 @@
-package com.choice.auth.entity;
-
-public enum Role {
-	MEMBER,
-	ADMIN
-}

@@ -1,5 +1,0 @@
-package com.choice.auth.domain;
-
-public class Token {
-
-}

@@ -13,10 +13,14 @@ public class Payments {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentsId; // 결제 ID
 
+    @Column(name = "pay_value")
     private String payValue; // 결제 값
+
+    @Column(name = "payment_method")
+    private String paymentMethod; // 결제 방법
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Order order; // 주문 ID
+    private Orders order; // 주문 ID
 
 }
