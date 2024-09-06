@@ -113,8 +113,8 @@ const MyOrder = () => {
           <FontAwesomeIcon icon={faUser} size="2x" />
         </div>
         <p className="myorder-no-orders">
-          [유저 아이디]님의 주문/배송 내역 입니다.<br />
-          [<Link to="/mypage">여기</Link>]를 클릭하면 마이페이지로 이동합니다.
+          <strong>[유저 아이디]</strong>님의 주문/배송 내역 입니다.<br />
+          <strong>[<Link to="/mypage">여기</Link>]</strong>를 클릭하면 마이페이지로 이동합니다.
         </p>
       </div>
 

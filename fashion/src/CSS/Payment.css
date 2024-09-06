@@ -166,3 +166,16 @@
   .add-address-btn:hover {
     background-color: #333;
   }
+
+  .remove-item-btn {
+    background-color: transparent;
+    border: none;
+    color: rgb(0, 0, 0);
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .remove-item-btn:hover {
+    color: rgb(255, 44, 44);
+  }

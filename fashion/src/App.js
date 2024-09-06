@@ -21,6 +21,8 @@ import Payment from './Component/Cart/Payment';
 import PayCompleted from './Component/Cart/PayCompleted'; 
 import Order from './Component/MyPage/Order';  
 import MyOrder from './Component/MyPage/MyOrder';
+import Product from './Component/Eproduct/Product';  
+import ProductDetails from './Component/Eproduct/ProductDetails';
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
           <Route path="/paycompleted" element={<PayCompleted />} /> {/* 결제 완료 페이지 */}
           <Route path="/order" element={<Order />} /> {/* 주문내역 페이지 */}
           <Route path="/myorder" element={<MyOrder />} /> {/* 마이페이지 주문 내역 */}
+           <Route path="/products" element={<Product />} /> {/* 전체 상품 페이지 */}
+           <Route path="/product/:id" element={<ProductDetails />} /> {/* 제품 상세 페이지 */}
         </Routes>
       </div>
       <Footer /> {/* 푸터 컴포넌트 추가 */}

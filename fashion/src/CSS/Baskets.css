@@ -35,7 +35,7 @@
 .basket-item {
     display: flex;
     align-items: center;
-    border: 1px solid #eaeaea;
+    border: 1px solid #858585;
     padding: 20px;
     margin-bottom: 10px;
     position: relative; /* 상대 위치로 설정 */
@@ -44,8 +44,8 @@
 /* 체크박스를 왼쪽 상단에 위치시키기 위한 스타일 */
 .basket-item-checkbox {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 1px;
+    left: 7px;
 }
 
 .basket-item-checkbox input {

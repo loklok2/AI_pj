@@ -130,11 +130,11 @@ const Baskets = () => {
 
       {/* 상품구매 금액 + 합계 섹션 추가 */}
       <div className="basket-total">
-        <p>선택된 상품구매 금액 합계: <strong>{totalPrice.toLocaleString()}원</strong></p>
+        <p>총 금액 합계: <strong>{totalPrice.toLocaleString()}원</strong></p>
       </div>
 
       <div className="basket-actions">
-        <button className="delete-all-btn" onClick={handleDeleteSelected}>선택된 항목 삭제</button> {/* 선택된 항목만 삭제 */}
+        <button className="delete-all-btn" onClick={handleDeleteSelected}>장바구니 삭제</button> {/* 선택된 항목만 삭제 */}
         <button className="purchase-btn" onClick={handlePayment}>결제하기</button> {/* 결제 버튼 클릭 시 handlePayment 호출 */}
       </div>
     </div>
