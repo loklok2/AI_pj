@@ -7,6 +7,7 @@ const Baskets = () => {
 
   // sessionStorage에서 장바구니 정보 가져오기
   const [items, setItems] = useState([]);
+  const [showModal, setShowModal] = useState(false); // 모달 상태 추가
 
   useEffect(() => {
     const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
@@ -26,8 +27,13 @@ const Baskets = () => {
   const handlePayment = () => {
     // 선택된 아이템만 sessionStorage에 저장
     const selectedItems = items.filter(item => item.isSelected);
-    sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
-    navigate('/payment');
+    if (selectedItems.length === 0) {
+      // 선택된 상품이 없으면 모달을 보여줌
+      setShowModal(true);
+    } else {
+      sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+      navigate('/payment');
+    }
   };
 
   const handleSelectAll = () => {
@@ -80,6 +86,10 @@ const Baskets = () => {
       setItems(updatedItems);
       sessionStorage.setItem('cartItems', JSON.stringify(updatedItems)); // 수량 변경 후 저장
     }
+  };
+
+  const closeModal = () => {
+    setShowModal(false); // 모달 닫기
   };
 
   return (
@@ -140,6 +150,16 @@ const Baskets = () => {
         <button className="delete-all-btn" onClick={handleDeleteSelected}>장바구니 삭제</button>
         <button className="purchase-btn" onClick={handlePayment}>결제하기</button>
       </div>
+
+      {/* 모달 */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+          <p className="modal-message">상품을 선택해주세요.</p>
+            <button onClick={closeModal}>확인</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

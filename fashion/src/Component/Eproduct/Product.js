@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // useNavigate 추가
 import '../../CSS/Product.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -64,9 +64,15 @@ const categories = ['전체', '티셔츠', '자켓', '니트', '원피스', '바
 
 const Product = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [wishlist, setWishlist] = useState(productList.map((product) => ({ id: product.id, liked: false })));
+  const [wishlist, setWishlist] = useState([]); // 초기 상태는 빈 배열
   const [selectedCategory, setSelectedCategory] = useState('전체');
-  const navigate = useNavigate(); // useNavigate 사용
+  const navigate = useNavigate();
+
+  // 페이지 로드 시 찜 목록 불러오기
+  useEffect(() => {
+    const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
+    setWishlist(storedWishlist);
+  }, []);
 
   const filteredProducts = selectedCategory === '전체' 
     ? productList 
@@ -75,9 +81,20 @@ const Product = () => {
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   const toggleWishlist = (productId) => {
-    setWishlist((prevWishlist) =>
-      prevWishlist.map((item) => (item.id === productId ? { ...item, liked: !item.liked } : item))
-    );
+    const updatedWishlist = [...wishlist];
+    const index = updatedWishlist.findIndex(item => item.id === productId);
+
+    if (index > -1) {
+      // 이미 찜한 항목이면 목록에서 제거
+      updatedWishlist.splice(index, 1);
+    } else {
+      // 찜하지 않은 항목이면 추가
+      const product = productList.find(item => item.id === productId);
+      updatedWishlist.push(product);
+    }
+
+    setWishlist(updatedWishlist);
+    sessionStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist)); // sessionStorage에 저장
   };
 
   const handleNextPage = () => {
@@ -108,7 +125,7 @@ const Product = () => {
 
       <div className="product-grid">
         {filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((product) => {
-          const liked = wishlist.find((item) => item.id === product.id)?.liked;
+          const liked = wishlist.some(item => item.id === product.id); // 찜 목록에 있는지 확인
           return (
             <div 
               key={product.id} 

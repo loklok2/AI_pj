@@ -179,11 +179,11 @@ const MyOrder = () => {
       <table className="myorder-table">
         <thead>
           <tr>
-            <th>상품번호</th>
-            <th>상품정보</th>
+            <th>주문 번호</th>
+            <th>상품 정보</th>
             <th>총 가격</th>
-            <th>주문일자</th>
-            <th>배송상태</th>
+            <th>주문 일자</th>
+            <th>배송 상태</th>
           </tr>
         </thead>
         <tbody>

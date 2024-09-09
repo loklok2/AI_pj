@@ -29,6 +29,10 @@ const PayCompleted = () => {
     navigate('/order'); 
   };
 
+  const handleMainPage = () => {
+    navigate('/'); // 메인 페이지로 이동
+  };
+
   return (
     <div className="pay-comp-container">
       <h2 className="pay-comp-title">구매가 정상적으로 완료되었습니다.</h2>
@@ -50,7 +54,7 @@ const PayCompleted = () => {
       </p>
 
       <div className="pay-comp-buttons">
-        <button className="pay-comp-main-page-btn">메인 홈 가기</button>
+        <button className="pay-comp-main-page-btn" onClick={handleMainPage} >메인 홈 가기</button>
         <button className="pay-comp-order-check-btn" onClick={handleOrderCheck}>
           주문 내역 확인하기
         </button>

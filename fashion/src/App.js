@@ -33,7 +33,6 @@ function App() {
           <Route path="/signup" element={<Signup />} /> {/* 회원가입 페이지 */}
           <Route path="/login" element={<Login />} /> {/* 로그인 페이지 */}
           <Route path="/analysis" element={<FaAnalysis />} /> {/* 패션 분석 페이지 */}
-          <Route path="/completion" element={<Completion />} /> {/* 회원가입 완료 페이지 */}
           <Route path="/qna" element={<Board />} /> {/* Q&A 보드 페이지 */}
           <Route path="/write" element={<Writing />} /> {/* Q&A 보드 게시글 작성 페이지 */}
           <Route path="/qna/:id" element={<View />} /> {/* 상세 페이지 View */}

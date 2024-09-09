@@ -66,6 +66,14 @@
     color: #333;
 }
 
+.order-page-item-quantity{
+    font-size: 12px;
+}
+
+.order-page-item-size{
+    font-size: 12px;
+}
+
 /* 주문 정보 */
 .order-page-info {
     border-top: 1px solid #ddd;

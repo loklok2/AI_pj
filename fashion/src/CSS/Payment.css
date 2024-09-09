@@ -79,6 +79,15 @@
     width: 100%;
     padding: 10px;
     margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  .payment-input-fieldes {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
     margin-bottom: 40px;
     border: 1px solid #ccc;
     border-radius: 3px;
@@ -151,6 +160,14 @@
     background-color: #333;
   }
 
+  .payment-order-item-quantity{
+    font-size: 12px;
+  }
+
+  .payment-order-item-size{
+    font-size: 12px;
+  }
+
   .add-address-btn {
     width: 100%;
     padding: 10px;
@@ -159,7 +176,7 @@
     border: none;
     cursor: pointer;
     border-radius: 3px;
-    margin-top: -100px;
+    margin-top: 30px;
     margin-bottom: 40px;
   }
   
@@ -179,3 +196,29 @@
   .remove-item-btn:hover {
     color: rgb(255, 44, 44);
   }
+
+  /* 경고 메시지 스타일 */
+.error-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+/* 흔들리는 애니메이션 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}
+
+/* 오류 상태에서 입력 필드의 경고 및 애니메이션 */
+.input-error {
+  border: 1px solid red;
+  animation: shake 0.3s;
+  color: red;
+}
+
+.input-error::placeholder {
+  color: red;
+}

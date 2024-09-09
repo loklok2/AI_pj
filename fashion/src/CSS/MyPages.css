@@ -5,9 +5,9 @@
   width: 60%;
   margin: 0 auto;
   font-family: 'Noto Sans KR', sans-serif;
-  text-align: center;
+  text-align: center; /* 타이틀 및 서브타이틀 중앙 정렬 */
   height: auto;
-  padding-bottom: 100px; /* 밑 공간 추가 */
+  padding-bottom: 150px; /* 밑 공간 추가 */
 }
 
 /* 페이지 제목 및 설명 */
@@ -30,7 +30,7 @@
   justify-content: flex-start;
   align-items: center;
   padding: 30px;
-  margin-bottom: 100px;
+  margin-bottom: 50px;
   border: 1px solid #ddd;
   border-radius: 3px;
   background-color: #f9f9f9;
@@ -79,18 +79,20 @@
   width: 100%;
 }
 
-/* 주문 상태 섹션 */
+/* 섹션 헤더 스타일 */
 .mypages-section-header {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start; /* 왼쪽 정렬 */
   margin-bottom: 10px;
+  margin-top: 30px;
 }
 
 .mypages-section-title {
   font-size: 18px;
   font-weight: bold;
-  margin-right: 10px;
+  margin-bottom: 5px;
 }
 
 .mypages-section-subtitle {
@@ -98,7 +100,95 @@
   color: #888;
 }
 
-/* 주문 상태 아이템 섹션 */
+/* 장바구니와 찜 목록을 담을 컨테이너 */
+.cart-items-container,
+.wishlist-items-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mypages-cart-items,
+.mypages-wishlist-items,
+.mypages-recommended-items {
+  display: flex;
+  justify-content: center; /* 상품 중앙 정렬 */
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0;
+}
+
+/* 상품 아이템 */
+.mypages-item {
+  position: relative;
+  width: 160px;
+  border: none;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px;
+  background-color: transparent;
+  margin: 0 15px /* 상품 간격 추가: 좌우 20px, 아래 40px */
+}
+
+/* 이미지 자리 */
+.mypages-item-placeholder {
+  width: 100%;
+  height: 150px;
+  background-color: #f0f0f0;
+  margin-bottom: 10px;
+}
+
+/* 상품명 및 가격 스타일 */
+.mypages-item-details {
+  text-align: center;
+}
+
+.mypages-item-name {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.mypages-item-price {
+  font-size: 12px;
+  color: #333;
+}
+
+/* 삭제 버튼 스타일 */
+.mypages-item-remove {
+  position: absolute;
+  top: 5px;
+  right: 0px;
+  cursor: pointer;
+  color: rgb(0, 0, 0);
+  font-size: 1.0rem;
+}
+
+.mypages-item-remove:hover {
+  color: rgb(236, 22, 22);
+}
+
+/* 페이지 네비게이션 화살표 스타일 */
+.pagination-arrow {
+  cursor: pointer;
+  font-size: 24px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.left-arrow {
+  left: -30px;
+}
+
+.right-arrow {
+  right: -30px;
+}
+
+/* 주문 상태 섹션 */
 .mypages-order-status {
   display: flex;
   justify-content: space-between;
@@ -108,88 +198,45 @@
   margin: 0 50px;
 }
 
-.mypages-order-status::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #ddd;
-  z-index: 0;
-}
-
 .mypages-status-item {
   position: relative;
   text-align: center;
-  z-index: 1;
-  margin-top: 80px;
 }
 
 .mypages-status-icon {
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   background-color: #ddd;
   border-radius: 50%;
   margin: 0 auto 10px;
-  margin-bottom: 50px;
 }
 
-.mypages-status-item p {
-  font-size: 14px;
-  color: #333;
+.mypages-status-line {
+  flex-grow: 1;
+  height: 2px;
+  background-color: #ddd;
+  margin: 0 15px;
 }
 
-/* 버튼 섹션 */
+/* 장바구니 및 주문 내역 버튼 */
 .mypages-order-buttons {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 100px;
+  margin-top: 50px;
 }
 
 .mypages-btn {
-  padding: 18px 225px;
-  border: 1px solid #ccc;
+  padding: 18px 220px;
   border-radius: 3px;
-  background-color: #f1f1f1;
+  background-color: #000000;
   cursor: pointer;
   font-size: 14px;
   margin: 0 10px;
-}
-
-.mypages-btn:hover {
-  background-color: #000000;
+  margin-bottom: 30px;
   color: #ffffff;
 }
 
-/* 장바구니, 찜 목록, 추천 상품 섹션 */
-.mypages-cart-items,
-.mypages-wishlist-items,
-.mypages-recommended-items {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-}
-
-/* 상품 아이템(이미지가 들어갈 자리) */
-.mypages-item {
-  width: 160px;
-  height: 190px;
-  background-color: #ddd;
-  margin-top: 30px;
-  margin-bottom: 80px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 14px;
-}
-
-/* 각 아이템 텍스트를 위해 */
-.mypages-item::after {
-  content: "상품 이미지";
-  font-size: 12px;
-  color: #555;
+.mypages-btn:hover {
+  background-color: #464646;
+  color: #ffffff;
 }

@@ -5,11 +5,19 @@ import '../../CSS/Payment.css';
 const Payment = () => {
   const navigate = useNavigate();
 
-  // 주문 상품 목록 상태 관리 (sessionStorage에서 선택된 상품 가져오기)
+  // 주문 상품 목록 상태 관리
   const [orderItems, setOrderItems] = useState([]);
 
-  // 주소 상태 관리
-  const [address, setAddress] = useState('서울특별시 강남구 테헤란로 123, 5층');
+  // 주소와 요청 사항 상태 관리
+  const [recipientName, setRecipientName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
+  const [request, setRequest] = useState('');
+
+  // 경고 메시지 상태 관리 (초기에는 false로 설정)
+  const [recipientError, setRecipientError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
+  const [addressError, setAddressError] = useState(false);
 
   // sessionStorage에서 선택된 상품 데이터를 가져와서 주문 목록에 저장
   useEffect(() => {
@@ -17,34 +25,69 @@ const Payment = () => {
     setOrderItems(selectedItems);
   }, []);
 
-  // 결제 완료 페이지로 이동하는 함수
   const handlePaymentSubmit = () => {
-    const totalPrice = calculateTotalPrice(); // 총 결제 금액 계산 함수
-    sessionStorage.setItem('totalPrice', totalPrice); // 총 결제 금액을 sessionStorage에 저장
-    navigate('/paycompleted');
+    let valid = true;
+
+    // 유효성 검사: 필수 입력 항목 체크
+    if (recipientName === '') {
+      setRecipientError(true);
+      valid = false;
+    } else {
+      setRecipientError(false);
+    }
+
+    if (phoneNumber === '') {
+      setPhoneError(true);
+      valid = false;
+    } else {
+      setPhoneError(false);
+    }
+
+    if (address === '') {
+      setAddressError(true);
+      valid = false;
+    } else {
+      setAddressError(false);
+    }
+
+    // 모든 입력이 유효할 경우 결제 완료 페이지로 이동
+    if (valid) {
+      const totalPrice = calculateTotalPrice();
+      sessionStorage.setItem('totalPrice', totalPrice);
+      const orderDate = new Date().toLocaleDateString();
+
+      const orderInfo = {
+        recipientName,
+        phoneNumber,
+        address,
+        request,
+        userId: 'mockUser', // mock user data 사용
+        orderDate,
+      };
+
+      sessionStorage.setItem('orderInfo', JSON.stringify(orderInfo));
+      sessionStorage.setItem('orderItems', JSON.stringify(orderItems));
+      navigate('/paycompleted');
+    }
   };
 
-  // 장바구니 페이지로 이동하는 함수
   const handleCartClick = () => {
     navigate('/cart');
   };
 
-  // 새로운 주소 입력 버튼을 클릭했을 때 주소 초기화
   const handleNewAddress = () => {
     setAddress('');
   };
 
-  // 상품 삭제 함수
   const handleRemoveItem = (itemId) => {
     const updatedItems = orderItems.filter(item => item.id !== itemId);
     setOrderItems(updatedItems);
-    sessionStorage.setItem('selectedItems', JSON.stringify(updatedItems)); // sessionStorage 업데이트
+    sessionStorage.setItem('selectedItems', JSON.stringify(updatedItems));
   };
 
-  // 총 결제 금액 계산 함수
   const calculateTotalPrice = () => {
     return orderItems.reduce((acc, item) => {
-      const price = parseInt(item.price.replace(/,/g, '')) || 0; // 가격에서 쉼표 제거 후 숫자로 변환
+      const price = parseInt(item.price.replace(/,/g, '')) || 0;
       return acc + (price * item.quantity);
     }, 0);
   };
@@ -66,14 +109,15 @@ const Payment = () => {
               <div className="payment-order-item-details">
                 <p className="payment-order-item-name">{item.name}</p>
                 <p className="payment-order-item-price">
-                  {/* 상품 가격 * 수량 */}
                   {(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString()}원
                 </p>
                 <p className="payment-order-item-quantity">
                   수량: {item.quantity}개
                 </p>
+                <p className="payment-order-item-size">
+                  사이즈: {item.size} {/* 사이즈 표시 */}
+                </p>
               </div>
-              {/* X 버튼 */}
               <button className="remove-item-btn" onClick={() => handleRemoveItem(item.id)}>
                 x
               </button>
@@ -87,13 +131,33 @@ const Payment = () => {
       {/* 배송지 정보 */}
       <div className="payment-delivery-info">
         <h2>배송지 정보</h2>
+        <h3>주문자</h3>
         <input
           type="text"
-          className="payment-input-fields"
-          placeholder="주소를 입력하세요.(상세 주소까지 입력해주세요)"
+          className={`payment-input-fields ${recipientError ? 'input-error' : ''}`}
+          placeholder={recipientError ? '주문자명을 입력해주세요.' : '주문자명을 입력하세요.'}
+          value={recipientName}
+          onChange={(e) => setRecipientName(e.target.value)}
+        />
+
+        <h3>휴대폰 번호</h3>
+        <input
+          type="tel"
+          className={`payment-input-fields ${phoneError ? 'input-error' : ''}`}
+          placeholder={phoneError ? '휴대폰 번호를 입력해주세요.' : '휴대폰 번호를 입력하세요.'}
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+        />
+
+        <h3>주소</h3>
+        <input
+          type="text"
+          className={`payment-input-fields ${addressError ? 'input-error' : ''}`}
+          placeholder={addressError ? '주소를 입력해주세요.' : '주소를 입력하세요.'}
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
+
         <button className="add-address-btn" onClick={handleNewAddress}>새로운 주소 입력</button>
         <hr className="divider-line" />
       </div>
@@ -101,11 +165,25 @@ const Payment = () => {
       {/* 주문 요청 사항 */}
       <div className="payment-request-info">
         <h2>주문 요청 사항</h2>
-        <input type="text" className="payment-input-field" placeholder="요청 사항을 입력하세요." />
-        <select className="payment-input-fields">
+        <input 
+          type="text" 
+          className="payment-input-field" 
+          placeholder="요청 사항을 입력하세요." 
+          value={request} 
+          onChange={(e) => setRequest(e.target.value)} 
+        />
+        <select 
+          className="payment-input-fieldes" 
+          value={request} 
+          onChange={(e) => setRequest(e.target.value)}
+        >
           <option value="">요청 사항을 선택하세요.</option>
-          <option value="문앞">문앞</option>
-          <option value="경비실">경비실</option>
+          <option value="문앞에 두고가주세요.">문앞에 두고가주세요.</option>
+          <option value="경비실에 맡겨주세요.">경비실에 맡겨주세요.</option>
+          <option value="부재 시 핸드폰으로 연락주세요.">부재 시 핸드폰으로 연락주세요.</option>
+          <option value="배송 전 연락해주세요.">배송 전 연락해주세요.</option>
+          <option value="택배 보관함에 보관해주세요.">택배 보관함에 보관해주세요.</option>
+          <option value="직접 입력">직접 입력</option>
         </select>
       </div>
 

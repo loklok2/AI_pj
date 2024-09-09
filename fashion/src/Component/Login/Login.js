@@ -76,6 +76,7 @@ const Login = () => {
                     <a href="/find-username" className="custom-signup-link"> 아이디 찾기 </a>
                     <a href="/find-password" className="custom-signup-link">/ 비밀번호 찾기</a>
                 </div>
+
             </div>
         </div>
     );

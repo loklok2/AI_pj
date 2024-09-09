@@ -149,3 +149,43 @@
     margin-bottom: 20px;
     text-align: right; /* 오른쪽 정렬 */
   }
+
+  /* 모달 오버레이 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* 모달 콘텐츠 */
+  .modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .modal-message {
+    font-size: 18px; 
+  }
+  
+  .modal-content button {
+    margin-top: 30px;
+    padding: 10px 20px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    
+  }
+  
+  .modal-content button:hover {
+    background-color: #555;
+  }
