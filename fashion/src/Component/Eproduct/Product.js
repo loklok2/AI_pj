@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // useNavigate 추가
+import { useNavigate } from 'react-router-dom'; 
 import '../../CSS/Product.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
@@ -58,43 +58,55 @@ const productList = [
   { id: 50, name: '스포티 트랙자켓', price: '57,900원', category: '자켓' }
 ];
 
-const itemsPerPage = 25; // 한 페이지에 표시할 상품 수
-
+const itemsPerPage = 25;
 const categories = ['전체', '티셔츠', '자켓', '니트', '원피스', '바지', '셔츠', '후드티', '신발'];
 
 const Product = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [wishlist, setWishlist] = useState([]); // 초기 상태는 빈 배열
+  const [wishlist, setWishlist] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('전체');
+  const [isGuest, setIsGuest] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태 추가
   const navigate = useNavigate();
 
-  // 페이지 로드 시 찜 목록 불러오기
   useEffect(() => {
-    const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
-    setWishlist(storedWishlist);
+    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
+    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+    
+    if (guestLogin || userLoggedIn) {
+      setIsGuest(guestLogin);
+      setIsLoggedIn(userLoggedIn);
+
+      const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
+      setWishlist(storedWishlist);
+    }
   }, []);
 
-  const filteredProducts = selectedCategory === '전체' 
-    ? productList 
+  const filteredProducts = selectedCategory === '전체'
+    ? productList
     : productList.filter(product => product.category === selectedCategory);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   const toggleWishlist = (productId) => {
+    if (!isGuest && !isLoggedIn) {
+      setShowLoginModal(true); // 로그인 모달 표시
+      return;
+    }
+
     const updatedWishlist = [...wishlist];
     const index = updatedWishlist.findIndex(item => item.id === productId);
 
     if (index > -1) {
-      // 이미 찜한 항목이면 목록에서 제거
-      updatedWishlist.splice(index, 1);
+      updatedWishlist.splice(index, 1); // 이미 찜한 항목이면 제거
     } else {
-      // 찜하지 않은 항목이면 추가
       const product = productList.find(item => item.id === productId);
-      updatedWishlist.push(product);
+      updatedWishlist.push(product); // 찜하지 않은 항목이면 추가
     }
 
     setWishlist(updatedWishlist);
-    sessionStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist)); // sessionStorage에 저장
+    sessionStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
   };
 
   const handleNextPage = () => {
@@ -115,7 +127,12 @@ const Product = () => {
   };
 
   const handleProductClick = (id) => {
-    navigate(`/product/${id}`); // 클릭 시 해당 제품 상세 페이지로 이동
+    navigate(`/product/${id}`);
+  };
+
+  const closeLoginModal = () => {
+    setShowLoginModal(false);
+    navigate('/login');
   };
 
   return (
@@ -125,7 +142,7 @@ const Product = () => {
 
       <div className="product-grid">
         {filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((product) => {
-          const liked = wishlist.some(item => item.id === product.id); // 찜 목록에 있는지 확인
+          const liked = wishlist.some(item => item.id === product.id);
           return (
             <div 
               key={product.id} 
@@ -150,6 +167,16 @@ const Product = () => {
         <span>{currentPage} / {totalPages}</span>
         <button onClick={handleNextPage} disabled={currentPage === totalPages}>다음</button>
       </div>
+
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <p>로그인 또는 비회원 로그인이 필요합니다.</p>
+            <button onClick={closeLoginModal}>확인</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

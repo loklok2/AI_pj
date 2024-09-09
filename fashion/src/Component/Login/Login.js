@@ -1,29 +1,35 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 로그인 성공 시 리다이렉트를 위해 사용
+import { useNavigate } from 'react-router-dom';
 import '../../CSS/Login.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // 페이지 이동을 위한 네비게이트 함수
+    const navigate = useNavigate();
 
+    // 회원 로그인 처리
     const handleLogin = async () => {
+        if (!username || !password) {
+            setError('아이디와 비밀번호를 입력해주세요.');
+            return;
+        }
+
         try {
             const response = await fetch('http://10.125.121.188:8080/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }), // 사용자가 입력한 아이디와 비밀번호를 JSON 형태로 전달
+                body: JSON.stringify({ username, password }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                // 로그인 성공: 토큰을 localStorage에 저장하고 리다이렉트 처리
                 localStorage.setItem('accessToken', data.accessToken);
                 localStorage.setItem('refreshToken', data.refreshToken);
-                navigate('/dashboard'); // 로그인 성공 후 대시보드 페이지로 이동
+                localStorage.removeItem('guestLogin'); // 비회원 상태 제거
+                navigate('/'); // 로그인 성공 시 홈으로 이동
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || '로그인에 실패했습니다. 다시 시도해주세요.');
@@ -31,6 +37,13 @@ const Login = () => {
         } catch (error) {
             setError('서버에 문제가 발생했습니다. 나중에 다시 시도해주세요.');
         }
+    };
+
+    // 비회원 로그인 처리
+    const handleGuestLogin = () => {
+        sessionStorage.setItem('guestLogin', 'true'); // 비회원 로그인 상태를 sessionStorage에 저장
+        navigate('/'); // 비회원 로그인 후 홈으로 이동
+        window.location.reload(); // 헤더 상태를 갱신하기 위해 페이지를 새로고침
     };
 
     return (
@@ -47,8 +60,8 @@ const Login = () => {
                             className="custom-form-input"
                             type="text"
                             placeholder="아이디 입력"
-                            value={username} // 상태 값으로 연결
-                            onChange={(e) => setUsername(e.target.value)} // 아이디 입력 시 상태 업데이트
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
                     <div className="custom-form-group">
@@ -58,13 +71,17 @@ const Login = () => {
                             className="custom-form-input"
                             type="password"
                             placeholder="비밀번호 입력"
-                            value={password} // 상태 값으로 연결
-                            onChange={(e) => setPassword(e.target.value)} // 비밀번호 입력 시 상태 업데이트
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-                    {error && <div className="custom-error-message">{error}</div>} {/* 에러 메시지 표시 */}
+                    {error && <div className="custom-error-message">{error}</div>}
                     <div className="custom-submit-button-container">
                         <button className="custom-submit-button" onClick={handleLogin}>로그인</button>
+                    </div>
+                    {/* 비회원 로그인 버튼 추가 */}
+                    <div className="custom-guest-login-container">
+                        <button className="custom-guest-login-button" onClick={handleGuestLogin}>비회원 로그인</button>
                     </div>
                 </div>
                 <div className="custom-signup-redirect">
@@ -76,7 +93,6 @@ const Login = () => {
                     <a href="/find-username" className="custom-signup-link"> 아이디 찾기 </a>
                     <a href="/find-password" className="custom-signup-link">/ 비밀번호 찾기</a>
                 </div>
-
             </div>
         </div>
     );

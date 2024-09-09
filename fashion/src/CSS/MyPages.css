@@ -240,3 +240,15 @@
   background-color: #464646;
   color: #ffffff;
 }
+
+.mypages-login-text {
+  cursor: pointer;
+  color: #333; /* 기본 텍스트 색상 */
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.blurred {
+  filter: blur(5px);
+  pointer-events: none; /* 클릭 방지 */
+}

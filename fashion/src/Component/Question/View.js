@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // useNavigate 훅 추가
+import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import '../../CSS/View.css'; 
@@ -19,11 +19,13 @@ const mockData = [
 
 const View = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  const navigate = useNavigate();
   const post = mockData.find((item) => item.id === parseInt(id));
 
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingContent, setEditingContent] = useState('');
 
   const handleCommentChange = (e) => {
     setComment(e.target.value);
@@ -35,17 +37,39 @@ const View = () => {
       return;
     }
 
-    setComments([...comments, { content: comment, writer: '사용자' }]);
+    const newComment = { id: Date.now(), content: comment, writer: '사용자' };
+    setComments([...comments, newComment]);
     setComment('');
   };
 
-  const goBackToList = () => {
-    navigate('/qna'); 
+  const handleDeleteComment = (id) => {
+    setComments(comments.filter((comment) => comment.id !== id));
   };
 
-  // New function to navigate to Modify page
+  const handleEditComment = (id) => {
+    if (editingCommentId === id) {
+      // 수정 중인 댓글을 저장
+      setComments(
+        comments.map((cmt) =>
+          cmt.id === editingCommentId ? { ...cmt, content: editingContent } : cmt
+        )
+      );
+      setEditingCommentId(null);
+      setEditingContent('');
+    } else {
+      // 수정 모드로 변경
+      const commentToEdit = comments.find((cmt) => cmt.id === id);
+      setEditingCommentId(id);
+      setEditingContent(commentToEdit.content);
+    }
+  };
+
+  const goBackToList = () => {
+    navigate('/qna');
+  };
+
   const handleEdit = () => {
-    navigate(`/qna/modify/${id}`); // Redirect to Modify page with the id
+    navigate(`/qna/modify/${id}`);
   };
 
   if (!post) {
@@ -59,14 +83,12 @@ const View = () => {
         *상품에 대한 답변의 업무 시간은 최대한 빠르게 답변드리겠습니다만, 급한 문의 시 연락 주세요.
       </p>
 
-      {/* 목록 버튼 추가 */}
       <div className="view-qna-list-button-container">
         <button className="view-qna-list-btn" onClick={goBackToList}>
           목록
         </button>
       </div>
 
-      {/* 질문 박스 */}
       <div className="view-qna-question-box">
         <div className="view-qna-question-header">
           <strong>{post.title}</strong>
@@ -77,15 +99,13 @@ const View = () => {
             <strong>{post.date}</strong>
           </p>
           <div className="view-qna-question-actions">
-            <button className="view-qna-edit-btn" onClick={handleEdit}>수정</button> {/* Redirect on click */}
+            <button className="view-qna-edit-btn" onClick={handleEdit}>수정</button>
             <button className="view-qna-delete-btn">삭제</button>
           </div>
         </div>
         <div className="view-qna-question-content">{post.content}</div>
       </div>
 
-
-      {/* 댓글 입력 섹션 */}
       <div className="view-qna-comment-section">
         <div className="view-qna-comment-header">
           <FontAwesomeIcon icon={faMessage} className="comment-icon" />
@@ -104,19 +124,34 @@ const View = () => {
         </div>
       </div>
 
-      {/* 작성된 댓글 표시 섹션 */}
       <div className="view-qna-admin-response">
-        {comments.map((cmt, index) => (
-          <div key={index} className="view-qna-admin-reply">
+        {comments.map((cmt) => (
+          <div key={cmt.id} className="view-qna-admin-reply">
             <p>
               <strong>{cmt.writer}</strong>
             </p>
-            <p>{cmt.content}</p>
+            {editingCommentId === cmt.id ? (
+              <>
+                <textarea
+                  className="view-qna-edit-comment-input"
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  rows={3}
+                  style={{ width: '100%' }}
+                />
+              </>
+            ) : (
+              <p>{cmt.content}</p>
+            )}
             <div className="view-qna-comment-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button className="view-qna-edit-btn">수정</button>
-              <button className="view-qna-delete-btn">삭제</button>
+              <button className="view-qna-edit-btn" onClick={() => handleEditComment(cmt.id)}>
+                {editingCommentId === cmt.id ? '저장' : '수정'}
+              </button>
+              <button className="view-qna-delete-btn" onClick={() => handleDeleteComment(cmt.id)}>
+                삭제
+              </button>
             </div>
-            {index < comments.length - 1 && <hr className="comment-divider" />} {/* 각 댓글 사이에 구분선 추가 */}
+            <hr className="comment-divider" />
           </div>
         ))}
       </div>

@@ -5,30 +5,42 @@ import '../../CSS/Baskets.css';
 const Baskets = () => {
   const navigate = useNavigate();
 
-  // sessionStorage에서 장바구니 정보 가져오기
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false); // 모달 상태 추가
+  const [selectAll, setSelectAll] = useState(false);
+
+  const [isGuest, setIsGuest] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
 
   useEffect(() => {
-    const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
-    setItems(storedItems);
-  }, []);
+    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
+    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
 
-  const [selectAll, setSelectAll] = useState(false);
+    if (guestLogin || userLoggedIn) {
+      setIsGuest(guestLogin);
+      setIsLoggedIn(userLoggedIn);
+
+      // 장바구니 정보 가져오기
+      const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
+      setItems(storedItems);
+    } else {
+      // 로그인 또는 비회원 로그인되지 않은 경우 모달 창 띄우기
+      setShowLoginModal(true);
+    }
+  }, [navigate]);
 
   const totalPrice = items
     .filter(item => item.isSelected)
     .reduce((acc, item) => {
-      const price = parseInt(item.price.replace(/,/g, '')) || 0; // price에서 쉼표 제거 후 숫자로 변환
-      const quantity = parseInt(item.quantity) || 1; // quantity가 undefined일 경우 기본값 1
+      const price = parseInt(item.price.replace(/,/g, '')) || 0;
+      const quantity = parseInt(item.quantity) || 1;
       return acc + (price * quantity);
     }, 0);
 
   const handlePayment = () => {
-    // 선택된 아이템만 sessionStorage에 저장
     const selectedItems = items.filter(item => item.isSelected);
     if (selectedItems.length === 0) {
-      // 선택된 상품이 없으면 모달을 보여줌
       setShowModal(true);
     } else {
       sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
@@ -61,7 +73,7 @@ const Baskets = () => {
       item.id === id ? { ...item, quantity: item.quantity + 1 } : item
     );
     setItems(updatedItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(updatedItems)); // 수량 증가 후 저장
+    sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
   };
 
   const handleDecreaseQuantity = (id) => {
@@ -69,13 +81,13 @@ const Baskets = () => {
       item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
     );
     setItems(updatedItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(updatedItems)); // 수량 감소 후 저장
+    sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
   };
 
   const handleDeleteItem = (id) => {
     const remainingItems = items.filter(item => item.id !== id);
     setItems(remainingItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(remainingItems)); // 삭제 후 저장
+    sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
   };
 
   const handleQuantityChange = (id, value) => {
@@ -84,12 +96,17 @@ const Baskets = () => {
         item.id === id ? { ...item, quantity: value } : item
       );
       setItems(updatedItems);
-      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems)); // 수량 변경 후 저장
+      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
     }
   };
 
   const closeModal = () => {
     setShowModal(false); // 모달 닫기
+  };
+
+  const closeLoginModal = () => {
+    setShowLoginModal(false); // 로그인 모달 닫기
+    navigate('/login'); // 로그인 페이지로 이동
   };
 
   return (
@@ -120,14 +137,13 @@ const Baskets = () => {
           </div>
           <div className="basket-item-info">
             <p>{item.name}</p>
-            {/* 쉼표 제거 후 가격 출력 */}
             <p className="basket-item-price">{parseInt(item.price.replace(/,/g, '')).toLocaleString()}원</p>
           </div>
           <div className="basket-item-controls">
             <button className="quantity-btn" onClick={() => handleDecreaseQuantity(item.id)}>-</button>
             <input
               type="number"
-              value={item.quantity !== undefined ? item.quantity : 1} // undefined 체크 및 기본값 설정
+              value={item.quantity !== undefined ? item.quantity : 1}
               min="1"
               onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value))}
               style={{ textAlign: 'center' }} 
@@ -135,7 +151,6 @@ const Baskets = () => {
             <button className="quantity-btn" onClick={() => handleIncreaseQuantity(item.id)}>+</button>
           </div>
           <div className="basket-item-total">
-            {/* 가격에서 쉼표 제거 후 숫자로 변환하여 총 가격 계산 */}
             <p>총 {(parseInt(item.price.replace(/,/g, '')) * parseInt(item.quantity)).toLocaleString()}원</p>
           </div>
           <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>x</button>
@@ -151,12 +166,20 @@ const Baskets = () => {
         <button className="purchase-btn" onClick={handlePayment}>결제하기</button>
       </div>
 
-      {/* 모달 */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-          <p className="modal-message">상품을 선택해주세요.</p>
+            <p className="modal-message">상품을 선택해주세요.</p>
             <button onClick={closeModal}>확인</button>
+          </div>
+        </div>
+      )}
+
+      {showLoginModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <p>로그인 또는 비회원 로그인이 필요합니다.</p>
+            <button onClick={closeLoginModal}>확인</button>
           </div>
         </div>
       )}

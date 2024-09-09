@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Board.css';
 
-// 목업 데이터 15개로 확장
 const mockData = [
   { id: 1, category: '상품문의', title: '상품 문의 1', writer: 'User1', date: '2023-09-01' },
   { id: 2, category: '상품문의', title: '상품 문의 2', writer: 'User2', date: '2023-09-02' },
@@ -25,7 +24,18 @@ const Board = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState('전체'); // 카테고리 필터 상태 추가
+  const [isGuest, setIsGuest] = useState(false); // 비회원 로그인 상태 관리
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
+  const [showModal, setShowModal] = useState(false); // 모달 창 상태 추가
   const itemsPerPage = 15;
+
+  useEffect(() => {
+    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
+    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+
+    if (guestLogin) setIsGuest(true);
+    if (userLoggedIn) setIsLoggedIn(true);
+  }, []);
 
   // 페이지 변경 함수
   const handlePageChange = (pageNumber) => {
@@ -48,11 +58,24 @@ const Board = () => {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const handleWriteClick = () => {
+    if (!isGuest && !isLoggedIn) {
+      setShowModal(true); // 모달 창 표시
+      return;
+    }
     navigate('/write');
   };
 
   const handleRowClick = (id) => {
+    if (!isGuest && !isLoggedIn) {
+      setShowModal(true); // 모달 창 표시
+      return;
+    }
     navigate(`/qna/${id}`);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    navigate('/login'); // 모달 닫은 후 로그인 페이지로 이동
   };
 
   return (
@@ -71,28 +94,34 @@ const Board = () => {
         <button onClick={() => setCategoryFilter('기타문의')}>기타문의</button>
       </div>
 
-      <table className="qna-board-table">
-        <thead>
-          <tr>
-            <th>번호</th>
-            <th>카테고리</th>
-            <th>제목</th>
-            <th>작성자</th>
-            <th>작성일</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentItems.map((item, index) => (
-            <tr key={item.id} onClick={() => handleRowClick(item.id)} style={{ cursor: 'pointer' }}>
-              <td>{item.id}</td>
-              <td>{item.category}</td>
-              <td>{item.title}</td>
-              <td>{item.writer}</td>
-              <td>{item.date}</td>
+      <div className={`qna-board-table-wrapper ${!isGuest && !isLoggedIn ? 'blurred' : ''}`}>
+        <table className="qna-board-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>카테고리</th>
+              <th>제목</th>
+              <th>작성자</th>
+              <th>작성일</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {currentItems.map((item, index) => (
+              <tr
+                key={item.id}
+                onClick={() => handleRowClick(item.id)}
+                style={{ cursor: 'pointer' }}
+              >
+                <td>{item.id}</td>
+                <td>{item.category}</td>
+                <td>{item.title}</td>
+                <td>{item.writer}</td>
+                <td>{item.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div className="qna-board-actions">
         <button onClick={handleWriteClick}>작성</button>
@@ -111,9 +140,7 @@ const Board = () => {
           <button
             key={index + 1}
             onClick={() => handlePageChange(index + 1)}
-            className={`pagination-btn ${
-              currentPage === index + 1 ? 'active' : ''
-            }`}
+            className={`pagination-btn ${currentPage === index + 1 ? 'active' : ''}`}
           >
             {index + 1}
           </button>
@@ -126,6 +153,16 @@ const Board = () => {
           다음
         </button>
       </div>
+
+      {/* 모달 창 */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <p>로그인 또는 비회원 로그인이 필요합니다.</p>
+            <button onClick={closeModal}>확인</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

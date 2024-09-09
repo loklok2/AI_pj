@@ -148,3 +148,27 @@
 .custom-signup-link:hover {
     text-decoration: underline;
 }
+
+/* 비회원 로그인 버튼 스타일 */
+.custom-guest-login-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.custom-guest-login-button {
+    width: 100%;
+    padding: 10px; /* 패딩 */
+    background-color: #000000;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    font-family: "Noto Sans KR", sans-serif;
+}
+
+.custom-guest-login-button:hover {
+    background-color: #383838;
+}

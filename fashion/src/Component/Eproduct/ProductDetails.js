@@ -65,10 +65,20 @@ const ProductDetails = () => {
 
   const [liked, setLiked] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [size, setSize] = useState('S'); // 사이즈 선택 상태 추가
+  const [size, setSize] = useState('S');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const [isGuest, setIsGuest] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
+    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+
+    if (guestLogin) setIsGuest(true);
+    if (userLoggedIn) setIsLoggedIn(true);
+
     const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
     const isLiked = storedWishlist.some(item => item.id === product.id);
     setLiked(isLiked);
@@ -78,7 +88,13 @@ const ProductDetails = () => {
     return <div>해당 제품을 찾을 수 없습니다.</div>;
   }
 
-  const toggleLike = () => {
+  const toggleLike = (e) => {
+    e.stopPropagation(); // 부모 컴포넌트로의 이벤트 전파를 막음
+    if (!isGuest && !isLoggedIn) {
+      setShowLoginModal(true); // 로그인 모달을 표시
+      return;
+    }
+  
     const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
     if (liked) {
       const updatedWishlist = storedWishlist.filter(item => item.id !== product.id);
@@ -97,12 +113,17 @@ const ProductDetails = () => {
   };
 
   const handleAddToCart = () => {
+    if (!isGuest && !isLoggedIn) {
+      setShowLoginModal(true); // 로그인 모달을 표시
+      return;
+    }
+
     const cartItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
     const existingItem = cartItems.find(item => item.id === product.id);
     
     if (existingItem) {
       existingItem.quantity += quantity;
-      existingItem.size = size; // 사이즈도 저장
+      existingItem.size = size;
     } else {
       cartItems.push({ ...product, quantity, size });
     }
@@ -112,6 +133,11 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = () => {
+    if (!isGuest && !isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
     const selectedItem = [{ ...product, quantity, size }];
     sessionStorage.setItem('selectedItems', JSON.stringify(selectedItem));
     navigate('/payment'); 
@@ -123,6 +149,11 @@ const ProductDetails = () => {
 
   const handleConfirmModal = () => {
     navigate('/cart');
+  };
+
+  const closeLoginModal = () => {
+    setShowLoginModal(false);
+    navigate('/login'); // 로그인 페이지로 이동
   };
 
   return (
@@ -147,7 +178,6 @@ const ProductDetails = () => {
           <p>배송비: <span>무료배송</span></p>
         </div>
 
-        {/* 사이즈 선택 추가 */}
         <div className="product-details-page-size">
           <span>사이즈 </span>
           <select value={size} onChange={(e) => setSize(e.target.value)}>
@@ -191,6 +221,15 @@ const ProductDetails = () => {
               <button onClick={handleCloseModal}>닫기</button>
               <button onClick={handleConfirmModal}>확인</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showLoginModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <p>로그인 또는 비회원 로그인이 필요합니다.</p>
+            <button onClick={closeLoginModal}>확인</button>
           </div>
         </div>
       )}

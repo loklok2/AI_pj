@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faRotateRight, faCircleXmark } from '@fortawesome/free-solid-svg-icons'; 
+import { faSpinner, faRotateRight, faCircleXmark, faCircleInfo } from '@fortawesome/free-solid-svg-icons'; 
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
@@ -13,6 +13,7 @@ const FaAnalysis = () => {
     const [chartData, setChartData] = useState(null);
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리 추가
 
     const handleClick = () => {
         fileInputRef.current.click();
@@ -86,6 +87,10 @@ const FaAnalysis = () => {
         }
     };
 
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);  // 모달 열고 닫기 기능
+    };
+
     return (
         <div className="fa-analysis-unique-container">
             <div className="fa-analysis-unique-header">
@@ -101,13 +106,19 @@ const FaAnalysis = () => {
                 <div className="fa-analysis-unique-upload-section">
                     <h2>옷 업로드</h2>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <p>* 명확한 사진을 업로드 해주세요.</p>
+                        <p style={{ margin: 0 }}>* 명확한 사진을 업로드 해주세요.</p>
+                        <FontAwesomeIcon 
+                            icon={faCircleInfo}  
+                            style={{ marginLeft: '8px', cursor: 'pointer', color: 'gray' }} 
+                            onClick={toggleModal}  // 모달 토글
+                        />
                         <FontAwesomeIcon 
                             icon={faRotateRight}  
                             onClick={handleReload} 
-                            style={{ cursor: 'pointer', marginLeft: '430px', marginTop:'-15px'}} 
+                            style={{ cursor: 'pointer', marginLeft: 'auto', marginTop: '-15px', color: 'gray' }} 
                         />
                     </div>
+
                     <div 
                         className="fa-analysis-unique-upload-box" 
                         onClick={handleClick}
@@ -165,6 +176,17 @@ const FaAnalysis = () => {
                     </div>
                 )}
             </div>
+
+            {/* 모달 컴포넌트 */}
+            {isModalOpen && (
+                <div className="modal-overlay" onClick={toggleModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>주의사항</h2>
+                        <p>옷만 나오는 경우, 옷이 아닌 다른 물건인 경우는 올바르지 못한 결과가 나옵니다. 사람이 착용하고 있는 옷이 올바른 결과를 제공합니다.</p>
+                        <button onClick={toggleModal}>닫기</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

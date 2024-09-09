@@ -25,9 +25,14 @@ const Payment = () => {
     setOrderItems(selectedItems);
   }, []);
 
+  // 주문 번호 생성 함수
+  const generateOrderNumber = () => {
+    return Math.floor(10000 + Math.random() * 90000).toString(); // 5자리 랜덤 숫자 생성
+  };
+
   const handlePaymentSubmit = () => {
     let valid = true;
-
+  
     // 유효성 검사: 필수 입력 항목 체크
     if (recipientName === '') {
       setRecipientError(true);
@@ -35,28 +40,31 @@ const Payment = () => {
     } else {
       setRecipientError(false);
     }
-
+  
     if (phoneNumber === '') {
       setPhoneError(true);
       valid = false;
     } else {
       setPhoneError(false);
     }
-
+  
     if (address === '') {
       setAddressError(true);
       valid = false;
     } else {
       setAddressError(false);
     }
-
+  
     // 모든 입력이 유효할 경우 결제 완료 페이지로 이동
     if (valid) {
       const totalPrice = calculateTotalPrice();
-      sessionStorage.setItem('totalPrice', totalPrice);
       const orderDate = new Date().toLocaleDateString();
-
+      
+      // 주문 번호 생성
+      const orderNumber = Math.floor(10000 + Math.random() * 90000).toString(); // 5자리 랜덤 숫자 생성
+      
       const orderInfo = {
+        orderNumber, // 주문 번호 추가
         recipientName,
         phoneNumber,
         address,
@@ -64,9 +72,13 @@ const Payment = () => {
         userId: 'mockUser', // mock user data 사용
         orderDate,
       };
-
+  
+      // sessionStorage에 데이터 저장
       sessionStorage.setItem('orderInfo', JSON.stringify(orderInfo));
       sessionStorage.setItem('orderItems', JSON.stringify(orderItems));
+      sessionStorage.setItem('totalPrice', totalPrice);
+  
+      // 결제 완료 페이지로 이동
       navigate('/paycompleted');
     }
   };
