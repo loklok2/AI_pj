@@ -133,6 +133,12 @@
   border-radius: 4px;
 }
 
+.myorder-text p {
+  margin-top: -5px;
+  margin-bottom: 0px ;
+  text-align: left;
+}
+
 .myorder-more-btn-container {
     text-align: center;
     margin-top: 20px;

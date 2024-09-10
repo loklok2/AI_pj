@@ -216,12 +216,29 @@ const ProductDetails = () => {
         </div>
       </div>
   
-      {/* 상품정보 섹션을 페이지 상단에 더 가깝게 배치 */}
+      {/* 상품정보 */}
       <div className="product-details-page-additional-infos">
         <hr />
         <p><strong>상품정보</strong></p>
         <p>상품번호: {product.id}</p>
         <p>상품등록일: 20140612</p>
+      </div>
+
+      {/* 배송 정보 */}
+      <div className="product-details-page-additional-infos">
+        <hr />
+        <p><strong>배송 정보</strong></p>
+        <p>천재지변, 택배사 사정 등으로 인한 배송 지연 시 개별 안내 드립니다.</p>
+        <p>배송 중 상품이 손상되었거나 분실된 경우, 고객센터로 즉시 연락해 주시기 바랍니다.</p>
+        <p>제주도 및 도서산간 지역도 추가 배송비 없이 배송됩니다. 단, 배송이 1-2일 추가 소요될 수 있습니다.</p>
+      </div>
+
+      {/* 교환 및 반품 안내 */}
+      <div className="product-details-page-additional-infoss">
+        <hr />
+        <p><strong>교환 및 반품 안내</strong></p>
+        <p>배송 받은 날로부터 7일 이내에 교환 및 반품 가능 (단, 미사용 상태 및 태그가 부착된 상태이어야 함)</p>
+        <p>제품 불량이나 오배송의 경우, 교환 및 반품 배송비는 판매자가 부담합니다.</p>
       </div>
   
       {isModalOpen && (

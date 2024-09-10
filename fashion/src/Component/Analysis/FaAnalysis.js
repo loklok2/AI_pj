@@ -1,11 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faRotateRight, faCircleXmark, faCircleInfo } from '@fortawesome/free-solid-svg-icons'; 
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { faSpinner, faRotateRight, faCircleXmark, faCircleInfo, faAngleRight } from '@fortawesome/free-solid-svg-icons'; 
+import ProgressBar from 'react-bootstrap/ProgressBar';
+import 'bootstrap/dist/css/bootstrap.min.css';  // Bootstrap 스타일 적용
 import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
-
-ChartJS.register(ArcElement, Tooltip, Legend);
 
 const FaAnalysis = () => {
     const fileInputRef = useRef(null);
@@ -14,6 +12,15 @@ const FaAnalysis = () => {
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리 추가
+    const [showRelatedStyles, setShowRelatedStyles] = useState(false); // 관련 스타일 섹션을 위한 상태 추가
+
+    const mockData = {
+        predictions: [
+            ['스트릿 스타일', 0.5], // 50%
+            ['캐주얼 스타일', 0.3], // 30%
+            ['클래식 스타일', 0.2], // 20%
+        ]
+    };
 
     const handleClick = () => {
         fileInputRef.current.click();
@@ -42,36 +49,10 @@ const FaAnalysis = () => {
 
         setLoading(true);
 
-        const formData = new FormData();
-        formData.append('image', imageFile);
-
-        fetch('http://localhost:5000/style_predict', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
+        setTimeout(() => {
             setLoading(false);
-
-            const chartLabels = data.predictions.map(prediction => prediction[0]);
-            const chartDataValues = data.predictions.map(prediction => prediction[1] * 100);
-
-            setChartData({
-                labels: chartLabels,
-                datasets: [
-                    {
-                        label: 'Probability',
-                        data: chartDataValues,
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                        hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                    },
-                ],
-            });
-        })
-        .catch(error => {
-            setLoading(false);
-            console.error('Error:', error);
-        });
+            setChartData(mockData.predictions);
+        }, 1000); // 로딩을 위한 딜레이 추가
     };
 
     const handleReload = () => {
@@ -79,16 +60,20 @@ const FaAnalysis = () => {
     };
 
     const handleRemoveImage = (e) => {
-        e.stopPropagation(); // 이벤트 전파를 막아 부모 요소의 onClick 이벤트가 발생하지 않도록 합니다.
+        e.stopPropagation(); 
         setImageFile(null);
         setPreviewUrl(null);
         if (fileInputRef.current) {
-            fileInputRef.current.value = null; // 파일 입력 값을 초기화합니다.
+            fileInputRef.current.value = null;
         }
     };
 
     const toggleModal = () => {
-        setIsModalOpen(!isModalOpen);  // 모달 열고 닫기 기능
+        setIsModalOpen(!isModalOpen);
+    };
+
+    const toggleRelatedStyles = () => {
+        setShowRelatedStyles(!showRelatedStyles); // 관련 스타일 섹션을 토글로 보여줌
     };
 
     return (
@@ -110,7 +95,7 @@ const FaAnalysis = () => {
                         <FontAwesomeIcon 
                             icon={faCircleInfo}  
                             style={{ marginLeft: '8px', cursor: 'pointer', color: 'gray' }} 
-                            onClick={toggleModal}  // 모달 토글
+                            onClick={toggleModal}  
                         />
                         <FontAwesomeIcon 
                             icon={faRotateRight}  
@@ -168,15 +153,55 @@ const FaAnalysis = () => {
                     </button>
                 </div>
 
+                {/* 진행형 막대를 사용한 분석 결과 */}
                 {chartData && (
                     <div className="fa-analysis-unique-description-section">
-                        <div style={{ width: '400px', margin: '15px auto 0 auto' }}>
-                            <Doughnut data={chartData} />
+                        <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
+                        <h2>스트릿 스타일</h2>
+                        {chartData.map((style, index) => (
+                            <div key={index} style={{ marginBottom: '20px', textAlign: 'left' }}>
+                                <p style={{ fontWeight: 'bold' }}>{style[0]} ({style[1] * 100}%)</p>
+                                <ProgressBar 
+                                    now={style[1] * 100} 
+                                    label={`${style[1] * 100}%`} 
+                                    style={{ height: '10px', borderRadius: '5px' }} 
+                                />
+                            </div>
+                        ))}
+                        <div style={{ textAlign: 'right', marginTop: '50px' }}>
+                            <a 
+                                href="#" 
+                                onClick={toggleRelatedStyles} 
+                                style={{ color: 'gray', textDecoration: 'none', fontSize: '18px' }}
+                            >
+                                관련 스타일 더보기
+                                <FontAwesomeIcon icon={faAngleRight} style={{ marginLeft: '5px' }} />
+                            </a>
                         </div>
                     </div>
                 )}
             </div>
 
+           {/* 관련 스타일 이미지 섹션 (관련 스타일 더보기 버튼을 눌러야 보임) */}
+            {showRelatedStyles && (
+                <div>
+                    <h2 className="related-styles-title">관련 스타일</h2> {/* 타이틀 추가 */}
+                    <div className="related-styles-section">
+                        <div className="related-style">
+                            <div className="related-style-placeholder"></div>
+                            <p className="related-style-description">스타일 설명</p>
+                        </div>
+                        <div className="related-style">
+                            <div className="related-style-placeholder"></div>
+                            <p className="related-style-description">스타일 설명</p>
+                        </div>
+                        <div className="related-style">
+                            <div className="related-style-placeholder"></div>
+                            <p className="related-style-description">스타일 설명</p>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* 모달 컴포넌트 */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={toggleModal}>
@@ -189,6 +214,6 @@ const FaAnalysis = () => {
             )}
         </div>
     );
-}
+};
 
 export default FaAnalysis;

@@ -35,7 +35,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-top: 20px; /* 기존보다 위로 올림 */
+    margin-top: 20px;
     margin-left: 30px;
     font-family: "Noto Sans KR", sans-serif;
 }
@@ -92,25 +92,25 @@
 }
 
 .fa-analysis-unique-description-section {
-    margin-top: 80px; /* 차트와 설명 섹션을 위로 올림 */
-    margin-bottom: 200px; /* 차트 아래 여백 축소 */
+    margin-top: 80px;
+    margin-bottom: 200px;
     width: 45%;
-    text-align: center; /* 설명 및 차트 가운데 정렬 */
+    text-align: center;
     font-size: 16px;
     line-height: 1.6;
     font-family: "Noto Sans KR", sans-serif;
 }
 
 .fa-analysis-unique-description-section canvas {
-    width: 400px !important; /* 차트 크기 조정 */
-    height: 400px !important; /* 차트 크기 조정 */
-    margin: 15px auto 0 auto; /* 차트를 수직 가운데 정렬 및 위로 올림 */
+    width: 300px !important;
+    height: 300px !important;
+    margin: 15px auto 0 auto;
 }
 
 .fa-analysis-unique-header .fa-analysis-unique-divider {
     border-top: 1px solid #ccc;
-    margin-bottom: 40px; 
-    margin-top: 100px; 
+    margin-bottom: 40px;
+    margin-top: 100px;
     font-family: "Noto Sans KR", sans-serif;
 }
 
@@ -130,7 +130,48 @@
     background-color: white;
     padding: 20px;
     border-radius: 5px;
-    max-width: 500px;
+    max-width: 400px;
     width: 100%;
     text-align: center;
+}
+
+.fa-analysis-unique-description-section h2 {
+    margin-top: 50px; 
+    margin-bottom: 50px; 
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 추가된 부분 - 관련 스타일 섹션 */
+.related-styles-section {
+    display: flex;
+    justify-content: space-around; /* 이미지를 더 가까이 배치하기 위해 space-around 사용 */
+    margin-top: 20px;
+    margin-bottom: 100px;
+}
+
+.related-style {
+    width: 22%; /* 각 스타일 박스의 너비를 약간 늘림 */
+    text-align: center;
+}
+
+.related-style-placeholder {
+    width: 100%;
+    height: 400px; /* 높이를 300px로 유지 */
+    background-color: lightgray;
+    border-radius: 5px;
+}
+
+.related-style-description {
+    margin-top: 10px;
+    font-size: 14px;
+    color: gray;
+    font-family: "Noto Sans KR", sans-serif;
+}
+
+.related-styles-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 50px;
+    text-align: left; /* 타이틀을 왼쪽 정렬 */
 }

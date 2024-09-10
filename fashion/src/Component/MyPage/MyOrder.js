@@ -94,7 +94,9 @@ const MyOrder = () => {
         </div>
         <p className="myorder-no-orders">
           <strong>[Guest]</strong>님의 주문/배송 내역입니다.<br />
-          <strong>[<Link to="/mypage">여기</Link>]</strong>를 클릭하면 마이페이지로 이동합니다.
+          <strong>
+            <Link to="/mypage" style={{ color: 'black' }}>여기</Link>
+          </strong>를 클릭하면 마이페이지로 이동합니다.
         </p>
       </div>
 
@@ -174,7 +176,7 @@ const MyOrder = () => {
                 <td>
                   <div className="myorder-product-info">
                     <div className="myorder-product-img-placeholder"></div>
-                    <div>
+                    <div className="myorder-text">
                       <p>{order.product}</p>
                       <p>사이즈: {order.size}</p>
                       <p>수량: {order.quantity}개</p>

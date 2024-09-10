@@ -171,7 +171,6 @@ const Payment = () => {
         />
 
         <button className="add-address-btn" onClick={handleNewAddress}>새로운 주소 입력</button>
-        <hr className="divider-line" />
       </div>
 
       {/* 주문 요청 사항 */}
