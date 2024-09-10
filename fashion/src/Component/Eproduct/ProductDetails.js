@@ -157,62 +157,73 @@ const ProductDetails = () => {
   };
 
   return (
-    <div className="product-details-page">
-      <div className="product-details-page-image">
-        <div className="product-details-page-placeholder-image"></div>
-      </div>
-      <div className="product-details-page-info">
-        <div className="product-title">
-          <h2>{product.name}</h2>
-          <div className="wishlist-icon" onClick={toggleLike}>
-            <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} />
+    <div className="product-details-wrapper">
+      <div className="product-details-page">
+        <div className="product-details-page-image">
+          <div className="product-details-page-placeholder-image"></div>
+        </div>
+        <div className="product-details-page-info">
+          <div className="product-title">
+            <h2>{product.name}</h2>
+            <div className="wishlist-icon" onClick={toggleLike}>
+              <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} 
+              style={{ color: liked ? '#FA5858' : 'black' }} />
+            </div>
+          </div>
+          <div className="product-details-page-price">
+            <span>가격 </span>
+            <strong>{product.price}</strong>
+            <span>원</span>
+          </div>
+          <div className="product-details-page-shipping">
+            <p>배송 정보: <span>3일 이내 출고</span></p>
+            <p>배송비: <span>무료배송</span></p>
+          </div>
+  
+          <div className="product-details-page-size">
+            <span>사이즈 </span>
+            <select value={size} onChange={(e) => setSize(e.target.value)}>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="FREE">FREE</option>
+            </select>
+          </div>
+  
+          <div className="product-details-page-quantity">
+            <span>수량</span>
+            <div className="product-details-page-quantity-controls">
+              <button onClick={() => handleQuantityChange(quantity - 1)}>-</button>
+              <input
+                type="number"
+                value={quantity}
+                min="1"
+                onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
+                style={{ textAlign: 'center' }} 
+              />
+              <button onClick={() => handleQuantityChange(quantity + 1)}>+</button>
+            </div>
+          </div>
+          <div className="product-details-page-buttons">
+            <button className="product-details-page-add-to-cart" onClick={handleAddToCart}>
+              장바구니 담기
+            </button>
+            <button className="product-details-page-buy-now" onClick={handleBuyNow}>
+              바로 구매하기
+            </button>
           </div>
         </div>
-        <div className="product-details-page-price">
-          <span>가격 </span>
-          <strong>{product.price}</strong>
-          <span>원</span>
-        </div>
-        <div className="product-details-page-shipping">
-          <p>배송 정보: <span>3일 이내 출고</span></p>
-          <p>배송비: <span>무료배송</span></p>
-        </div>
-
-        <div className="product-details-page-size">
-          <span>사이즈 </span>
-          <select value={size} onChange={(e) => setSize(e.target.value)}>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="FREE">FREE</option>
-          </select>
-        </div>
-
-        <div className="product-details-page-quantity">
-          <span>수량</span>
-          <div className="product-details-page-quantity-controls">
-            <button onClick={() => handleQuantityChange(quantity - 1)}>-</button>
-            <input
-              type="number"
-              value={quantity}
-              min="1"
-              onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-              style={{ textAlign: 'center' }} 
-            />
-            <button onClick={() => handleQuantityChange(quantity + 1)}>+</button>
-          </div>
-        </div>
-        <div className="product-details-page-buttons">
-          <button className="product-details-page-add-to-cart" onClick={handleAddToCart}>
-            장바구니 담기
-          </button>
-          <button className="product-details-page-buy-now" onClick={handleBuyNow}>
-            바로 구매하기
-          </button>
-        </div>
       </div>
-
+  
+      {/* 상품정보 섹션을 페이지 상단에 더 가깝게 배치 */}
+      <div className="product-details-page-additional-infos">
+        <hr />
+        <p><strong>상품정보</strong></p>
+        <p>상품번호: {product.id}</p>
+        <p>상품등록일: 20140612</p>
+      </div>
+  
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
@@ -224,7 +235,7 @@ const ProductDetails = () => {
           </div>
         </div>
       )}
-
+  
       {showLoginModal && (
         <div className="modal-overlay">
           <div className="modal-content">

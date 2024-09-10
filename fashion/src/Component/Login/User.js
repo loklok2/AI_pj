@@ -9,6 +9,12 @@ const User = () => {
     const navigate = useNavigate(); 
 
     const handleSubmit = async () => {
+        // 유효성 검사: 이름과 이메일이 입력되었는지 확인
+        if (!name || !email) {
+            setError('이름과 이메일을 모두 입력해주세요.');
+            return;
+        }
+
         try {
             const response = await fetch('http://10.125.121.188:8080/api/auth/find-username', {
                 method: 'POST',

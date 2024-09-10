@@ -17,6 +17,12 @@ const RePass = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 비밀번호 유효성 검사 (길이)
+    if (newPassword.length < 8 || newPassword.length > 15) {
+      setErrorMessage('비밀번호는 8자에서 15자 사이여야 합니다.');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setErrorMessage('비밀번호가 일치하지 않습니다.');
       return;
@@ -94,7 +100,13 @@ const RePass = () => {
             {errorMessage && <p className="error-message">{errorMessage}</p>}
             {successMessage && <p className="success-message">{successMessage}</p>}
           </div>
-          <button type="submit" className="repass-submit-button">변경하기</button>
+          <button 
+            type="submit" 
+            className="repass-submit-button" 
+            disabled={newPassword === '' || confirmPassword === '' || newPassword !== confirmPassword}
+          >
+            변경하기
+          </button>
         </form>
       </div>
     </div>

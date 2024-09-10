@@ -18,6 +18,10 @@ const mockData = [
   { id: 13, category: '기타문의', title: '기타 문의 13', writer: 'User13', date: '2023-09-13' },
   { id: 14, category: '기타문의', title: '기타 문의 14', writer: 'User14', date: '2023-09-14' },
   { id: 15, category: '기타문의', title: '기타 문의 15', writer: 'User15', date: '2023-09-15' },
+  { id: 16, category: '기타문의', title: '기타 문의 15', writer: 'User16', date: '2023-09-15' },
+  { id: 17, category: '기타문의', title: '기타 문의 15', writer: 'User17', date: '2023-09-15' },
+  { id: 18, category: '기타문의', title: '기타 문의 15', writer: 'User18', date: '2023-09-15' },
+  { id: 19, category: '기타문의', title: '기타 문의 15', writer: 'User19', date: '2023-09-15' },
 ];
 
 const Board = () => {

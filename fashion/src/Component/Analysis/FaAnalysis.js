@@ -94,7 +94,7 @@ const FaAnalysis = () => {
     return (
         <div className="fa-analysis-unique-container">
             <div className="fa-analysis-unique-header">
-                <h1>옷 이미지 분석</h1>
+                <h1>패션 분석</h1>
                 <p>정보를 알고 싶은 옷의 이미지를 이곳에 넣어 옷에 대한 정보를 확인해보세요.</p>
                 <p className="fa-analysis-unique-small-text">
                     * 옷과 관련된 이미지를 넣어주세요. 관련된 이미지가 아닌 경우 올바른 결과를 보장하지 못합니다.

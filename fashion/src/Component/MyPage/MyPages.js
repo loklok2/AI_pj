@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faTimes, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'; 
+import { faUser, faTimes, faAngleLeft, faAngleRight, faCartShopping, faBox, faTruckMoving, faHouseChimney } from '@fortawesome/free-solid-svg-icons'; 
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/MyPages.css';
 
@@ -106,9 +106,9 @@ const MyPages = () => {
           {/* 게스트 상태에 따른 문구 변경 */}
           {isGuest || isLoggedIn ? (
             <>
-              <p className="mypages-user-message">[게스트]님 환영합니다.</p>
+              <p className="mypages-user-message">[Guest]님 환영합니다.</p>
               <p className="mypages-user-status">
-                장바구니 및 주문/배송 조회를 확인하실 수 있습니다.
+                게스트 이용자는 페이지를 닫으면 모든 정보가 초기화되니 유의해 주세요.
               </p>
             </>
           ) : (
@@ -133,23 +133,31 @@ const MyPages = () => {
 
         <div className="mypages-order-status">
           <div className="mypages-status-item">
-            <div className="mypages-status-icon"></div>
-            <p>발송준비</p>
+            <div className="mypages-status-icon">
+              <FontAwesomeIcon icon={faCartShopping} className="mypages-status-icon-inner" />
+            </div>
+            <p>발송 준비</p>
           </div>
           <div className="mypages-status-line"></div>
           <div className="mypages-status-item">
-            <div className="mypages-status-icon"></div>
-            <p>배송시작</p>
+            <div className="mypages-status-icon">
+              <FontAwesomeIcon icon={faBox} className="mypages-status-icon-inner" />
+            </div>
+            <p>배송 시작</p>
           </div>
           <div className="mypages-status-line"></div>
           <div className="mypages-status-item">
-            <div className="mypages-status-icon"></div>
-            <p>배송중</p>
+            <div className="mypages-status-icon">
+              <FontAwesomeIcon icon={faTruckMoving} className="mypages-status-icon-inner" />
+            </div>
+            <p>배송 중</p>
           </div>
           <div className="mypages-status-line"></div>
           <div className="mypages-status-item">
-            <div className="mypages-status-icon"></div>
-            <p>도착예정</p>
+            <div className="mypages-status-icon">
+              <FontAwesomeIcon icon={faHouseChimney} className="mypages-status-icon-inner" />
+            </div>
+            <p>도착 예정</p>
           </div>
         </div>
 

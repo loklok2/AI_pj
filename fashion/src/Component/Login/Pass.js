@@ -8,8 +8,15 @@ const Pass = () => {
     const [error, setError] = useState(''); // 에러 메시지 상태
     const [message, setMessage] = useState(''); // 성공 메시지 상태
     const navigate = useNavigate(); 
-  
+
     const handleSubmit = async () => {
+        // 아이디나 이메일이 비어있을 경우 처리
+        if (!username || !email) {
+            setError('아이디와 이메일을 모두 입력해주세요.');
+            setMessage('');
+            return;
+        }
+
         try {
             const response = await fetch('http://10.125.121.188:8080/api/auth/reset-password', {
                 method: 'POST',

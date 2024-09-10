@@ -6,13 +6,14 @@ const Signup = () => {
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 창 상태 관리
     const [formData, setFormData] = useState({
-        username: '',   // 사용자 아이디
-        password: '',   // 비밀번호
-        email: '',      // 이메일
-        birthDate: '',  // 주민등록번호
-        address: '',    // 주소
-        phone: '',      // 전화번호
-        style: '',      // 선호하는 스타일
+        name: '',        // 이름
+        username: '',    // 사용자 아이디
+        password: '',    // 비밀번호
+        email: '',       // 이메일
+        birthDate: '',   // 주민등록번호
+        address: '',     // 주소
+        phone: '',       // 전화번호
+        style: '',       // 선호하는 스타일
     });
     const [maskedBack, setMaskedBack] = useState(''); // 마스킹된 뒷자리 값
     const [realBack, setRealBack] = useState(''); // 실제 뒷자리 값
@@ -95,6 +96,20 @@ const Signup = () => {
             </div>
 
             <div className="signup-form-container">
+                {/* 이름 입력 필드 */}
+                <div className="form-group">
+                    <label htmlFor="name" className="form-label">이름</label>
+                    <input
+                        id="name"
+                        className="form-input"
+                        type="text"
+                        placeholder="이름을 입력해주세요."
+                        value={formData.name}
+                        onChange={handleChange}
+                    />
+                </div>
+
+                {/* 아이디 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="username" className="form-label">아이디</label>
                     <input
@@ -112,6 +127,7 @@ const Signup = () => {
                     </button>
                 </div>
 
+                {/* 비밀번호 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="password" className="form-label">비밀번호</label>
                     <input
@@ -124,6 +140,7 @@ const Signup = () => {
                     />
                 </div>
 
+                {/* 이메일 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="email" className="form-label">이메일</label>
                     <input
@@ -141,6 +158,7 @@ const Signup = () => {
                     </button>
                 </div>
 
+                {/* 전화번호 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="phone" className="form-label">전화번호</label>
                     <input
@@ -153,6 +171,7 @@ const Signup = () => {
                     />
                 </div>
 
+                {/* 주소 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="address" className="form-label">주소</label>
                     <input
@@ -165,6 +184,7 @@ const Signup = () => {
                     />
                 </div>
 
+                {/* 주민등록번호 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="birthDate" className="form-label">주민등록번호</label>
                     <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
@@ -191,6 +211,7 @@ const Signup = () => {
                     </div>
                 </div>
 
+                {/* 스타일 선택 필드 */}
                 <div className="form-group">
                     <label htmlFor="style" className="form-label">선호하는 스타일</label>
                     <select
@@ -200,19 +221,26 @@ const Signup = () => {
                         onChange={handleChange}
                     >
                         <option value="">선호하는 스타일 선택해주세요.</option>
-                        <option value="캐주얼">캐주얼</option>
-                        <option value="스포츠">스포츠</option>
-                        <option value="포멀">포멀</option>
+                        <option value="CASUAL">캐주얼</option>      {/* CASUAL, 캐주얼 */}
+                        <option value="FORMAL">포멀</option>        {/* FORMAL, 포멀 */}
+                        <option value="SPORTY">스포티</option>      {/* SPORTY, 스포티 */}
+                        <option value="VINTAGE">빈티지</option>     {/* VINTAGE, 빈티지 */}
+                        <option value="BOHEMIAN">보헤미안</option>  {/* BOHEMIAN, 보헤미안 */}
+                        <option value="MINIMALIST">미니멀리즘</option> {/* MINIMALIST, 미니멀리즘 */}
+                        <option value="STREETWEAR">스트릿웨어</option> {/* STREETWEAR, 스트릿웨어 */}
                     </select>
                 </div>
             </div>
 
+            {/* 에러 메시지 */}
             {errorMessage && <p className="error-message">{errorMessage}</p>}
 
+            {/* 가입하기 버튼 */}
             <div className="submit-button-container">
                 <button className="submit-button" onClick={handleSignup}>가입하기</button>
             </div>
 
+            {/* 모달 창 */}
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal-content">

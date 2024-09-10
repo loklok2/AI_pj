@@ -154,7 +154,10 @@ const Product = () => {
               <div className="product-price-wrapper">
                 <p className="product-price">{product.price}</p>
                 <div className="wishlist-icon" onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}>
-                  <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} />
+                  <FontAwesomeIcon 
+                    icon={liked ? solidHeart : regularHeart} 
+                    style={{ color: liked ? '#FA5858' : 'black' }} // 좋아요 시 빨간색, 아니면 검은색
+                  />
                 </div>
               </div>
             </div>
