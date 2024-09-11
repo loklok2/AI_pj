@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductAttribute;
+import com.choice.product.entity.ProductAttributeLink;
 import com.choice.product.entity.ProductImg;
 import com.choice.shopping.dto.CartItemDTO;
+import com.choice.shopping.dto.CartSummaryDTO;
 import com.choice.shopping.entity.Cart;
 import com.choice.shopping.entity.CartItem;
 import com.choice.shopping.repository.CartItemRepository;
@@ -18,50 +20,62 @@ import com.choice.shopping.repository.CartRepository;
 @Service
 public class CartService {
 
-    @Autowired
-    private CartRepository cartRepository;
+        @Autowired
+        private CartRepository cartRepository;
 
-    @Autowired
-    private CartItemRepository cartItemRepository;
+        @Autowired
+        private CartItemRepository cartItemRepository;
 
-    public List<CartItemDTO> getCartItems(Long userId) {
-        Cart cart = cartRepository.findByMember_UserId(userId)
-                .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
+        public List<CartItemDTO> getCartItems(Long userId) {
+                Cart cart = cartRepository.findByMember_UserId(userId)
+                                .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
 
-        return cartItemRepository.findByCart(cart).stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
+                return cartItemRepository.findByCart(cart).stream()
+                                .map(this::convertToDTO)
+                                .collect(Collectors.toList());
+        }
 
-    public Long getCartTotal(Long userId) {
-        Cart cart = cartRepository.findByMember_UserId(userId)
-                .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
+        public Long getCartTotal(Long userId) {
+                Cart cart = cartRepository.findByMember_UserId(userId)
+                                .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
 
-        return cartItemRepository.findByCart(cart).stream()
-                .mapToLong(item -> item.getProduct().getPrice() * item.getQuantity())
-                .sum();
-    }
+                return cartItemRepository.findByCart(cart).stream()
+                                .mapToLong(item -> item.getProduct().getPrice() * item.getQuantity())
+                                .sum();
+        }
 
-    private CartItemDTO convertToDTO(CartItem cartItem) {
-        Product product = cartItem.getProduct();
-        String imageUrl = product.getImages().stream()
-                .findFirst()
-                .map(ProductImg::getPimgName)
-                .orElse(null);
+        private CartItemDTO convertToDTO(CartItem cartItem) {
+                Product product = cartItem.getProduct();
+                String imageUrl = product.getImages().stream()
+                                .findFirst()
+                                .map(ProductImg::getPimgName)
+                                .orElse(null);
 
-        String category = product.getAttributes().stream()
-                .filter(attr -> "category".equals(attr.getAttributeType()))
-                .findFirst()
-                .map(ProductAttribute::getNameKo)
-                .orElse(null);
+                String category = product.getAttributeLinks().stream()
+                                .map(ProductAttributeLink::getAttribute)
+                                .filter(attr -> "category".equals(attr.getAttributeType()))
+                                .findFirst()
+                                .map(ProductAttribute::getNameKo)
+                                .orElse(null);
 
-        return new CartItemDTO(
-                product.getProductId(),
-                imageUrl,
-                product.getName(),
-                category,
-                cartItem.getQuantity(),
-                product.getPrice(),
-                product.getPrice() * cartItem.getQuantity());
-    }
+                return new CartItemDTO(
+                                product.getProductId(),
+                                imageUrl,
+                                product.getName(),
+                                category,
+                                cartItem.getQuantity(),
+                                product.getPrice(),
+                                product.getPrice() * cartItem.getQuantity());
+        }
+
+        public CartSummaryDTO getCartSummary(Long userId) {
+                List<CartItemDTO> items = getCartItems(userId);
+                Long total = getCartTotal(userId);
+
+                CartSummaryDTO summary = new CartSummaryDTO();
+                summary.setItems(items);
+                summary.setTotal(total);
+
+                return summary;
+        }
 }

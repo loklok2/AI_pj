@@ -1,11 +1,11 @@
 package com.choice.board.service;
 
+import java.io.File;
 import java.io.IOException;
-import java.sql.Blob;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +31,9 @@ public class QboardService {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Value("${image.upload.path}")
+    private String uploadPath;
+
     // Q&A 게시글 생성
     public Qboard createQboard(Qboard qboard, String username, List<MultipartFile> images) throws IOException {
         Member member = memberRepository.findByUsername(username)
@@ -43,7 +46,7 @@ public class QboardService {
                 if (!image.isEmpty()) { // 이미지가 비어있지 않은 경우
                     try {
                         addImage(savedQboard.getQboardId(), image); // 이미지 추가
-                    } catch (SQLException e) {
+                    } catch (IOException e) {
                         throw new RuntimeException("이미지 추가 중 오류 발생", e);
                     }
                 }
@@ -83,7 +86,7 @@ public class QboardService {
                 if (!image.isEmpty()) { // 이미지가 비어있지 않은 경우
                     try {
                         addImage(qboard.getQboardId(), image); // 이미지 추가
-                    } catch (SQLException e) {
+                    } catch (IOException e) {
                         throw new RuntimeException("이미지 추가 중 오류 발생", e);
                     }
                 }
@@ -117,17 +120,17 @@ public class QboardService {
     }
 
     // 이미지 추가
-    private void addImage(Long qboardId, MultipartFile file) throws IOException, SQLException {
-        QboardImg img = new QboardImg(); // 이미지 객체 생성
-        Qboard qboard = qboardRepository.findById(qboardId) // 게시글 ID로 게시글 조회
+    private void addImage(Long qboardId, MultipartFile file) throws IOException {
+        QboardImg img = new QboardImg();
+        Qboard qboard = qboardRepository.findById(qboardId)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
-        img.setQboard(qboard); // 게시글 설정
-        img.setQimgName(file.getOriginalFilename()); // 이미지 이름 설정
+        img.setQboard(qboard);
+        img.setQimgName(file.getOriginalFilename());
 
-        // Blob 객체 생성
-        byte[] bytes = file.getBytes(); // 이미지 바이트 배열 생성
-        Blob blob = new javax.sql.rowset.serial.SerialBlob(bytes); // Blob 객체 생성
-        img.setQimgData(blob); // 이미지 데이터 설정
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String filePath = uploadPath + fileName;
+        file.transferTo(new File(filePath));
+        img.setQimgPath(filePath);
 
         qboardImgRepository.save(img);
     }

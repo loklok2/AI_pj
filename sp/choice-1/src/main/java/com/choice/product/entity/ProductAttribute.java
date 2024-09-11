@@ -20,7 +20,7 @@ public class ProductAttribute {
 
     private String nameKo; // 속성 이름
 
-    @ManyToMany(mappedBy = "attributes")
-    private Set<Product> products; // 상품 엔티티와의 다대다 관계
+    @OneToMany(mappedBy = "attribute")
+    private Set<ProductAttributeLink> productLinks; // 상품 속성 링크 엔티티와의 일대다 관계
 
 }

@@ -20,7 +20,9 @@ import com.choice.config.JWTUtil;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @EnableScheduling
@@ -33,38 +35,20 @@ public class AuthService {
     // 회원가입
     @Transactional
     public void registerUser(SignupRequestDTO requestDto) {
-        // 사용자 이름 중복 검사
-        if (memberRepository.findByUsername(requestDto.getUsername()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 사용자 이름입니다.");
-        }
-
-        // 이메일 중복 검사
-        if (memberRepository.findByEmail(requestDto.getEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다.");
-        }
-
-        // 주민등록번호에서 생년월일과 성별 추출
-        String residentRegistrationNumber = requestDto.getResidentRegistrationNumber();
-        if (residentRegistrationNumber.length() != 7) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주민등록번호는 앞 7자리를 입력해야 합니다.");
-        }
-        char genderCode = residentRegistrationNumber.charAt(6);
-        String gender = (genderCode == '1' || genderCode == '3') ? "남자" : "여자";
-
-        // 비밀번호 암호화
+        validateSignupRequest(requestDto);
+        
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
+        String gender = extractGenderFromResidentRegistrationNumber(requestDto.getResidentRegistrationNumber());
 
-        // 사용자 생성 및 저장
         Member member = Member.builder()
                 .username(requestDto.getUsername())
                 .password(encodedPassword)
                 .name(requestDto.getName())
-                .residentRegistrationNumber(residentRegistrationNumber)
+                .residentRegistrationNumber(requestDto.getResidentRegistrationNumber())
                 .gender(gender)
                 .address(requestDto.getAddress())
                 .phone(requestDto.getPhone())
                 .email(requestDto.getEmail())
-                // .nickname(requestDto.getNickname())
                 .role(Role.MEMBER)
                 .joinDate(LocalDateTime.now())
                 .editedDate(LocalDateTime.now())
@@ -72,12 +56,40 @@ public class AuthService {
                 .style(requestDto.getStyle())
                 .build();
 
-        // 회원 정보 저장
         Member savedMember = memberRepository.save(member);
-
-        // 이메일 인증 토큰 생성 및 저장
         String emailVerificationToken = JWTUtil.getEmailVerificationToken(savedMember.getUsername());
-        emailService.sendVerificationEmail(member.getEmail(), emailVerificationToken); // 이메일 인증 메일 발송
+        emailService.sendVerificationEmail(member.getEmail(), emailVerificationToken);
+        log.info("New user registered: {}", savedMember.getUsername());
+    }
+
+    private void validateSignupRequest(SignupRequestDTO requestDto) {
+        if (memberRepository.findByUsername(requestDto.getUsername()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 사용자 이름입니다.");
+        }
+        if (memberRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다.");
+        }
+        if (!isValidPassword(requestDto.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이며, 숫자, 문자, 특수문자를 포함해야 합니다.");
+        }
+        if (!isValidResidentRegistrationNumber(requestDto.getResidentRegistrationNumber())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "올바르지 않은 주민등록번호 형식입니다.");
+        }
+    }
+
+    private String extractGenderFromResidentRegistrationNumber(String residentRegistrationNumber) {
+        char genderCode = residentRegistrationNumber.charAt(6);
+        return (genderCode == '1' || genderCode == '3') ? "남자" : "여자";
+    }
+
+    private boolean isValidPassword(String password) {
+        // 비밀번호 정책 구현
+        String regex = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$";
+        return password.matches(regex);
+    }
+
+    private boolean isValidResidentRegistrationNumber(String number) {
+        return number.length() == 7 && number.matches("\\d{6}[1-4]");
     }
 
     // 로그인

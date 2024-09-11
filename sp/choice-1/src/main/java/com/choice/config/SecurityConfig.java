@@ -2,7 +2,6 @@ package com.choice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,20 +25,16 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .authorizeHttpRequests(authorize -> authorize
-                        // 인증 관련 API
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Q&A 게시판 API
-                        .requestMatchers(HttpMethod.GET, "/api/qboard", "/api/qboard/{id}",
+                        .requestMatchers("/api/qboard", "/api/qboard/{id}",
                                 "/api/qboard/{qboardId}/images")
                         .permitAll()
                         .requestMatchers("/api/qboard/**").authenticated()
-                        // 댓글 API
-                        .requestMatchers(HttpMethod.GET, "/api/comments/qboard/{qboardId}").permitAll()
+                        .requestMatchers("/api/comments/qboard/{qboardId}").permitAll()
                         .requestMatchers("/api/comments/**").authenticated()
-                        // OAuth2 로그인
                         .requestMatchers("/oauth2/**").permitAll()
-                        // 그 외 모든 요청
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/recommendation/**").permitAll()
+                        .anyRequest().permitAll())
                 .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
                 .oauth2Login(oauth2 -> oauth2.successHandler(successHandler)) // OAuth2 로그인 성공 핸들러 설정
                 .addFilterBefore(new JWTAuthorizationFilter(memberRepository),

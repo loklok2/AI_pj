@@ -1,6 +1,7 @@
 package com.choice.product.entity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -19,10 +20,6 @@ public class Product {
     private String name; // 상품 이름
     private String info; // 상품 정보
 
-    @Enumerated(EnumType.STRING)
-    private Size size; // 상품 사이즈
-
-    private Long stock; // 상품 재고
     private Long sell; // 상품 판매량
 
     @Column(name = "price", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
@@ -36,14 +33,25 @@ public class Product {
 
     private Long view; // 상품 조회수
 
-    @ManyToMany
-    @JoinTable(name = "product_attribute_link", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "attribute_id"))
-    private Set<ProductAttribute> attributes; // 상품 속성
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProductAttributeLink> attributeLinks; // 상품 속성 링크 엔티티와의 일대다 관계
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductImg> images; // 상품 이미지
 
-    public enum Size {
-        XS, S, M, L, XL, FREE
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Product))
+            return false;
+        Product product = (Product) o;
+        return Objects.equals(getProductId(), product.getProductId());
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getProductId());
+    }
+
 }

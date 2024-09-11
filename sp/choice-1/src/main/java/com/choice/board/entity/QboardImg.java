@@ -3,7 +3,6 @@ package com.choice.board.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.sql.Blob;
 
 @Entity
 @Table(name = "qboard_img")
@@ -21,6 +20,5 @@ public class QboardImg {
 
     private String qimgName; // 이미지 이름
 
-    @Lob
-    private Blob qimgData; // 이미지 데이터
+    private String qimgPath; // 이미지 파일 경로
 }

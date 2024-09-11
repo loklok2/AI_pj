@@ -9,11 +9,11 @@ import lombok.Data;
 @Builder
 public class CartItemDTO {
     private Long productId;
+    private String imageUrl; // imageData 대신 imageUrl 사용
     private String productName;
     private String category;
-    private String size;
     private Integer quantity;
-    private byte[] imageData;
     private Long price;
     private Long totalPrice;
+
 }

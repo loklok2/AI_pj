@@ -1,0 +1,27 @@
+HTTP Method,Endpoint,Description
+POST,/api/auth/signup,회원가입
+POST,/api/auth/login,로그인
+GET,/api/auth/verify?token={token},이메일 인증
+POST,/api/auth/find-username,아이디 찾기
+POST,/api/auth/reset-password,비밀번호 재설정 요청
+POST,/api/auth/reset-password-confirm,비밀번호 재설정 확인
+POST,/api/auth/refresh-token,토큰 갱신
+POST,/api/qboard,게시글 작성
+GET,/api/qboard/{id},게시글 조회
+GET,/api/qboard,모든 게시글 조회
+PUT,/api/qboard/{id},게시글 수정
+DELETE,/api/qboard/{id},게시글 삭제
+GET,/api/qboard/{qboardId}/images,게시글 이미지 조회
+POST,/api/comments/{qboardId},댓글 작성
+PUT,/api/comments/{commentId},댓글 수정
+DELETE,/api/comments/{commentId},댓글 삭제
+GET,/api/comments/qboard/{qboardId},게시글별 댓글 조회
+POST,/api/recommendation/analyze,이미지 분석 및 상품 추천
+GET,/api/admin/members,모든 회원 조회
+GET,/api/admin/qboards,모든 게시글 조회
+GET,/api/admin/products,모든 상품 조회
+DELETE,/api/admin/members/{id},회원 삭제
+DELETE,/api/admin/qboards/{id},게시글 삭제
+DELETE,/api/admin/products/{id},상품 삭제
+GET,/api/admin/orders,주문 정보 조회
+GET,/api/admin/daily-sales-report?date={date},일일 매출 보고서

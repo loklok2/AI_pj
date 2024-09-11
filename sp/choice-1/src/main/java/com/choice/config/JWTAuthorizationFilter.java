@@ -46,10 +46,14 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             }
 
             String username = JWTUtil.getClaim(jwtToken); // JWT 토큰에서 사용자 이름(username) 추출
+            System.out.println("Extracted username: " + username); // 로깅 추가
+
             Optional<Member> opt = memberRepository.findByUsername(username); // 사용자 이름으로 멤버 조회
+            System.out.println("Member found: " + opt.isPresent()); // 로깅 추가
 
             if (!opt.isPresent()) { // 멤버가 없으면 응답 상태를 401 Unauthorized로 설정
-                filterChain.doFilter(request, response); // 다음 필터로 넘김
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("User not found");
                 return;
             }
 
@@ -63,8 +67,10 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response); // 다음 필터로 넘김
         } catch (Exception e) { // 예외 발생 시 응답 상태를 401 Unauthorized로 설정
+            System.out.println("Exception in JWTAuthorizationFilter: " + e.getMessage()); // 로깅 추가
+            e.printStackTrace(); // 스택 트레이스 출력
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid token");
+            response.getWriter().write("Invalid token: " + e.getMessage());
         }
     }
 }

@@ -18,7 +18,7 @@ public class EmailService {
         message.setTo(to);
         message.setSubject("회원가입 이메일 인증");
         message.setText("회원가입을 완료하려면 다음 링크를 클릭하세요: "
-                + "http://localhost:3000/verify?token=" + token);
+                + "http://localhost:8080/verify?token=" + token);
         mailSender.send(message);
     }
 

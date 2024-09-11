@@ -1,3 +1,6 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "workbench.preferredDarkColorTheme": "Default Dark Modern",
+    "workbench.colorTheme": "Default Dark Modern",
+    "workbench.preferredLightColorTheme": "Default Light Modern"
 }
