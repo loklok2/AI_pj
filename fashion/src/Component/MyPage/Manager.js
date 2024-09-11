@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format, getDay, isAfter, isBefore } from 'date-fns'; // 추가된 함수들
+import { ko } from 'date-fns/locale'; // 한국어 로케일 불러오기
 import { Line, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -24,21 +28,30 @@ ChartJS.register(
   Legend
 );
 
+// 한국어 로케일 등록
+registerLocale('ko', ko);
+
 const Manager = () => {
-  const [totalVisits, setTotalVisits] = useState(0);
-  const [inquiries, setInquiries] = useState(0);
-  const [inquiryReplies, setInquiryReplies] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(3420);
+  const [inquiries, setInquiries] = useState(120);
+  const [inquiryReplies, setInquiryReplies] = useState(110);
   const [orderList, setOrderList] = useState([]);
   const [selectedOrders, setSelectedOrders] = useState([]); // 선택된 주문 리스트
   const [chartType, setChartType] = useState('realtime'); // 'realtime' or 'cumulative'
+  const [startDate, setStartDate] = useState(null); // 시작 날짜
+  const [endDate, setEndDate] = useState(null); // 종료 날짜
+  const [filteredData, setFilteredData] = useState({
+    labels: [],
+    datasets: [{ label: '일별 매출', data: [] }],
+  }); // 필터링된 데이터 기본값 설정
 
-  // 목업 실시간 월별 데이터
+  // 목업 실시간 일별 데이터 (1월 1일부터 9일까지)
   const realTimeData = {
-    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월'],
+    labels: ['9월 1일', '9월 2일', '9월 3일', '9월 4일', '9월 5일', '9월 6일', '9월 7일', '9월 8일', '9월 9일'],
     datasets: [
       {
-        label: '매출',
-        data: [200, 250, 300, 320, 400, 450, 480, 500, 520],
+        label: '일별 매출',
+        data: [200, 250, 220, 320, 200, 450, 380, 500, 420],
         fill: false,
         borderColor: 'rgba(75,192,192,1)',
         tension: 0.1,
@@ -46,13 +59,13 @@ const Manager = () => {
     ],
   };
 
-  // 목업 누적 월별 데이터
+  // 목업 누적 월별 데이터 (1월부터 9월까지)
   const cumulativeData = {
     labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월'],
     datasets: [
       {
-        label: '판매율',
-        data: [200, 450, 750, 1070, 1470, 1920, 2400, 2900, 3420],
+        label: '월별 누적 매출',
+        data: [200, 700, 2450, 1970, 2470, 3000, 2700, 4500, 3200],
         fill: false,
         borderColor: 'rgba(255,99,132,1)',
         tension: 0.1,
@@ -83,7 +96,7 @@ const Manager = () => {
           'rgba(153, 102, 255, 1)',
           'rgba(255, 99, 132, 1)',
           'rgba(255, 159, 64, 1)',
-          'rgba(128, 0, 128, 0.5)',
+          'rgba(128, 0, 128, 1)',
         ],
         borderWidth: 1,
       },
@@ -135,6 +148,99 @@ const Manager = () => {
     alert('저장되었습니다.');
   };
 
+  // 조회 버튼 클릭 시 실행되는 함수 (날짜 필터링 로직 추가)
+  const handleSearchClick = () => {
+    console.log("조회 시작 날짜: ", startDate ? format(startDate, 'yyyy.MM.dd') : "선택 안 됨");
+    console.log("조회 종료 날짜: ", endDate ? format(endDate, 'yyyy.MM.dd') : "선택 안 됨");
+  
+    // 차트 타입에 따라 데이터를 필터링
+    if (chartType === 'realtime') {
+      // 날짜 범위로 실시간 데이터를 필터링
+      const filteredLabels = realTimeData.labels.filter((label, index) => {
+        const parts = label.match(/(\d+)월 (\d+)일/);
+        if (!parts) return false;
+  
+        const month = parts[1].padStart(2, '0');  // 월
+        const day = parts[2].padStart(2, '0');    // 일
+        const labelDate = new Date(`2024-${month}-${day}`);
+  
+        return (!startDate || labelDate >= new Date(startDate)) && (!endDate || labelDate <= new Date(endDate));
+      });
+  
+      const filteredDataValues = realTimeData.datasets[0].data.filter((_, index) => {
+        const parts = realTimeData.labels[index].match(/(\d+)월 (\d+)일/);
+        if (!parts) return false;
+  
+        const month = parts[1].padStart(2, '0');  // 월
+        const day = parts[2].padStart(2, '0');    // 일
+        const labelDate = new Date(`2024-${month}-${day}`);
+  
+        return (!startDate || labelDate >= new Date(startDate)) && (!endDate || labelDate <= new Date(endDate));
+      });
+  
+      setFilteredData({
+        labels: filteredLabels,
+        datasets: [
+          {
+            label: '일별 매출',
+            data: filteredDataValues,
+            fill: false,
+            borderColor: 'rgba(75,192,192,1)',
+            tension: 0.1,
+          },
+        ],
+      });
+    } else if (chartType === 'cumulative') {
+      // 날짜 범위로 누적 데이터를 필터링
+      const filteredLabels = cumulativeData.labels.filter((label, index) => {
+        const monthStartDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-01`);
+        const monthEndDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-31`);
+  
+        return (!startDate || monthEndDate >= new Date(startDate)) && (!endDate || monthStartDate <= new Date(endDate));
+      });
+  
+      const filteredDataValues = cumulativeData.datasets[0].data.filter((_, index) => {
+        const monthStartDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-01`);
+        const monthEndDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-31`);
+  
+        return (!startDate || monthEndDate >= new Date(startDate)) && (!endDate || monthStartDate <= new Date(endDate));
+      });
+  
+      setFilteredData({
+        labels: filteredLabels,
+        datasets: [
+          {
+            label: '월별 누적 매출',
+            data: filteredDataValues,
+            fill: false,
+            borderColor: 'rgba(255,99,132,1)',
+            tension: 0.1,
+          },
+        ],
+      });
+    }
+  };
+  
+  // 차트 타입 변경 시 필터링된 데이터를 업데이트
+  useEffect(() => {
+    if (chartType === 'realtime') {
+      setFilteredData(realTimeData);
+    } else {
+      setFilteredData(cumulativeData);
+    }
+  }, [chartType]);
+  
+  // 각 날짜에 대한 클래스를 지정하는 함수 (토요일과 일요일 색상 변경을 위한 함수 추가)
+  const getDayClassName = (date) => {
+    const day = getDay(date); // 0: 일요일, 6: 토요일
+    if (day === 0) {
+      return 'sunday'; // 일요일
+    } else if (day === 6) {
+      return 'saturday'; // 토요일
+    }
+    return '';
+  };
+
   useEffect(() => {
     // 목업 데이터로 상태값 설정
     setTotalVisits(3420); // 목업으로 총 방문자 수 설정
@@ -145,6 +251,13 @@ const Manager = () => {
       { orderId: '76015-4', userId: 'user004', productInfo: '플로팅 로트리 스마트', totalPrice: '37,900원', orderDate: '2024. 9. 10', deliveryStatus: '배송 중' },
       { orderId: '76015-5', userId: 'user005', productInfo: '다이렉트 스텝 커버 레드 플로', totalPrice: '52,900원', orderDate: '2024. 9. 10', deliveryStatus: '배송 중' },
     ]);
+
+    // 필터링되지 않은 초기 데이터로 설정
+    setFilteredData(realTimeData);
+  }, []);
+
+  useEffect(() => {
+    setFilteredData(realTimeData); // 초기화 시 필터링되지 않은 데이터로 설정
   }, []);
 
   return (
@@ -152,6 +265,7 @@ const Manager = () => {
       <h1 className="manager-dashboard-title">DashBoard</h1>
       <p className="manager-dashboard-welcome-text">이 페이지는 관리자만 이용 가능합니다.</p>
 
+      {/* 대시보드 통계 상자 */}
       <div className="manager-dashboard-stats">
         <div className="manager-dashboard-stat-box">
           <p>총 회원수</p>
@@ -171,23 +285,52 @@ const Manager = () => {
         </div>
       </div>
 
-      {/* 실시간/누적 차트 선택 버튼 */}
-      <div className="chart-type-buttons">
-        <button onClick={() => setChartType('realtime')}>매출</button>
-        <button onClick={() => setChartType('cumulative')}>판매율</button>
+      {/* 차트 타입 선택 버튼 및 날짜 선택 필터 한 줄 배치 */}
+      <div className="chart-type-and-filter">
+        <div className="chart-type-buttons">
+          <button onClick={() => setChartType('realtime')}>일일 매출 보고서</button>
+          <button onClick={() => setChartType('cumulative')}>월별 매출 보고서</button>
+        </div>
+        <div className="search-filter-inline">
+          <DatePicker
+            locale="ko" // 한국어 적용
+            selected={startDate}
+            onChange={(date) => setStartDate(date)} // 날짜가 선택되었을 때 업데이트
+            dateFormat="yyyy.MM.dd" // 날짜 형식 지정
+            dayClassName={getDayClassName} // 요일별 클래스 지정
+            placeholderText="시작 날짜"
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+          />
+          <span> ~ </span>
+          <DatePicker
+            locale="ko" // 한국어 적용
+            selected={endDate}
+            onChange={(date) => setEndDate(date)} // 날짜가 선택되었을 때 업데이트
+            dateFormat="yyyy.MM.dd" // 날짜 형식 지정
+            dayClassName={getDayClassName} // 요일별 클래스 지정
+            placeholderText="종료 날짜"
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate} // 시작 날짜 이후만 선택 가능
+          />
+          <button onClick={handleSearchClick}>조회</button>
+        </div>
       </div>
 
       <div className="manager-dashboard-charts">
         <div className="manager-dashboard-chart">
-          <p>{chartType === 'realtime' ? '매출' : '판매율'}</p>
-          <Line data={chartType === 'realtime' ? realTimeData : cumulativeData} />
+          <p>{chartType === 'realtime' ? '일일 매출' : '월별 매출'}</p>
+          <Line data={filteredData} />
         </div>
         <div className="manager-dashboard-chart">
           <p>카테고리별 판매율</p>
           <Doughnut data={doughnutData} options={doughnutOptions} />
         </div>
       </div>
-
+      
       <div className="manager-dashboard-order">
         <div className="manager-dashboard-order-header">
           <h2>주문 목록</h2>
@@ -233,6 +376,7 @@ const Manager = () => {
                     <option value="배송 준비">배송 준비</option>
                     <option value="배송 중">배송 중</option>
                     <option value="배송 완료">배송 완료</option>
+                    <option value="배송 취소">주문 취소</option>
                   </select>
                 </td>
               </tr>

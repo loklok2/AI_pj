@@ -8,17 +8,27 @@ import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
 const FaAnalysis = () => {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
-    const [chartData, setChartData] = useState(null);
+    const [chartData, setChartData] = useState([
+        ['스타일', 0], // 초기 상태는 0%
+        ['스타일', 0],
+        ['스타일', 0],
+        ['스타일', 0],
+        ['스타일', 0],
+    ]);
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리 추가
     const [showRelatedStyles, setShowRelatedStyles] = useState(false); // 관련 스타일 섹션을 위한 상태 추가
+    const [topStyle, setTopStyle] = useState(''); // 가장 높은 퍼센트 스타일 상태 추가
+    const [flippedCards, setFlippedCards] = useState(Array(chartData.length).fill(false)); // 각 카드의 플립 상태를 관리
 
     const mockData = {
         predictions: [
             ['스트릿 스타일', 0.5], // 50%
             ['캐주얼 스타일', 0.3], // 30%
             ['클래식 스타일', 0.2], // 20%
+            ['미니멀리즘 스타일', 0.4], // 40%
+            ['스트릿웨어', 0.2], // 20%
         ]
     };
 
@@ -51,7 +61,14 @@ const FaAnalysis = () => {
 
         setTimeout(() => {
             setLoading(false);
-            setChartData(mockData.predictions);
+            setChartData(mockData.predictions); // 결과 업데이트
+
+            // 가장 높은 퍼센트 스타일 찾기
+            const maxStyle = mockData.predictions.reduce((max, style) => style[1] > max[1] ? style : max, mockData.predictions[0]);
+            setTopStyle(maxStyle[0]); // 가장 높은 퍼센트 스타일의 이름 저장
+
+            // 관련 스타일 섹션 표시
+            setShowRelatedStyles(false); // 분석 후에 관련 스타일을 숨김
         }, 1000); // 로딩을 위한 딜레이 추가
     };
 
@@ -72,8 +89,10 @@ const FaAnalysis = () => {
         setIsModalOpen(!isModalOpen);
     };
 
-    const toggleRelatedStyles = () => {
-        setShowRelatedStyles(!showRelatedStyles); // 관련 스타일 섹션을 토글로 보여줌
+    const handleFlip = (index) => {
+        const newFlippedCards = [...flippedCards];
+        newFlippedCards[index] = !newFlippedCards[index]; // 클릭한 카드의 상태를 반전
+        setFlippedCards(newFlippedCards);
     };
 
     return (
@@ -154,60 +173,69 @@ const FaAnalysis = () => {
                 </div>
 
                 {/* 진행형 막대를 사용한 분석 결과 */}
-                {chartData && (
-                    <div className="fa-analysis-unique-description-section">
-                        <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
-                        <h2>스트릿 스타일</h2>
-                        {chartData.map((style, index) => (
-                            <div key={index} style={{ marginBottom: '20px', textAlign: 'left' }}>
-                                <p style={{ fontWeight: 'bold' }}>{style[0]} ({style[1] * 100}%)</p>
-                                <ProgressBar 
-                                    now={style[1] * 100} 
-                                    label={`${style[1] * 100}%`} 
-                                    style={{ height: '10px', borderRadius: '5px' }} 
-                                />
-                            </div>
-                        ))}
-                        <div style={{ textAlign: 'right', marginTop: '50px' }}>
+                <div className="fa-analysis-unique-description-section">
+                    <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
+                    <h2>{topStyle || '스타일'}</h2> {/* 동적으로 스타일 이름 업데이트 */}
+                    {chartData.map((style, index) => (
+                        <div key={index} style={{ marginBottom: '50px', textAlign: 'left' }}>
+                            <p style={{ fontWeight: 'bold' }}>{style[0]} ({style[1] * 100}%)</p>
+                            <ProgressBar 
+                                now={style[1] * 100} 
+                                label={`${style[1] * 100}%`} 
+                                style={{ height: '10px', borderRadius: '5px' }} 
+                            />
+                        </div>
+                    ))}
+                    <div style={{ textAlign: 'right', marginTop: '50px' }}>
+                        {/* 관련 스타일 더보기 버튼 */}
+                        {chartData.some(style => style[1] > 0) && (
                             <a 
                                 href="#" 
-                                onClick={toggleRelatedStyles} 
+                                onClick={() => setShowRelatedStyles(!showRelatedStyles)} 
                                 style={{ color: 'gray', textDecoration: 'none', fontSize: '18px' }}
                             >
                                 관련 스타일 더보기
                                 <FontAwesomeIcon icon={faAngleRight} style={{ marginLeft: '5px' }} />
                             </a>
-                        </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
 
-           {/* 관련 스타일 이미지 섹션 (관련 스타일 더보기 버튼을 눌러야 보임) */}
+            {/* 관련 스타일 이미지 섹션 (관련 스타일 더보기 버튼을 눌러야 보임) */}
             {showRelatedStyles && (
                 <div>
                     <h2 className="related-styles-title">관련 스타일</h2> {/* 타이틀 추가 */}
                     <div className="related-styles-section">
-                        <div className="related-style">
-                            <div className="related-style-placeholder"></div>
-                            <p className="related-style-description">스타일 설명</p>
-                        </div>
-                        <div className="related-style">
-                            <div className="related-style-placeholder"></div>
-                            <p className="related-style-description">스타일 설명</p>
-                        </div>
-                        <div className="related-style">
-                            <div className="related-style-placeholder"></div>
-                            <p className="related-style-description">스타일 설명</p>
-                        </div>
+                        {chartData
+                            .sort((a, b) => b[1] - a[1])  // 퍼센트 높은 순으로 정렬
+                            .slice(0, 5)  // 상위 5개 스타일만 출력
+                            .map((style, index) => (
+                                <div key={index} className={`related-style ${flippedCards[index] ? 'flipped' : ''}`} onClick={() => handleFlip(index)}>
+                                    <p className="related-style-title">{style[0]} ({style[1] * 100}%)</p> {/* 이름을 카드 위로 이동 */}
+                                    <div className="related-style-inner">
+                                        {/* 카드 앞면 */}
+                                        <div className="related-style-front">
+                                            <div className="related-style-placeholder"></div>
+                                        </div>
+                                        {/* 카드 뒷면 */}
+                                        <div className="related-style-back">
+                                            <p className="related-style-description">
+                                                {style[0]}의 대표적인 특성은 ... 입니다.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 </div>
             )}
-            {/* 모달 컴포넌트 */}
+
+            {/* 모달 코드 추가 */}
             {isModalOpen && (
-                <div className="modal-overlay" onClick={toggleModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>주의사항</h2>
-                        <p>옷만 나오는 경우, 옷이 아닌 다른 물건인 경우는 올바르지 못한 결과가 나옵니다. 사람이 착용하고 있는 옷이 올바른 결과를 제공합니다.</p>
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <p>옷의 분석 결과는 스타일 카테고리에 따라 달라질 수 있습니다.</p>
                         <button onClick={toggleModal}>닫기</button>
                     </div>
                 </div>
