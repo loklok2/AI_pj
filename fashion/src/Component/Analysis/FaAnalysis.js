@@ -11,7 +11,7 @@ const FaAnalysis = () => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [topStyles, setTopStyles] = useState([]); // 상위 3개 스타일 상태
     const [recommendedProducts, setRecommendedProducts] = useState([]); // 추천 상품 상태
-    const [clothesDescription, setClothesDescription] = useState(''); // 옷 설명 상태
+    const [captionResult, setCaptionResult] = useState(''); // 이미지 설명 상태
     const [showRelatedStyles, setShowRelatedStyles] = useState(false); // 관련 스타일 더보기 상태
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달창 상태
 
@@ -21,15 +21,15 @@ const FaAnalysis = () => {
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
-        setImageFile(file);
-
         if (file) {
+            setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreviewUrl(reader.result);
             };
             reader.readAsDataURL(file);
         } else {
+            setImageFile(null);
             setPreviewUrl(null);
         }
     };
@@ -44,27 +44,48 @@ const FaAnalysis = () => {
 
         try {
             const formData = new FormData();
-            formData.append('image', imageFile);
+            formData.append('file', imageFile, imageFile.name);
 
-            // 분석 API 호출
+            // API 호출
             const response = await fetch('http://10.125.121.188:8080/api/recommendation/analyze', {
                 method: 'POST',
                 body: formData,
             });
             const data = await response.json();
-
+            
              // 응답 데이터 로그
             console.log('API 응답 데이터:', data);
 
             // API 응답 처리
-            const { styleindex, recommendedProducts } = data;
+            const { styleindex, recommendedProducts, captionResult } = data;
 
             // 스타일 인덱스 설정
-            setTopStyles(styleindex.map(style => [style.nameKo, Math.random()]));
+            if (Array.isArray(styleindex)) {
+                setTopStyles(styleindex.map(style => style.nameKo));
+            } else {
+                console.error('스타일 데이터가 유효하지 않습니다:', styleindex);
+                alert('스타일 데이터를 받지 못했습니다.');
+            }
+
             // 추천 상품 설정
-            setRecommendedProducts(recommendedProducts);
-            // 옷 설명 설정 (수동으로 추가)
-            setClothesDescription('이 옷은 편안하고 스타일리시한 디자인을 가진 캐주얼 아이템입니다. 일상에서 착용하기 좋으며 다양한 스타일과 매치하기 적합합니다.');
+            if (Array.isArray(recommendedProducts)) {
+                const updatedProducts = recommendedProducts.map(product => ({
+                    ...product,
+                    imagePath: product.imagePath.replace("C:\\workspace_pj2\\back\\images\\", "http://localhost:8080/images/") 
+                }));
+                setRecommendedProducts(updatedProducts);
+            } else {
+                console.error('추천 상품 데이터가 유효하지 않습니다:', recommendedProducts);
+                alert('추천 상품 데이터를 받지 못했습니다.');
+            }
+
+            // 설명 결과 설정
+            if (captionResult) {
+                setCaptionResult(captionResult);
+            } else {
+                console.error('설명 결과가 유효하지 않습니다:', captionResult);
+                alert('설명 결과를 받지 못했습니다.');
+            }
 
         } catch (error) {
             console.error('분석 중 오류 발생:', error);
@@ -157,15 +178,11 @@ const FaAnalysis = () => {
                     <div className="fa-analysis-unique-description-section">
                         <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
                         <h2>
-                            {topStyles.length > 0 ? topStyles.map((style, index) => (
-                                <span key={index}>
-                                    {style[0]}{index < topStyles.length - 1 && ', '}
-                                </span>
-                            )) : ''}
+                            {topStyles.join(', ')}
                         </h2>
 
                         <p style={{ marginTop: '80px', marginBottom: '80px' }}>
-                            {clothesDescription ? clothesDescription : ''}
+                            {captionResult ? captionResult : ''}
                         </p>
 
                         {topStyles.length > 0 && (
@@ -205,7 +222,7 @@ const FaAnalysis = () => {
                             <div key={product.productId} className="related-style" style={{ flex: '0 0 30%', marginBottom: '20px' }}>
                                 <p className="related-style-title" style={{ textAlign: 'center' }}>{product.name}</p>
                                 <div className="related-style-inner">
-                                    <img src={`http://localhost:8080/images/${product.imagePath}`} alt={product.name} style={{ height: '200px', width: '100%', objectFit: 'cover' }} />
+                                    <img src={product.imagePath} alt={product.name} style={{ height: '200px', width: '100%', objectFit: 'cover' }} />
                                     <div className="related-style-info">
                                         <p>{product.info}</p>
                                         <p>{product.price.toLocaleString()} 원</p>
