@@ -16,6 +16,7 @@ import com.choice.auth.dto.ResetPasswordRequestDTO;
 import com.choice.auth.dto.SignupRequestDTO;
 import com.choice.auth.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -74,4 +75,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/log-ip")
+    public String logClientIp(HttpServletRequest request) {
+        String clientIp = request.getRemoteAddr();
+        System.out.println("클라이언트 IP: " + clientIp);
+        return "IP가 로그에 기록되었습니다.";
+    }
 }

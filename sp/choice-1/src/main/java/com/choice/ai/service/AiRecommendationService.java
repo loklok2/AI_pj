@@ -10,12 +10,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.choice.ai.dto.AiAnalysisResponse;
 import com.choice.ai.dto.AiAnalysisResult;
@@ -66,9 +69,10 @@ public class AiRecommendationService {
                 AiAnalysisResponse flaskResponse = flaskClientService.analyzeImage(image);
                 return processFlaskResponse(flaskResponse, image, memberId);
             } catch (Exception e) {
-                throw new RuntimeException("이미지 분석 실패", e);
+                log.error("이미지 분석 중 오류 발생", e);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석 실패", e);
             }
-        });
+        }).orTimeout(300, TimeUnit.SECONDS);
     }
 
     @Transactional(readOnly = true)
@@ -91,10 +95,18 @@ public class AiRecommendationService {
                 })
                 .collect(Collectors.toList());
 
-        AiAnalysis savedAnalysis = saveAnalysis(flaskResponse, image, memberId);
+        AiAnalysis savedAnalysis = null;
+        if (memberId != null) {
+            savedAnalysis = saveAnalysis(flaskResponse, image, memberId);
+        }
 
-        return new AiAnalysisResult(savedAnalysis.getId().longValue(), recommendedProducts, styleIndices);
+        String captionTranslated = flaskResponse.getCaptionResult();
 
+        return new AiAnalysisResult(
+                savedAnalysis != null ? savedAnalysis.getId().longValue() : null,
+                recommendedProducts,
+                styleIndices,
+                captionTranslated);
     }
 
     @Transactional
@@ -105,9 +117,8 @@ public class AiRecommendationService {
         AiAnalysis aiAnalysis = new AiAnalysis();
         aiAnalysis.setMember(member);
         aiAnalysis.setImagePath(saveImage(image, memberId));
-        aiAnalysis.setAnalysisDate(LocalDateTime.now()); // 분석 날짜 설정
+        aiAnalysis.setAnalysisDate(LocalDateTime.now());
 
-        // 스타일 인덱스 저장
         for (Integer styleIndex : flaskResponse.getStyleResult()) {
             ProductAttribute attribute = productAttributeRepository.findById(styleIndex.longValue())
                     .orElseThrow(() -> new RuntimeException("스타일 속성을 찾을 수 없습니다: " + styleIndex));
@@ -117,9 +128,8 @@ public class AiRecommendationService {
             aiAnalysis.getStyles().add(style);
         }
 
-        // 추천 상품 저장
         for (int i = 0; i < flaskResponse.getRecomResult().size(); i++) {
-            Long productId = flaskResponse.getRecomResult().get(i).longValue();
+            Long productId = Long.valueOf(flaskResponse.getRecomResult().get(i));
             AiRecommendation recommendation = new AiRecommendation();
             recommendation.setAiAnalysis(aiAnalysis);
             recommendation.setProductId(productId);
@@ -132,41 +142,24 @@ public class AiRecommendationService {
 
     private String saveImage(MultipartFile image, Long memberId) {
         try {
-            // 현재 날짜와 시간을 포함한 디렉토리 경로 생성
             LocalDateTime now = LocalDateTime.now();
             String datePath = now.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-            // 절대 경로 사용
             Path directoryPath = Paths.get(imageStoragePath, memberId.toString(), datePath).toAbsolutePath();
             Files.createDirectories(directoryPath);
 
-            // 원본 파일 이름 가져오기
             String originalFilename = image.getOriginalFilename();
 
-            // 유니크한 파일명 생성 (원본 파일 이름 유지)
             String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
             Path filePath = directoryPath.resolve(fileName);
 
-            // 이미지 저장
             Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // 저장된 이미지의 상대 경로 반환
             return Paths.get(memberId.toString(), datePath, fileName).toString();
         } catch (IOException e) {
             log.error("이미지 저장 실패: ", e);
             throw new RuntimeException("이미지 저장 실패", e);
         }
-    }
-
-    private String getFileExtension(String filename) {
-        if (filename == null) {
-            return "";
-        }
-        int lastIndexOf = filename.lastIndexOf(".");
-        if (lastIndexOf == -1) {
-            return ""; // 확장자가 없는 경우
-        }
-        return filename.substring(lastIndexOf);
     }
 
     private ProductsDTO convertToProductDTO(Product product) {

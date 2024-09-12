@@ -36,7 +36,7 @@ public class AuthService {
     @Transactional
     public void registerUser(SignupRequestDTO requestDto) {
         validateSignupRequest(requestDto);
-        
+
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
         String gender = extractGenderFromResidentRegistrationNumber(requestDto.getResidentRegistrationNumber());
 
@@ -167,6 +167,7 @@ public class AuthService {
         memberRepository.save(member);
     }
 
+    // 리프레시 토큰 재발급
     @Transactional
     public LoginResponseDTO refreshToken(String refreshToken) {
         if (JWTUtil.isExpiredRefreshToken(refreshToken)) {

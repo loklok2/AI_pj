@@ -1,7 +1,5 @@
 package com.choice.ai.entity;
 
-import com.choice.product.entity.Product;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

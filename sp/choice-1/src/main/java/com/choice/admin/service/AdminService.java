@@ -88,7 +88,7 @@ public class AdminService {
                 .map(this::convertToOrderSummaryDTO)
                 .collect(Collectors.toList());
     }
-
+    // 일별 매출 조회
     public DailySalesReportDTO getDailySalesReport(LocalDate date) {
         LocalDateTime startDate = date.atStartOfDay();
         LocalDateTime endDate = date.atTime(LocalTime.MAX);
@@ -106,6 +106,7 @@ public class AdminService {
         return new DailySalesReportDTO(date, totalSales, orderCount);
     }
 
+    // 일별 매출 조회 범위
     public List<DailySalesReportDTO> getDailySalesReportRange(LocalDate startDate, LocalDate endDate) {
         List<Object[]> results = orderRepository.findDailySalesReport(startDate.atStartOfDay(),
                 endDate.atTime(LocalTime.MAX));

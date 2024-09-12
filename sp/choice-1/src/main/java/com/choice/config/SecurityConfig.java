@@ -25,20 +25,13 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/qboard", "/api/qboard/{id}",
-                                "/api/qboard/{qboardId}/images")
-                        .permitAll()
-                        .requestMatchers("/api/qboard/**").authenticated()
-                        .requestMatchers("/api/comments/qboard/{qboardId}").permitAll()
-                        .requestMatchers("/api/comments/**").authenticated()
-                        .requestMatchers("/oauth2/**").permitAll()
-                        .requestMatchers("/api/recommendation/**").permitAll()
                         .anyRequest().permitAll())
                 .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
                 .oauth2Login(oauth2 -> oauth2.successHandler(successHandler)) // OAuth2 로그인 성공 핸들러 설정
                 .addFilterBefore(new JWTAuthorizationFilter(memberRepository),
                         UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+        http.cors(c -> {
+        });// cors 설정
 
         return http.build();
     }

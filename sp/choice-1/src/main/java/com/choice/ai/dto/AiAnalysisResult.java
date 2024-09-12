@@ -11,4 +11,5 @@ public class AiAnalysisResult {
     private Long analysisId;
     private List<ProductsDTO> recommendedProducts;
     private List<StyleIndexDTO> styleindex;
+    private String captionResult;
 }
