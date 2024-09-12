@@ -24,6 +24,7 @@ import MyOrder from './Component/MyPage/MyOrder';
 import Product from './Component/Eproduct/Product';  
 import ProductDetails from './Component/Eproduct/ProductDetails';
 import Manager from './Component/MyPage/Manager';
+import Home from "./Component/Mainpage/Home"
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
       <Header />
       <div className="main-content">
         <Routes>
+          <Route path="/" element={<Home />} /> {/*메인 페이지 */}
           <Route path="/signup" element={<Signup />} /> {/* 회원가입 페이지 */}
           <Route path="/login" element={<Login />} /> {/* 로그인 페이지 */}
           <Route path="/analysis" element={<FaAnalysis />} /> {/* 패션 분석 페이지 */}

@@ -1,36 +1,19 @@
 import React, { useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faRotateRight, faCircleXmark, faCircleInfo, faAngleRight } from '@fortawesome/free-solid-svg-icons'; 
-import ProgressBar from 'react-bootstrap/ProgressBar';
+import { faSpinner, faCircleXmark, faRotateRight, faCircleInfo, faAngleRight } from '@fortawesome/free-solid-svg-icons'; 
 import 'bootstrap/dist/css/bootstrap.min.css';  // Bootstrap 스타일 적용
 import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
 
 const FaAnalysis = () => {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
-    const [chartData, setChartData] = useState([
-        ['스타일', 0], // 초기 상태는 0%
-        ['스타일', 0],
-        ['스타일', 0],
-        ['스타일', 0],
-        ['스타일', 0],
-    ]);
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리 추가
-    const [showRelatedStyles, setShowRelatedStyles] = useState(false); // 관련 스타일 섹션을 위한 상태 추가
-    const [topStyle, setTopStyle] = useState(''); // 가장 높은 퍼센트 스타일 상태 추가
-    const [flippedCards, setFlippedCards] = useState(Array(chartData.length).fill(false)); // 각 카드의 플립 상태를 관리
-
-    const mockData = {
-        predictions: [
-            ['스트릿 스타일', 0.5], // 50%
-            ['캐주얼 스타일', 0.3], // 30%
-            ['클래식 스타일', 0.2], // 20%
-            ['미니멀리즘 스타일', 0.4], // 40%
-            ['스트릿웨어', 0.2], // 20%
-        ]
-    };
+    const [topStyles, setTopStyles] = useState([]); // 상위 3개 스타일 상태
+    const [recommendedProducts, setRecommendedProducts] = useState([]); // 추천 상품 상태
+    const [clothesDescription, setClothesDescription] = useState(''); // 옷 설명 상태
+    const [showRelatedStyles, setShowRelatedStyles] = useState(false); // 관련 스타일 더보기 상태
+    const [isModalOpen, setIsModalOpen] = useState(false); // 모달창 상태
 
     const handleClick = () => {
         fileInputRef.current.click();
@@ -51,7 +34,7 @@ const FaAnalysis = () => {
         }
     };
 
-    const handleAnalyzeClick = () => {
+    const handleAnalyzeClick = async () => {
         if (!imageFile) {
             alert('이미지를 업로드 해주세요.');
             return;
@@ -59,40 +42,44 @@ const FaAnalysis = () => {
 
         setLoading(true);
 
-        setTimeout(() => {
+        try {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+
+            // 분석 API 호출
+            const response = await fetch('http://10.125.121.188:8080/api/recommendation/analyze', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+
+             // 응답 데이터 로그
+            console.log('API 응답 데이터:', data);
+
+            // API 응답 처리
+            const { styleindex, recommendedProducts } = data;
+
+            // 스타일 인덱스 설정
+            setTopStyles(styleindex.map(style => [style.nameKo, Math.random()]));
+            // 추천 상품 설정
+            setRecommendedProducts(recommendedProducts);
+            // 옷 설명 설정 (수동으로 추가)
+            setClothesDescription('이 옷은 편안하고 스타일리시한 디자인을 가진 캐주얼 아이템입니다. 일상에서 착용하기 좋으며 다양한 스타일과 매치하기 적합합니다.');
+
+        } catch (error) {
+            console.error('분석 중 오류 발생:', error);
+            alert('분석 중 오류가 발생했습니다.');
+        } finally {
             setLoading(false);
-            setChartData(mockData.predictions); // 결과 업데이트
-
-            // 가장 높은 퍼센트 스타일 찾기
-            const maxStyle = mockData.predictions.reduce((max, style) => style[1] > max[1] ? style : max, mockData.predictions[0]);
-            setTopStyle(maxStyle[0]); // 가장 높은 퍼센트 스타일의 이름 저장
-
-            // 관련 스타일 섹션 표시
-            setShowRelatedStyles(false); // 분석 후에 관련 스타일을 숨김
-        }, 1000); // 로딩을 위한 딜레이 추가
+        }
     };
 
     const handleReload = () => {
         window.location.reload();
     };
 
-    const handleRemoveImage = (e) => {
-        e.stopPropagation(); 
-        setImageFile(null);
-        setPreviewUrl(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = null;
-        }
-    };
-
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
-    };
-
-    const handleFlip = (index) => {
-        const newFlippedCards = [...flippedCards];
-        newFlippedCards[index] = !newFlippedCards[index]; // 클릭한 카드의 상태를 반전
-        setFlippedCards(newFlippedCards);
     };
 
     return (
@@ -100,34 +87,27 @@ const FaAnalysis = () => {
             <div className="fa-analysis-unique-header">
                 <h1>패션 분석</h1>
                 <p>정보를 알고 싶은 옷의 이미지를 이곳에 넣어 옷에 대한 정보를 확인해보세요.</p>
-                <p className="fa-analysis-unique-small-text">
-                    * 옷과 관련된 이미지를 넣어주세요. 관련된 이미지가 아닌 경우 올바른 결과를 보장하지 못합니다.
-                </p>
                 <div className="fa-analysis-unique-divider"></div>
             </div>
 
             <div className="fa-analysis-unique-content">
                 <div className="fa-analysis-unique-upload-section">
                     <h2>옷 업로드</h2>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <p style={{ margin: 0 }}>* 명확한 사진을 업로드 해주세요.</p>
                         <FontAwesomeIcon 
-                            icon={faCircleInfo}  
-                            style={{ marginLeft: '8px', cursor: 'pointer', color: 'gray' }} 
-                            onClick={toggleModal}  
+                            icon={faCircleInfo} 
+                            onClick={toggleModal} 
+                            style={{ cursor: 'pointer', fontSize: '18px', color: 'gray', marginRight: '400px' }} 
                         />
                         <FontAwesomeIcon 
-                            icon={faRotateRight}  
+                            icon={faRotateRight} 
                             onClick={handleReload} 
-                            style={{ cursor: 'pointer', marginLeft: 'auto', marginTop: '-15px', color: 'gray' }} 
+                            style={{ cursor: 'pointer', fontSize: '18px', color: 'gray' }} 
                         />
                     </div>
 
-                    <div 
-                        className="fa-analysis-unique-upload-box" 
-                        onClick={handleClick}
-                        style={{ position: 'relative' }}
-                    >
+                    <div className="fa-analysis-unique-upload-box" onClick={handleClick} style={{ position: 'relative' }}>
                         {loading ? (
                             <FontAwesomeIcon icon={faSpinner} spin />
                         ) : previewUrl ? (
@@ -143,7 +123,7 @@ const FaAnalysis = () => {
                                 />
                                 <FontAwesomeIcon 
                                     icon={faCircleXmark} 
-                                    onClick={handleRemoveImage} 
+                                    onClick={() => setImageFile(null)} 
                                     style={{ 
                                         position: 'absolute', 
                                         top: '10px', 
@@ -172,71 +152,67 @@ const FaAnalysis = () => {
                     </button>
                 </div>
 
-                {/* 진행형 막대를 사용한 분석 결과 */}
-                <div className="fa-analysis-unique-description-section">
-                    <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
-                    <h2>{topStyle || '스타일'}</h2> {/* 동적으로 스타일 이름 업데이트 */}
-                    {chartData.map((style, index) => (
-                        <div key={index} style={{ marginBottom: '50px', textAlign: 'left' }}>
-                            <p style={{ fontWeight: 'bold' }}>{style[0]} ({style[1] * 100}%)</p>
-                            <ProgressBar 
-                                now={style[1] * 100} 
-                                label={`${style[1] * 100}%`} 
-                                style={{ height: '10px', borderRadius: '5px' }} 
-                            />
-                        </div>
-                    ))}
-                    <div style={{ textAlign: 'right', marginTop: '50px' }}>
-                        {/* 관련 스타일 더보기 버튼 */}
-                        {chartData.some(style => style[1] > 0) && (
-                            <a 
-                                href="#" 
-                                onClick={() => setShowRelatedStyles(!showRelatedStyles)} 
-                                style={{ color: 'gray', textDecoration: 'none', fontSize: '18px' }}
-                            >
-                                관련 스타일 더보기
-                                <FontAwesomeIcon icon={faAngleRight} style={{ marginLeft: '5px' }} />
-                            </a>
+                {/* 분석 결과 및 옷 설명 영역 */}
+                {topStyles.length > 0 && (
+                    <div className="fa-analysis-unique-description-section">
+                        <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
+                        <h2>
+                            {topStyles.length > 0 ? topStyles.map((style, index) => (
+                                <span key={index}>
+                                    {style[0]}{index < topStyles.length - 1 && ', '}
+                                </span>
+                            )) : ''}
+                        </h2>
+
+                        <p style={{ marginTop: '80px', marginBottom: '80px' }}>
+                            {clothesDescription ? clothesDescription : ''}
+                        </p>
+
+                        {topStyles.length > 0 && (
+                            <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                                <a 
+                                    href="#" 
+                                    onClick={() => setShowRelatedStyles(true)}  
+                                    style={{ color: 'gray', textDecoration: 'none', fontSize: '18px' }}
+                                >
+                                    관련 스타일 더보기
+                                    <FontAwesomeIcon icon={faAngleRight} style={{ marginLeft: '5px' }} />
+                                </a>
+                            </div>
                         )}
                     </div>
-                </div>
+                )}
             </div>
 
-            {/* 관련 스타일 이미지 섹션 (관련 스타일 더보기 버튼을 눌러야 보임) */}
-            {showRelatedStyles && (
-                <div>
-                    <h2 className="related-styles-title">관련 스타일</h2> {/* 타이틀 추가 */}
-                    <div className="related-styles-section">
-                        {chartData
-                            .sort((a, b) => b[1] - a[1])  // 퍼센트 높은 순으로 정렬
-                            .slice(0, 5)  // 상위 5개 스타일만 출력
-                            .map((style, index) => (
-                                <div key={index} className={`related-style ${flippedCards[index] ? 'flipped' : ''}`} onClick={() => handleFlip(index)}>
-                                    <p className="related-style-title">{style[0]} ({style[1] * 100}%)</p> {/* 이름을 카드 위로 이동 */}
-                                    <div className="related-style-inner">
-                                        {/* 카드 앞면 */}
-                                        <div className="related-style-front">
-                                            <div className="related-style-placeholder"></div>
-                                        </div>
-                                        {/* 카드 뒷면 */}
-                                        <div className="related-style-back">
-                                            <p className="related-style-description">
-                                                {style[0]}의 대표적인 특성은 ... 입니다.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+            {/* 모달창 코드 */}
+            {isModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>주의 사항</h2>
+                        <p>사물(옷)하나만 있을 경우, 옷과 관련이 없는 사물의 경우 올바른 결과가 나오지 않습니다.</p>
+                        <button onClick={toggleModal}>닫기</button>
                     </div>
                 </div>
             )}
 
-            {/* 모달 코드 추가 */}
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <p>옷의 분석 결과는 스타일 카테고리에 따라 달라질 수 있습니다.</p>
-                        <button onClick={toggleModal}>닫기</button>
+            {/* 관련 스타일 이미지 섹션 (관련 스타일 더보기 버튼을 눌러야 보임) */}
+            {showRelatedStyles && (
+                <div>
+                    <h2 className="related-styles-title">관련 스타일</h2>
+
+                    <div className="related-styles-section" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+                        {recommendedProducts.map((product) => (
+                            <div key={product.productId} className="related-style" style={{ flex: '0 0 30%', marginBottom: '20px' }}>
+                                <p className="related-style-title" style={{ textAlign: 'center' }}>{product.name}</p>
+                                <div className="related-style-inner">
+                                    <img src={`http://localhost:8080/images/${product.imagePath}`} alt={product.name} style={{ height: '200px', width: '100%', objectFit: 'cover' }} />
+                                    <div className="related-style-info">
+                                        <p>{product.info}</p>
+                                        <p>{product.price.toLocaleString()} 원</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

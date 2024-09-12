@@ -9,7 +9,7 @@
 }
 
 .fa-analysis-unique-header {
-    margin-top: 100px; 
+    margin-top: 80px; 
     margin-bottom: 5px;
     font-family: "Noto Sans KR", sans-serif;
 }
@@ -37,7 +37,6 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-top: 20px;
-    margin-left: 30px;
     font-family: "Noto Sans KR", sans-serif;
 }
 
@@ -83,7 +82,6 @@
     width: 100%;
     padding: 10px 0;
     margin-top: 20px;
-    margin-bottom: 150px;
     background-color: black;
     color: white;
     border: none;
@@ -94,7 +92,7 @@
 
 .fa-analysis-unique-description-section {
     margin-top: 50px;
-    margin-bottom: 200px;
+    margin-bottom: 80px;
     width: 45%;
     text-align: center;
     font-size: 16px;
@@ -103,17 +101,13 @@
 }
 
 .fa-analysis-unique-description-section p {
-    margin-top: -30px;
+    margin-top: 50px;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 .fa-analysis-unique-description-section h2 {
-    margin-top: -40px;
-}
-
-.fa-analysis-unique-description-section canvas {
-    width: 300px !important;
-    height: 300px !important;
-    margin: 15px auto 0 auto;
+    margin-top: 100px;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 .fa-analysis-unique-header .fa-analysis-unique-divider {
@@ -123,6 +117,7 @@
     font-family: "Noto Sans KR", sans-serif;
 }
 
+/* 모달창 관련 스타일 */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -133,6 +128,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: "Noto Sans KR", sans-serif;
 }
 
 .modal-content {
@@ -161,7 +157,7 @@
 
 .related-style {
     perspective: 1000px;
-    width: 18%;  /* 카드 크기 고정 */
+    width: 18%;
     text-align: center;
 }
 
@@ -187,7 +183,7 @@
     align-items: center;
     text-align: center;
     border-radius: 5px;
-    overflow: hidden;  /* 컨텐츠가 카드 밖으로 넘치지 않도록 설정 */
+    overflow: hidden;
 }
 
 .related-style-front {
@@ -217,7 +213,7 @@
     color: gray;
     font-family: "Noto Sans KR", sans-serif;
     text-align: center;
-    top: -300px; /* 카드 위에 위치하게 설정 */
+    top: -300px;
 }
 
 .related-style-description {
@@ -227,12 +223,61 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px; /* 텍스트와 경계 사이 간격을 추가 */
+    padding: 10px;
 }
 
 .related-styles-title {
     font-size: 24px;
     font-weight: bold;
+    margin-top: 50px;
     margin-bottom: 20px;
     text-align: left;
 }
+
+
+/* 관련 이미지 섹션 */
+.related-images-section {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr)); 
+    gap: 5px;
+    row-gap: 30px;
+    margin-top: 400px;
+    margin-left: 25px;
+    justify-content: space-between;
+}
+
+.related-image-placeholder {
+    width: 90%;
+    height: 250px;
+    background-color: lightgray;
+    border-radius: 3px;
+}
+
+/* 페이지네이션 */
+.custom-pagination-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.custom-pagination-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+}
+
+.custom-pagination-buttons span {
+    margin: 0 10px;
+}
+
+.custom-pagination-buttons .fa-angle-left,
+.custom-pagination-buttons .fa-angle-right {
+    cursor: pointer;
+}
+

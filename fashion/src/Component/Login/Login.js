@@ -21,13 +21,14 @@ const Login = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ username, password }), // 요청 본문에 username과 password 전송
             });
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('refreshToken', data.refreshToken);
+                // 응답에서 accessToken과 refreshToken 저장
+                localStorage.setItem('accessToken', data.accessToken); // accessToken 저장
+                localStorage.setItem('refreshToken', data.refreshToken); // refreshToken 저장
                 localStorage.removeItem('guestLogin'); // 비회원 상태 제거
                 navigate('/'); // 로그인 성공 시 홈으로 이동
             } else {
