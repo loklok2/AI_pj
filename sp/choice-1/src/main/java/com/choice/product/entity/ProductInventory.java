@@ -17,7 +17,7 @@ public class ProductInventory {
     @JoinColumn(name = "product_id", unique = true)
     private Product product;// 상품 엔티티와의 일대일 관계
 
-    private Long quantity; // 재고 수량
+    private Long stock; // 재고 수량
 
     @Enumerated(EnumType.STRING)
     private Size size; // 상품 사이즈

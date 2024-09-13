@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class InventoryDTO {
     private Long productId;
-    private Long quantity;
+    private Long stock;
     private Size size;
 }

@@ -12,11 +12,11 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         // CORS 설정을 추가하는 메서드
         registry.addMapping("/**") // 모든 경로에 대해 CORS 설정 적용
-                .allowedOrigins("http://10.125.121.187:3000", "http://10.125.121.181:3000",
-                        "http://10.125.121.187:5000",
-                        "http://10.125.121.182:5000") // 특정
+                // .allowedOrigins("http://10.125.121.187:3000", "http://10.125.121.181:3000",
+                // "http://10.125.121.187:5000",
+                // "http://10.125.121.182:5000") // 특정
                 // TODO ip주소 확인하고 cors 설정 수정
-                // .allowedOrigins("*") // 특정
+                .allowedOrigins("*") // 특정
                 // 도메인에서의
                 // 요청을
                 // 허용

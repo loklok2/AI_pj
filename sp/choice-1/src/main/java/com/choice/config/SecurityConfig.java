@@ -2,6 +2,8 @@ package com.choice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,8 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.choice.admin.util.SessionListener;
 import com.choice.auth.repository.MemberRepository;
 
+import jakarta.servlet.http.HttpSessionListener;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -40,5 +44,23 @@ public class SecurityConfig {
     AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         // 기본 인증 제공자를 사용하여 AuthenticationManager 설정 및 반환
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();
+    }
+
+    @Bean
+    HttpSessionListener httpSessionListener() {
+        // 세션 리스너 설정
+        return new SessionListener();
+    }
+
+    @Bean
+    // 스케줄러 설정
+    public TaskScheduler taskScheduler() {
+        // 스케줄러 설정
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        // 스케줄러 풀 크기 설정
+        scheduler.setPoolSize(10);
+        // 스케줄러 스레드 이름 설정
+        scheduler.setThreadNamePrefix("ThreadPoolTaskScheduler-");
+        return scheduler;
     }
 }

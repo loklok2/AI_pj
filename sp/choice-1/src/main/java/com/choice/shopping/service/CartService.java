@@ -78,4 +78,16 @@ public class CartService {
 
                 return summary;
         }
+
+        public List<CartItem> getCartItemsForUser(Long userId) {
+                Cart cart = cartRepository.findByMember_UserId(userId)
+                                .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
+                return cartItemRepository.findByCart(cart);
+        }
+
+        public void clearCart(Long userId) {
+                Cart cart = cartRepository.findByMember_UserId(userId)
+                                .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
+                cartItemRepository.deleteByCart(cart);
+        }
 }

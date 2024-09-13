@@ -1,10 +1,10 @@
 package com.choice.admin.controller;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,12 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.choice.admin.dto.DailySalesReportDTO;
 import com.choice.admin.dto.InventoryDTO;
-import com.choice.admin.dto.OrderSummaryDTO;
 import com.choice.admin.dto.ProductDTO;
 import com.choice.admin.service.AdminService;
 import com.choice.auth.entity.Member;
@@ -33,85 +30,169 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    // 회원 수 조회
+    @GetMapping("/members/count")
+    public ResponseEntity<?> getTotalMemberCount() {
+        try {
+            long count = adminService.getTotalMemberCount();
+            return new ResponseEntity<>(count, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("회원 수 조회 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 회원 목록 조회
     @GetMapping("/members")
-    public ResponseEntity<List<Member>> getAllMembers() {
-        return ResponseEntity.ok(adminService.getAllMembers());
+    public ResponseEntity<?> getAllMembers() {
+        try {
+            List<Member> members = adminService.getAllMembers();
+            return new ResponseEntity<>(members, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("회원 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 게시글 수 조회
+    @GetMapping("/qboards/count")
+    public ResponseEntity<?> getTotalQboardCount() {
+        try {
+            long count = adminService.getTotalQboardCount();
+            return new ResponseEntity<>(count, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Q&A 게시글 수 조회 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 게시글 목록 조회
     @GetMapping("/qboards")
-    public ResponseEntity<List<Qboard>> getAllQboards() {
-        return ResponseEntity.ok(adminService.getAllQboards());
+    public ResponseEntity<?> getAllQboards() {
+        try {
+            List<Qboard> qboards = adminService.getAllQboards();
+            return new ResponseEntity<>(qboards, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("게시판 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 상품 목록 조회
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(adminService.getAllProducts());
+    public ResponseEntity<?> getAllProducts() {
+        try {
+            List<Product> products = adminService.getAllProducts();
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("상품 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 관리자 댓글 수 조회
+    @GetMapping("/comments/admin/count")
+    public ResponseEntity<?> getAdminCommentCount() {
+        try {
+            long count = adminService.getAdminCommentCount();
+            return new ResponseEntity<>(count, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("관리자 댓글 수 조회 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 회원 삭제
     @DeleteMapping("/members/{id}")
     public ResponseEntity<?> deleteMember(@PathVariable Long id) {
-        adminService.deleteMember(id);
-        return ResponseEntity.ok().build();
+        try {
+            adminService.deleteMember(id);
+            return new ResponseEntity<>("회원이 성공적으로 삭제되었습니다.", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("해당 회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("회원 삭제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 게시글 삭제
     @DeleteMapping("/qboards/{id}")
     public ResponseEntity<?> deleteQboard(@PathVariable Long id) {
-        adminService.deleteQboard(id);
-        return ResponseEntity.ok().build();
+        try {
+            adminService.deleteQboard(id);
+            return new ResponseEntity<>("게시글이 성공적으로 삭제되었습니다.", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("해당 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("게시글 삭제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 상품 삭제
     @DeleteMapping("/products/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        adminService.deleteProduct(id);
-        return ResponseEntity.ok().build();
+        try {
+            adminService.deleteProduct(id);
+            return new ResponseEntity<>("상품이 성공적으로 삭제되었습니다.", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("해당 상품을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("상품 삭제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @GetMapping("/orders")
-    public ResponseEntity<List<OrderSummaryDTO>> getAllOrders() {
-        return ResponseEntity.ok(adminService.getAllOrders());
-    }
-
-    @GetMapping("/sales-report")
-    public ResponseEntity<DailySalesReportDTO> getDailySalesReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ResponseEntity.ok(adminService.getDailySalesReport(date));
-    }
-
-    @GetMapping("/daily-sales-range")
-    public ResponseEntity<List<DailySalesReportDTO>> getDailySalesReportRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(adminService.getDailySalesReportRange(startDate, endDate));
-    }
-
-    @GetMapping("/monthly-sales")
-    public ResponseEntity<List<DailySalesReportDTO>> getMonthlySalesReport(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(adminService.getMonthlySalesReport(startDate, endDate));
-    }
-
+    // 상품 추가
     @PostMapping("/products")
-    public ResponseEntity<Product> addProduct(@RequestBody ProductDTO productDTO) {
-        Product newProduct = adminService.addProduct(productDTO, new InventoryDTO());
-        return ResponseEntity.ok(newProduct);
+    public ResponseEntity<?> addProduct(@RequestBody ProductDTO productDTO) {
+        try {
+            Product newProduct = adminService.addProduct(productDTO, new InventoryDTO());
+            return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("상품 추가 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 상품 업데이트
     @PutMapping("/products/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
-        Product updatedProduct = adminService.updateProduct(id, productDTO, new InventoryDTO());
-        return ResponseEntity.ok(updatedProduct);
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
+        try {
+            Product updatedProduct = adminService.updateProduct(id, productDTO, new InventoryDTO());
+            return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("해당 상품을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("상품 업데이트 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 주문 상태 업데이트
     @PutMapping("/orders/{id}/status")
-    public ResponseEntity<Orders> updateOrderStatus(@PathVariable Long id, @RequestBody Orders.OrderStatus newStatus) {
-        Orders updatedOrder = adminService.updateOrderStatus(id, newStatus);
-        return ResponseEntity.ok(updatedOrder);
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody Orders.OrderStatus newStatus) {
+        try {
+            Orders updatedOrder = adminService.updateOrderStatus(id, newStatus);
+            return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("해당 주문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("주문 상태 업데이트 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // 주문 취소
     @PutMapping("/orders/{id}/cancel")
-    public ResponseEntity<Orders> cancelOrder(@PathVariable Long id) {
-        Orders cancelledOrder = adminService.cancelOrder(id);
-        return ResponseEntity.ok(cancelledOrder);
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id) {
+        try {
+            Orders cancelledOrder = adminService.cancelOrder(id);
+            return new ResponseEntity<>(cancelledOrder, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("해당 주문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("주문 취소 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 카테고리별 매출 조회
+    @GetMapping("/sales/category-percentage")
+    public ResponseEntity<?> getCategorySalesPercentage() {
+        try {
+            Map<String, Double> percentages = adminService.getCategorySalesPercentage();
+            return new ResponseEntity<>(percentages, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("카테고리별 판매율 조회 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

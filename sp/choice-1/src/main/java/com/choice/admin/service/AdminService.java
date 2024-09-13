@@ -2,8 +2,9 @@ package com.choice.admin.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,8 +17,10 @@ import com.choice.admin.dto.InventoryDTO;
 import com.choice.admin.dto.OrderSummaryDTO;
 import com.choice.admin.dto.ProductDTO;
 import com.choice.auth.entity.Member;
+import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
 import com.choice.board.entity.Qboard;
+import com.choice.board.repository.CommentRepository;
 import com.choice.board.repository.QboardRepository;
 import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductAttribute;
@@ -51,14 +54,32 @@ public class AdminService {
     @Autowired
     private ProductInventoryRepository productInventoryRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
+    // 회원 수 조회
+    public long getTotalMemberCount() {
+        return memberRepository.count();
+    }
+
     // 회원 정보 조회
     public List<Member> getAllMembers() {
         return memberRepository.findAll();
     }
 
+    // 게시글 수 조회
+    public long getTotalQboardCount() {
+        return qboardRepository.count();
+    }
+
     // 게시글 정보 조회
     public List<Qboard> getAllQboards() {
         return qboardRepository.findAll();
+    }
+
+    // 관리자 댓글 수 조회
+    public long getAdminCommentCount() {
+        return commentRepository.countByMember_Role(Role.ADMIN);
     }
 
     // 상품 정보 조회
@@ -88,29 +109,21 @@ public class AdminService {
                 .map(this::convertToOrderSummaryDTO)
                 .collect(Collectors.toList());
     }
-    // 일별 매출 조회
+
     public DailySalesReportDTO getDailySalesReport(LocalDate date) {
-        LocalDateTime startDate = date.atStartOfDay();
-        LocalDateTime endDate = date.atTime(LocalTime.MAX);
-
-        List<Object[]> results = orderRepository.findDailySalesReport(startDate, endDate);
-
+        List<Object[]> results = orderRepository.findDailySalesReport(date, date);
         if (results.isEmpty()) {
             return new DailySalesReportDTO(date, 0L, 0L);
         }
-
         Object[] result = results.get(0);
-        long totalSales = ((Number) result[1]).longValue();
-        long orderCount = ((Number) result[2]).longValue();
-
-        return new DailySalesReportDTO(date, totalSales, orderCount);
+        return new DailySalesReportDTO(
+                ((java.sql.Date) result[0]).toLocalDate(),
+                ((Number) result[1]).longValue(),
+                ((Number) result[2]).longValue());
     }
 
-    // 일별 매출 조회 범위
     public List<DailySalesReportDTO> getDailySalesReportRange(LocalDate startDate, LocalDate endDate) {
-        List<Object[]> results = orderRepository.findDailySalesReport(startDate.atStartOfDay(),
-                endDate.atTime(LocalTime.MAX));
-
+        List<Object[]> results = orderRepository.findDailySalesReport(startDate, endDate);
         return results.stream()
                 .map(result -> new DailySalesReportDTO(
                         ((java.sql.Date) result[0]).toLocalDate(),
@@ -119,18 +132,18 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
+    // 월별 매출 조회
     public List<DailySalesReportDTO> getMonthlySalesReport(LocalDate startDate, LocalDate endDate) {
-        List<Object[]> results = orderRepository.findMonthlySalesReport(startDate.atStartOfDay(),
-                endDate.atTime(LocalTime.MAX));
-
+        List<Object[]> results = orderRepository.findMonthlySalesReport(startDate, endDate);
         return results.stream()
                 .map(result -> new DailySalesReportDTO(
-                        LocalDate.parse(result[0].toString() + "-01"),
+                        ((java.sql.Date) result[0]).toLocalDate(),
                         ((Number) result[1]).longValue(),
                         ((Number) result[2]).longValue()))
                 .collect(Collectors.toList());
     }
 
+    // 상품 추가
     public Product addProduct(ProductDTO productDTO, InventoryDTO inventoryDTO) {
         Product product = new Product();
         updateProductFromDTO(product, productDTO);
@@ -145,6 +158,7 @@ public class AdminService {
         return product;
     }
 
+    // 상품 업데이트
     public Product updateProduct(Long productId, ProductDTO productDTO, InventoryDTO inventoryDTO) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -159,6 +173,7 @@ public class AdminService {
         return product;
     }
 
+    // 상품 정보 업데이트
     private void updateProductFromDTO(Product product, ProductDTO productDTO) {
         product.setName(productDTO.getName());
         product.setInfo(productDTO.getInfo());
@@ -183,6 +198,7 @@ public class AdminService {
         }
     }
 
+    // 주문 정보 변환
     private OrderSummaryDTO convertToOrderSummaryDTO(Orders order) {
         Long totalAmount = order.getOrderItems().stream()
                 .mapToLong(item -> item.getPrice() * item.getQuantity())
@@ -197,7 +213,7 @@ public class AdminService {
     }
 
     private void updateInventoryFromDTO(ProductInventory inventory, InventoryDTO inventoryDTO) {
-        inventory.setQuantity(inventoryDTO.getQuantity());
+        inventory.setStock(inventoryDTO.getStock());
         inventory.setSize(inventoryDTO.getSize());
         inventory.setLastUpdated(LocalDateTime.now());
     }
@@ -214,10 +230,23 @@ public class AdminService {
     public Orders cancelOrder(Long orderId) {
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        if (order.getOrderStatus() == Orders.OrderStatus.SHIPPED || order.getOrderStatus() == Orders.OrderStatus.DELIVERED) {
+        if (order.getOrderStatus() == Orders.OrderStatus.SHIPPED
+                || order.getOrderStatus() == Orders.OrderStatus.DELIVERED) {
             throw new RuntimeException("Cannot cancel shipped or delivered orders");
         }
         order.setOrderStatus(Orders.OrderStatus.CANCELLED);
         return orderRepository.save(order);
+    }
+
+    // 카테고리별 매출 조회
+    public Map<String, Double> getCategorySalesPercentage() {
+        List<Object[]> results = orderRepository.findCategorySalesPercentage();
+        Map<String, Double> percentages = new HashMap<>();
+        for (Object[] row : results) {
+            String category = (String) row[0];
+            Double percentage = ((Number) row[2]).doubleValue();
+            percentages.put(category, Math.round(percentage * 100.0) / 100.0);
+        }
+        return percentages;
     }
 }

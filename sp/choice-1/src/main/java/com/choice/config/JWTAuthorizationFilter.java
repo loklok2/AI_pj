@@ -36,7 +36,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String jwtToken = srcToken.replace("Bearer ", ""); // Bearer 부분을 제거하여 실제 토큰 값 추출
+        String jwtToken = JWTUtil.getJWTSource(srcToken);
 
         try { // JWT 토큰 검증
             if (JWTUtil.isExpired(jwtToken)) { // 토큰이 만료되었으면 응답 상태를 401 Unauthorized로 설정

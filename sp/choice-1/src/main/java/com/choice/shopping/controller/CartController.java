@@ -3,6 +3,7 @@ package com.choice.shopping.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,20 +23,33 @@ public class CartController {
     private CartService cartService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<CartItemDTO>> getCartItems(@PathVariable Long userId) {
-        List<CartItemDTO> cartItems = cartService.getCartItems(userId);
-        return ResponseEntity.ok(cartItems);
+    public ResponseEntity<?> getCartItems(@PathVariable Long userId) {
+        try {
+            List<CartItemDTO> cartItems = cartService.getCartItems(userId);
+            return new ResponseEntity<>(cartItems, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("장바구니 아이템을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{userId}/total")
-    public ResponseEntity<CartTotalDTO> getCartTotal(@PathVariable Long userId) {
-        Long total = cartService.getCartTotal(userId);
-        return ResponseEntity.ok(new CartTotalDTO(total));
+    public ResponseEntity<?> getCartTotal(@PathVariable Long userId) {
+        try {
+            Long total = cartService.getCartTotal(userId);
+            return new ResponseEntity<>(new CartTotalDTO(total), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("장바구니 총합을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{userId}/summary")
-    public ResponseEntity<CartSummaryDTO> getCartSummary(@PathVariable Long userId) {
-        CartSummaryDTO summary = cartService.getCartSummary(userId);
-        return ResponseEntity.ok(summary);
+    public ResponseEntity<?> getCartSummary(@PathVariable Long userId) {
+        try {
+            CartSummaryDTO summary = cartService.getCartSummary(userId);
+            return new ResponseEntity<>(summary, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("장바구니 요약을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
+

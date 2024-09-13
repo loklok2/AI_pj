@@ -30,7 +30,7 @@ public class JWTUtil {
     }
 
     // 토큰에서 접두사 "Bearer "를 제거하는 메서드
-    private static String getJWTSource(String token) {
+    public static String getJWTSource(String token) {
         if (token.startsWith(PREFIX))
             return token.replace(PREFIX, "");
         return token;

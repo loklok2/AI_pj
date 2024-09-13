@@ -58,7 +58,12 @@ public class AuthService {
 
         Member savedMember = memberRepository.save(member);
         String emailVerificationToken = JWTUtil.getEmailVerificationToken(savedMember.getUsername());
-        emailService.sendVerificationEmail(member.getEmail(), emailVerificationToken);
+        try {
+            emailService.sendVerificationEmail(member.getEmail(), emailVerificationToken);
+        } catch (ResponseStatusException e) {
+            log.error("Failed to send verification email", e);
+            throw new RuntimeException("이메일 발송에 실패했습니다.", e);
+        }
         log.info("New user registered: {}", savedMember.getUsername());
     }
 
@@ -109,21 +114,34 @@ public class AuthService {
         String accessToken = JWTUtil.getJWT(member.getUsername());
         String refreshToken = JWTUtil.getRefreshToken(member.getUsername());
 
-        return new LoginResponseDTO(accessToken, refreshToken);
+        return new LoginResponseDTO(accessToken, refreshToken, member.getRole().toString());
     }
 
     // 이메일 인증
     @Transactional
     public boolean verifyEmail(String token) {
-        if (JWTUtil.isExpired(token)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "만료된 토큰입니다.");
+        log.info("Verifying email with token: {}", token);
+        try {
+            if (JWTUtil.isExpired(token)) {
+                log.error("Token is expired: {}", token);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "만료된 토큰입니다.");
+            }
+            String username = JWTUtil.getClaim(token);
+            log.info("Username extracted from token: {}", username);
+            Member member = memberRepository.findByUsername(username)
+                    .orElseThrow(() -> {
+                        log.error("User not found for username: {}", username);
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.");
+                    });
+            member.setEnabled(true);
+            memberRepository.save(member);
+            log.info("Email verified successfully for user: {}", username);
+            return true;
+        } catch (Exception e) {
+            log.error("Error verifying email: ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "이메일 인증 중 오류가 발생했습니다: " + e.getMessage());
         }
-        String username = JWTUtil.getClaim(token);
-        Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
-        member.setEnabled(true);
-        memberRepository.save(member);
-        return true;
     }
 
     // 24시간 이후에 인증 토큰이 만료되면 사용자 계정 삭제
@@ -175,12 +193,12 @@ public class AuthService {
         }
 
         String username = JWTUtil.getClaim(refreshToken);
-        memberRepository.findByUsername(username)
+        Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
         String newAccessToken = JWTUtil.getJWT(username);
         String newRefreshToken = JWTUtil.getRefreshToken(username);
 
-        return new LoginResponseDTO(newAccessToken, newRefreshToken);
+        return new LoginResponseDTO(newAccessToken, newRefreshToken, member.getRole().toString());
     }
 }

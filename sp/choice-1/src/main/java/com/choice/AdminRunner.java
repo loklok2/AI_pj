@@ -33,6 +33,7 @@ public class AdminRunner implements CommandLineRunner {
                     .address("관리자") // 주소 설정
                     .phone("010-1234-5678") // 전화번호 설정
                     .email("admin@example.com") // 이메일 설정
+                    .enabled(true)
                     .joinDate(LocalDateTime.now()) // 가입 일자 설정
                     .editedDate(LocalDateTime.now()) // 수정 일자 설정
                     .build();

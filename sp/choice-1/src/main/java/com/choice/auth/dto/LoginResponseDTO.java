@@ -9,4 +9,5 @@ import lombok.Data;
 public class LoginResponseDTO {
     private String accessToken; // 액세스 토큰
     private String refreshToken; // 리프레시 토큰
+    private String role; // 권한
 }
