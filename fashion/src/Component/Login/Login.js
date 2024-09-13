@@ -26,11 +26,19 @@ const Login = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                // 응답에서 accessToken과 refreshToken 저장
+                // 응답에서 accessToken, refreshToken, role, username 저장
                 localStorage.setItem('accessToken', data.accessToken); // accessToken 저장
                 localStorage.setItem('refreshToken', data.refreshToken); // refreshToken 저장
+                localStorage.setItem('role', data.role); // role 저장
+                localStorage.setItem('username', data.username); // username 저장
                 localStorage.removeItem('guestLogin'); // 비회원 상태 제거
-                navigate('/'); // 로그인 성공 시 홈으로 이동
+                
+                // 권한에 따른 페이지 리다이렉션
+                if (data.role === 'ADMIN') {
+                    navigate('/manager'); // 관리자 페이지로 이동
+                } else {
+                    navigate('/'); // 사용자 홈으로 이동
+                }
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || '로그인에 실패했습니다. 다시 시도해주세요.');
