@@ -13,10 +13,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.images WHERE p.productId IN :ids")
     List<Product> findAllWithImagesById(@Param("ids") List<Long> ids);
 
-    @Query("SELECT DISTINCT p FROM Product p " +
-            "LEFT JOIN FETCH p.images " +
-            "LEFT JOIN FETCH p.attributeLinks al " +
-            "LEFT JOIN FETCH al.attribute " +
-            "WHERE p.productId IN :productIds")
-    List<Product> findAllWithImagesAndAttributesById(@Param("productIds") List<Long> productIds);
+    @Query(value = "SELECT * FROM product_details_view WHERE product_id IN (:productIds)", nativeQuery = true)
+    List<Object[]> findProductDetailsById(@Param("productIds") List<Long> productIds);
 }

@@ -30,7 +30,6 @@ import com.choice.ai.entity.AiRecommendation;
 import com.choice.ai.repository.AiAnalysisRepository;
 import com.choice.auth.entity.Member;
 import com.choice.auth.repository.MemberRepository;
-import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductAttribute;
 import com.choice.product.repository.ProductAttributeRepository;
 import com.choice.product.repository.ProductRepository;
@@ -82,8 +81,8 @@ public class AiRecommendationService {
                 .map(Long::valueOf)
                 .collect(Collectors.toList());
 
-        List<Product> products = productRepository.findAllWithImagesAndAttributesById(productIds);
-        List<ProductsDTO> recommendedProducts = products.stream()
+        List<Object[]> productDetails = productRepository.findProductDetailsById(productIds);
+        List<ProductsDTO> recommendedProducts = productDetails.stream()
                 .map(this::convertToProductDTO)
                 .collect(Collectors.toList());
 
@@ -162,17 +161,13 @@ public class AiRecommendationService {
         }
     }
 
-    private ProductsDTO convertToProductDTO(Product product) {
+    private ProductsDTO convertToProductDTO(Object[] productDetail) {
         ProductsDTO dto = new ProductsDTO();
-        dto.setProductId(product.getProductId());
-        dto.setName(product.getName());
-        dto.setInfo(product.getInfo());
-        dto.setPrice(product.getPrice());
-
-        if (product.getImages() != null && !product.getImages().isEmpty()) {
-            dto.setImagePath(product.getImages().iterator().next().getPimgPath());
-        }
-
+        dto.setProductId((Long) productDetail[0]);
+        dto.setName((String) productDetail[1]);
+        dto.setInfo((String) productDetail[2]);
+        dto.setPrice((Long) productDetail[4]);
+        dto.setImagePath((String) productDetail[10]);
         return dto;
     }
 }
