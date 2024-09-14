@@ -10,9 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.choice.auth.entity.Member;
 import com.choice.auth.repository.MemberRepository;
+import com.choice.product.repository.ProductRepository;
 import com.choice.shopping.dto.OrderDTO;
 import com.choice.shopping.dto.OrderItemDTO;
-import com.choice.shopping.entity.CartItem;
+import com.choice.shopping.dto.CartItemDTO;
 import com.choice.shopping.entity.OrderItem;
 import com.choice.shopping.entity.Orders;
 import com.choice.shopping.repository.OrderRepository;
@@ -28,6 +29,9 @@ public class OrderService {
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     public List<OrderDTO> getOrdersByUserId(Long userId) {
         List<Orders> orders = orderRepository.findByMember_UserId(userId);
@@ -66,7 +70,7 @@ public class OrderService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        List<CartItem> cartItems = cartService.getCartItemsForUser(userId);
+        List<CartItemDTO> cartItems = cartService.getCartItems(userId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("장바구니가 비어있습니다.");
         }
@@ -76,13 +80,13 @@ public class OrderService {
         order.setOrderDate(LocalDateTime.now());
         order.setOrderStatus(Orders.OrderStatus.PENDING);
 
-        for (CartItem cartItem : cartItems) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(cartItem.getProduct().getPrice());
-            order.getOrderItems().add(orderItem);
+        for (CartItemDTO cartItem : cartItems) {
+            OrderItem item = new OrderItem();
+            item.setOrder(order);
+            item.setProduct(productRepository.findById(cartItem.getProductId()).orElseThrow());
+            item.setQuantity(cartItem.getQuantity());
+            item.setPrice(cartItem.getPrice());
+            order.getOrderItems().add(item);
         }
 
         order = orderRepository.save(order);
