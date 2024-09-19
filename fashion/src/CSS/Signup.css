@@ -5,7 +5,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 90vh;
   background-color: #fff;
   padding: 20px;
 }
@@ -15,6 +15,8 @@
   margin-bottom: 20px;
   font-family: "Noto Sans KR", sans-serif;
 }
+
+
 
 .signup-title {
   font-size: 24px;

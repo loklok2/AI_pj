@@ -27,11 +27,12 @@ import Manager from './Component/MyPage/Manager';
 import Admheader from './Component/Admins/Admheader'; 
 import Home from "./Component/Mainpage/Home";
 import Managers from './Component/Admins/Managers';
+import Storemanage from './Component/Admins/Storemanage';
 
 function App() {
   const location = useLocation();
 
-  const noHeaderFooterRoutes = ['/admin', '/manager', '/managers'];
+  const noHeaderFooterRoutes = ['/admin', '/manager', '/managers', '/storemanage'];
 
   return (
     <div>
@@ -64,6 +65,7 @@ function App() {
           <Route path="/admin" element={<Admheader />} />
           <Route path="/manager" element={<Manager />} />
           <Route path="/managers" element={<Managers />} />
+          <Route path="/storemanage" element={<Storemanage />} />
         </Routes>
       </div>
 

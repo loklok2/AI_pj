@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
 .managers-dashboard-container {
   margin-left: 240px; /* 사이드바 너비(250px) + 여백(20px) */
   padding: 50px; /* 본문 안의 패딩 */

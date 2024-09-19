@@ -4,14 +4,14 @@ import '../../CSS/Baskets.css';
 
 const Baskets = () => {
   const navigate = useNavigate();
+  const userId = sessionStorage.getItem('userId');
 
   const [items, setItems] = useState([]);
-  const [showModal, setShowModal] = useState(false); // 모달 상태 추가
+  const [showModal, setShowModal] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
-
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
@@ -21,20 +21,31 @@ const Baskets = () => {
       setIsGuest(guestLogin);
       setIsLoggedIn(userLoggedIn);
 
-      // 장바구니 정보 가져오기
-      const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
-      setItems(storedItems);
+      if (userLoggedIn) {
+        fetch(`/api/cart/${userId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+          },
+        })
+          .then(response => response.json())
+          .then(data => setItems(data.map(item => ({ ...item, isSelected: false }))))
+          .catch(error => console.error('장바구니 가져오기 실패:', error));
+      } else {
+        const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
+        setItems(storedItems.map(item => ({ ...item, isSelected: false })));
+      }
     } else {
-      // 로그인 또는 비회원 로그인되지 않은 경우 모달 창 띄우기
       setShowLoginModal(true);
     }
-  }, [navigate]);
+  }, [navigate, userId]);
 
   const totalPrice = items
     .filter(item => item.isSelected)
     .reduce((acc, item) => {
-      const price = parseInt(item.price.replace(/,/g, '')) || 0;
-      const quantity = parseInt(item.quantity) || 1;
+      const price = parseInt(item.price, 10) || 0;
+      const quantity = parseInt(item.quantity, 10) || 1;
       return acc + (price * quantity);
     }, 0);
 
@@ -55,17 +66,33 @@ const Baskets = () => {
   };
 
   const handleSelectItem = (id) => {
-    setItems(
-      items.map(item =>
-        item.id === id ? { ...item, isSelected: !item.isSelected } : item
-      )
+    const updatedItems = items.map(item =>
+      item.id === id ? { ...item, isSelected: !item.isSelected } : item
     );
+    setItems(updatedItems);
+
+    // 전체 선택 체크박스 상태 업데이트
+    const allSelected = updatedItems.every(item => item.isSelected);
+    setSelectAll(allSelected);
   };
 
   const handleDeleteSelected = () => {
     const remainingItems = items.filter(item => !item.isSelected);
     setItems(remainingItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
+
+    if (isLoggedIn) {
+      fetch(`/api/cart/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ items: remainingItems }),
+      })
+        .catch(error => console.error('장바구니 업데이트 실패:', error));
+    } else {
+      sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
+    }
   };
 
   const handleIncreaseQuantity = (id) => {
@@ -73,7 +100,20 @@ const Baskets = () => {
       item.id === id ? { ...item, quantity: item.quantity + 1 } : item
     );
     setItems(updatedItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+
+    if (isLoggedIn) {
+      fetch(`/api/cart/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(updatedItems),
+      })
+        .catch(error => console.error('장바구니 업데이트 실패:', error));
+    } else {
+      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+    }
   };
 
   const handleDecreaseQuantity = (id) => {
@@ -81,13 +121,39 @@ const Baskets = () => {
       item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
     );
     setItems(updatedItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+
+    if (isLoggedIn) {
+      fetch(`/api/cart/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(updatedItems),
+      })
+        .catch(error => console.error('장바구니 업데이트 실패:', error));
+    } else {
+      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+    }
   };
 
   const handleDeleteItem = (id) => {
     const remainingItems = items.filter(item => item.id !== id);
     setItems(remainingItems);
-    sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
+
+    if (isLoggedIn) {
+      fetch(`/api/cart/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ items: remainingItems }),
+      })
+        .catch(error => console.error('장바구니 업데이트 실패:', error));
+    } else {
+      sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
+    }
   };
 
   const handleQuantityChange = (id, value) => {
@@ -96,17 +162,30 @@ const Baskets = () => {
         item.id === id ? { ...item, quantity: value } : item
       );
       setItems(updatedItems);
-      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+
+      if (isLoggedIn) {
+        fetch(`/api/cart/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+          },
+          body: JSON.stringify(updatedItems),
+        })
+          .catch(error => console.error('장바구니 업데이트 실패:', error));
+      } else {
+        sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+      }
     }
   };
 
   const closeModal = () => {
-    setShowModal(false); // 모달 닫기
+    setShowModal(false);
   };
 
   const closeLoginModal = () => {
-    setShowLoginModal(false); // 로그인 모달 닫기
-    navigate('/login'); // 로그인 페이지로 이동
+    setShowLoginModal(false);
+    navigate('/login');
   };
 
   return (
@@ -137,7 +216,7 @@ const Baskets = () => {
           </div>
           <div className="basket-item-info">
             <p>{item.name}</p>
-            <p className="basket-item-price">{parseInt(item.price.replace(/,/g, '')).toLocaleString()}원</p>
+            <p className="basket-item-price">{parseInt(item.price, 10).toLocaleString()}원</p>
           </div>
           <div className="basket-item-controls">
             <button className="quantity-btn" onClick={() => handleDecreaseQuantity(item.id)}>-</button>
@@ -151,7 +230,7 @@ const Baskets = () => {
             <button className="quantity-btn" onClick={() => handleIncreaseQuantity(item.id)}>+</button>
           </div>
           <div className="basket-item-total">
-            <p>총 {(parseInt(item.price.replace(/,/g, '')) * parseInt(item.quantity)).toLocaleString()}원</p>
+            <p>총 {(parseInt(item.price, 10) * parseInt(item.quantity)).toLocaleString()}원</p>
           </div>
           <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>x</button>
         </div>

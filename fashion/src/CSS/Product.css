@@ -158,3 +158,26 @@
   .category-item:hover {
     background-color: #eee;
   }
+
+  /* 정렬 드롭다운 스타일 */
+.sort-dropdown {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.sort-dropdown label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.sort-dropdown select {
+  padding: 5px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+
+.like-count{
+  font-size: 12px;
+}

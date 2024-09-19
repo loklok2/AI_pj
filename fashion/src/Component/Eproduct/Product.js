@@ -5,61 +5,30 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 
-const productList = [
-  { id: 1, name: '로맨틱 핑크 플로럴 러플 블라우스', price: '39,900원', category: '블라우스/남방' },
-  { id: 2, name: '엘레강스 블랙 튜브탑 with 핑크 리본 디테일', price: '29,900원', category: '반팔티' },
-  { id: 3, name: '내추럴 크로셰 니트 볼레로', price: '34,900원', category: '니트' },
-  { id: 4, name: '스트라이프 셔츠', price: '25,900원', category: '셔츠' },
-  { id: 5, name: '클래식 데님 재킷', price: '45,900원', category: '자켓' },
-  { id: 6, name: '화이트 레이스 블라우스', price: '29,900원', category: '블라우스/남방' },
-  { id: 7, name: '블랙 슬림 슬랙스', price: '39,900원', category: '바지' },
-  { id: 8, name: '스카이블루 셔츠', price: '32,900원', category: '셔츠' },
-  { id: 9, name: '네이비 니트 스웨터', price: '27,900원', category: '니트' },
-  { id: 10, name: '플로럴 프린트 스커트', price: '37,900원', category: '스커트' },
-  { id: 11, name: '오버사이즈 브라운 카디건', price: '45,500원', category: '니트' },
-  { id: 12, name: '라벤더 레이스 미디 드레스', price: '49,900원', category: '원피스' },
-  { id: 13, name: '와이드 핏 데님 팬츠', price: '39,900원', category: '바지' },
-  { id: 14, name: '벨트 디테일 레더 자켓', price: '79,900원', category: '자켓' },
-  { id: 15, name: '캣프린트 실크 블라우스', price: '41,900원', category: '블라우스/남방' },
-  { id: 16, name: '민트 컬러 스윙 스커트', price: '29,900원', category: '스커트' },
-  { id: 17, name: '코튼 스트라이프 후디', price: '34,900원', category: '후드티' },
-  { id: 18, name: '버건디 롱 슬리브 티셔츠', price: '19,900원', category: '긴팔티' },
-  { id: 19, name: '플레어 니트 원피스', price: '53,900원', category: '원피스' },
-  { id: 20, name: '슬림 핏 블랙 청바지', price: '44,900원', category: '바지' },
-  { id: 21, name: '그레이 울 코트', price: '109,900원', category: '자켓' },
-  { id: 22, name: '크림 컬러 하이웨이스트 치마', price: '27,900원', category: '스커트' },
-  { id: 23, name: '패턴 니트 머플러', price: '18,900원', category: '악세서리' },
-  { id: 24, name: '오렌지 컬러 프린트 티셔츠', price: '21,900원', category: '티셔츠' },
-  { id: 25, name: '푸른빛 라운드넥 스웨터', price: '37,900원', category: '니트' },
-  { id: 26, name: '퍼프소매 레드 블라우스', price: '42,900원', category: '블라우스/남방' },
-  { id: 27, name: '피트니스 레깅스', price: '29,900원', category: '바지' },
-  { id: 28, name: '베이지 체크 패턴 재킷', price: '59,900원', category: '자켓' },
-  { id: 29, name: '니트 베스트', price: '22,900원', category: '니트' },
-  { id: 30, name: '플리츠 미니 스커트', price: '35,900원', category: '스커트' },
-  { id: 31, name: '트렌치 코트', price: '89,900원', category: '자켓' },
-  { id: 32, name: '와인 컬러 벨벳 자켓', price: '64,900원', category: '자켓' },
-  { id: 33, name: '코듀로이 팬츠', price: '39,900원', category: '바지' },
-  { id: 34, name: '실크 블랙 스카프', price: '15,900원', category: '악세서리' },
-  { id: 35, name: '옐로우 코튼 미니 드레스', price: '47,900원', category: '원피스' },
-  { id: 36, name: '그린 컬러 플로럴 프린트 블라우스', price: '39,900원', category: '블라우스/남방' },
-  { id: 37, name: '레드 플로럴 롱 스커트', price: '41,900원', category: '스커트' },
-  { id: 38, name: '라운드넥 블랙 스웨트셔츠', price: '32,900원', category: '티셔츠' },
-  { id: 39, name: '데님 오버롤', price: '49,900원', category: '바지' },
-  { id: 40, name: '니트 베이지 터틀넥', price: '43,900원', category: '니트' },
-  { id: 41, name: '화이트 스니커즈', price: '55,900원', category: '신발' },
-  { id: 42, name: '스웨이드 앵클 부츠', price: '62,900원', category: '신발' },
-  { id: 43, name: '그레이 트레이닝 팬츠', price: '29,900원', category: '바지' },
-  { id: 44, name: '브이넥 실크 드레스', price: '59,900원', category: '원피스' },
-  { id: 45, name: '멀티컬러 니트 가디건', price: '48,900원', category: '니트' },
-  { id: 46, name: '블루 슬리브리스 티', price: '22,900원', category: '반팔티' },
-  { id: 47, name: '린넨 반바지', price: '26,900원', category: '바지' },
-  { id: 48, name: '타이트 핏 레더 팬츠', price: '52,900원', category: '바지' },
-  { id: 49, name: '블랙 앵클부츠', price: '65,900원', category: '신발' },
-  { id: 50, name: '스포티 트랙자켓', price: '57,900원', category: '자켓' }
-];
-
 const itemsPerPage = 25;
-const categories = ['전체', '티셔츠', '자켓', '니트', '원피스', '바지', '셔츠', '후드티', '신발'];
+const categories = [
+  { ko: '전체', en: 'All' },
+  { ko: '가디건', en: 'Cardigan' },
+  { ko: '니트웨어', en: 'Knitwear' },
+  { ko: '드레스', en: 'Dress' },
+  { ko: '레깅스', en: 'Leggings' },
+  { ko: '베스트', en: 'Vest' },
+  { ko: '블라우스', en: 'Blouse' },
+  { ko: '셔츠', en: 'Shirts' },
+  { ko: '스커트', en: 'Skirt' },
+  { ko: '재킷', en: 'Jacket' },
+  { ko: '점퍼', en: 'Jumper' },
+  { ko: '점프수트', en: 'Jumpsuit' },
+  { ko: '조거팬츠', en: 'Jogger Pants' },
+  { ko: '질업', en: 'Zipper' },
+  { ko: '청바지', en: 'Jeans' },
+  { ko: '코트', en: 'Coat' },
+  { ko: '탑', en: 'Top' },
+  { ko: '티셔츠', en: 'T-shirt' },
+  { ko: '패딩', en: 'Padding' },
+  { ko: '팬츠', en: 'Pants' },
+  { ko: '후드티', en: 'Hoodie' }
+];
 
 const Product = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,10 +36,30 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태 추가
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [sortOption, setSortOption] = useState('productPriceHigh'); // 정렬 옵션 상태
+  const [productList, setProductList] = useState([]); // 상품 목록 상태
+  const [totalPages, setTotalPages] = useState(1); // 전체 페이지 수 상태
   const navigate = useNavigate();
 
   useEffect(() => {
+    // 상품 데이터 가져오기
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`http://10.125.121.188:8080/api/products?page=${currentPage}&size=${itemsPerPage}&sort=${sortOption}`);
+        if (!response.ok) {
+          throw new Error('상품 데이터를 가져오는데 실패했습니다');
+        }
+        const data = await response.json();
+        setProductList(data.content); // API 응답의 'content' 배열 사용
+        setTotalPages(data.totalPages); // 전체 페이지 수 업데이트
+      } catch (error) {
+        console.error('상품 데이터를 가져오는데 실패했습니다:', error);
+      }
+    };
+
+    fetchProducts();
+
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
     const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
     
@@ -81,32 +70,39 @@ const Product = () => {
       const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
       setWishlist(storedWishlist);
     }
-  }, []);
-
-  const filteredProducts = selectedCategory === '전체'
-    ? productList
-    : productList.filter(product => product.category === selectedCategory);
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  }, [currentPage, sortOption]); // currentPage와 sortOption이 변경될 때마다 fetchProducts 호출
 
   const toggleWishlist = (productId) => {
     if (!isGuest && !isLoggedIn) {
-      setShowLoginModal(true); // 로그인 모달 표시
+      setShowLoginModal(true);
       return;
     }
 
     const updatedWishlist = [...wishlist];
-    const index = updatedWishlist.findIndex(item => item.id === productId);
+    const index = updatedWishlist.findIndex(item => item.productId === productId);
 
     if (index > -1) {
-      updatedWishlist.splice(index, 1); // 이미 찜한 항목이면 제거
+      updatedWishlist.splice(index, 1);
     } else {
-      const product = productList.find(item => item.id === productId);
-      updatedWishlist.push(product); // 찜하지 않은 항목이면 추가
+      const product = productList.find(item => item.productId === productId);
+      updatedWishlist.push(product);
     }
 
     setWishlist(updatedWishlist);
     sessionStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
+
+    // likeCount 업데이트
+    const updatedProductList = productList.map(product => {
+      if (product.productId === productId) {
+        return {
+          ...product,
+          likeCount: product.likeCount + (index > -1 ? -1 : 1) // 하트를 눌렀다면 감소, 눌리지 않았다면 증가
+        };
+      }
+      return product;
+    });
+
+    setProductList(updatedProductList);
   };
 
   const handleNextPage = () => {
@@ -135,29 +131,51 @@ const Product = () => {
     navigate('/login');
   };
 
+  const handleSortChange = (e) => {
+    setSortOption(e.target.value);
+    setCurrentPage(1); // 정렬을 변경할 때 페이지를 1로 초기화
+  };
+
+  // 현재 페이지에서 보여줄 상품 필터링
+  const filteredProductList = selectedCategory === '전체'
+    ? productList
+    : productList.filter(product => product.category === selectedCategory);
+
   return (
     <div className="product-page">
       <PageTitle title="전체 상품" />
       <CategoryBar categories={categories} selectedCategory={selectedCategory} setSelectedCategory={handleCategorySelect} />
 
+      {/* 정렬 드롭다운 추가 */}
+      <div className="sort-dropdown">
+        <label htmlFor="sort"></label>
+        <select id="sort" value={sortOption} onChange={handleSortChange}>
+          <option value="productPriceHigh">가격 높은순</option>
+          <option value="productPriceLow">가격 낮은순</option>
+          <option value="likeCount">인기순</option>
+        </select>
+      </div>
+
       <div className="product-grid">
-        {filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((product) => {
-          const liked = wishlist.some(item => item.id === product.id);
+        {filteredProductList.map((product) => {
+          const liked = wishlist.some(item => item.productId === product.productId);
+          const imageUrl = `http://10.125.121.188:8080${product.pimgPath}`;
           return (
             <div 
-              key={product.id} 
+              key={product.productId} 
               className="product-card" 
-              onClick={() => handleProductClick(product.id)} // 제품 클릭 시 상세 페이지로 이동
+              onClick={() => handleProductClick(product.productId)}
             >
-              <div className="placeholder-box"></div>
+              <img src={imageUrl} alt={product.name} className="product-image" />
               <h2 className="product-name">{product.name}</h2>
               <div className="product-price-wrapper">
-                <p className="product-price">{product.price}</p>
-                <div className="wishlist-icon" onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}>
+                <p className="product-price">{product.price.toLocaleString()}원</p>
+                <div className="wishlist-icon" onClick={(e) => { e.stopPropagation(); toggleWishlist(product.productId); }}>
                   <FontAwesomeIcon 
                     icon={liked ? solidHeart : regularHeart} 
-                    style={{ color: liked ? '#FA5858' : 'black' }} // 좋아요 시 빨간색, 아니면 검은색
+                    style={{ color: liked ? '#FA5858' : 'black' }}
                   />
+                  <span className="like-count">{product.likeCount}</span> {/* 좋아요 수 표시 */}
                 </div>
               </div>
             </div>
@@ -193,10 +211,10 @@ const CategoryBar = ({ categories, selectedCategory, setSelectedCategory }) => (
     {categories.map((category, index) => (
       <span
         key={index}
-        className={`category-item ${selectedCategory === category ? 'active' : ''}`}
-        onClick={() => setSelectedCategory(category)}
+        className={`category-item ${selectedCategory === category.ko ? 'active' : ''}`}
+        onClick={() => setSelectedCategory(category.ko)}
       >
-        {category}
+        {category.ko} / {category.en} {/* 한국어와 영어를 같이 표시 */}
       </span>
     ))}
   </div>

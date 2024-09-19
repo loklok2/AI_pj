@@ -33,7 +33,6 @@ const Admheader = () => {
               className="adm-logout-button" // CSS로 스타일을 적용
               style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'inherit' }}
             >
-              로그아웃
             </button>
           </p>
         </div>
@@ -56,8 +55,13 @@ const Admheader = () => {
               </a>
             </li>
             <li>
+              <a href="/storemanage">
+                 매장관리
+              </a>
+            </li>
+            <li>
               <a href="/managers">
-                 기타 관리
+                 기타관리
               </a>
             </li>
           </ul>

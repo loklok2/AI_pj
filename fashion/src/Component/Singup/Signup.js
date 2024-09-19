@@ -10,7 +10,7 @@ const Signup = () => {
         username: '',    // 사용자 아이디
         password: '',    // 비밀번호
         email: '',       // 이메일
-        birthDate: '',   // 주민등록번호
+        residentRegistrationNumber: '',   // 주민등록번호
         address: '',     // 주소
         phone: '',       // 전화번호
         style: '',       // 선호하는 스타일
@@ -31,7 +31,7 @@ const Signup = () => {
         if (part === 'front') {
             setFormData({
                 ...formData,
-                birthDate: value + formData.birthDate.slice(6)  // 앞 6자리 업데이트
+                residentRegistrationNumber: value + formData.residentRegistrationNumber.slice(6)  // 앞 6자리 업데이트
             });
         } else if (part === 'back') {
             setRealBack(value);  // 뒷자리 실제 값 저장
@@ -40,7 +40,7 @@ const Signup = () => {
 
             setFormData({
                 ...formData,
-                birthDate: formData.birthDate.slice(0, 6) + value  // 전체 주민등록번호 업데이트
+                residentRegistrationNumber: formData.residentRegistrationNumber.slice(0, 6) + value  // 전체 주민등록번호 업데이트
             });
         }
     };
@@ -48,12 +48,18 @@ const Signup = () => {
     // 백엔드 회원가입 API 호출
     const handleSignup = async () => {
         try {
+            // 백엔드로 보낼 데이터 생성
+            const signupData = {
+                ...formData,
+                residentRegistrationNumber: formData.residentRegistrationNumber // 'birthDate'를 'residentRegistrationNumber'로 변경
+            };
+
             const response = await fetch('http://10.125.121.188:8080/api/auth/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),  // 사용자가 입력한 데이터를 그대로 JSON으로 변환하여 백엔드로 전송
+                body: JSON.stringify(signupData),  // 사용자가 입력한 데이터를 그대로 JSON으로 변환하여 백엔드로 전송
             });
 
             if (response.ok) {
@@ -64,7 +70,7 @@ const Signup = () => {
                 setErrorMessage(errorData.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
             }
         } catch (error) {
-            setErrorMessage('서버에 문제가 발생했습니다. 나중에 다시 시도해주세요.');
+            setErrorMessage('회원 정보를 다시 입력해주세요.');
         }
     };
 
@@ -116,7 +122,7 @@ const Signup = () => {
                         id="username"
                         className="form-input short-input"
                         type="text"
-                        placeholder="아이디 입력(5-20)"
+                        placeholder="아이디 입력(영문 5-20자 이상)"
                         value={formData.username}
                         onChange={handleChange}
                     />
@@ -134,7 +140,7 @@ const Signup = () => {
                         id="password"
                         className="form-input"
                         type="password"
-                        placeholder="비밀번호를 입력해주세요.(8자 이상)"
+                        placeholder="비밀번호를 입력해주세요.(대소문자, 숫자 포함 8자 이상)"
                         value={formData.password}
                         onChange={handleChange}
                     />
@@ -186,14 +192,14 @@ const Signup = () => {
 
                 {/* 주민등록번호 입력 필드 */}
                 <div className="form-group">
-                    <label htmlFor="birthDate" className="form-label">주민등록번호</label>
+                    <label htmlFor="residentRegistrationNumber" className="form-label">주민등록번호</label>
                     <div className="form-row" style={{ display: 'flex', gap: '10px' }}>
                         <input
                             id="birthYear"
                             className="form-input"
                             type="text"
                             placeholder="앞 6자리(ex. 900101)"
-                            value={formData.birthDate.slice(0, 6)}
+                            value={formData.residentRegistrationNumber.slice(0, 6)}
                             onChange={(e) => handleIdChange(e, 'front')}
                             style={{ flex: 1 }}
                             maxLength="6"
@@ -254,4 +260,4 @@ const Signup = () => {
     );
 };
 
-export default Signup;
+export default Signup; 

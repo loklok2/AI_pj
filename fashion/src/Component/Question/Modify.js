@@ -4,67 +4,90 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import '../../CSS/Modify.css'; 
 
-// mock 데이터를 불러온다고 가정
-const mockData = {
-  id: 1,
-  title: '수정할 제목',
-  category: 'product',
-  content: '수정할 내용입니다.',
-};
-
 const Modify = () => {
   const { id } = useParams(); // 게시글 id를 받아옴
   const navigate = useNavigate();
   const quillRef = useRef(null);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
-  const [content, setContent] = useState('');
+  const [file, setFile] = useState(null); // 첨부파일 상태 추가
+  const [content, setContent] = useState(''); // <--- 이 부분을 추가합니다.
+  const [quillInstance, setQuillInstance] = useState(null);
 
   useEffect(() => {
-    // 서버에서 데이터를 받아오는 로직 대신 mock 데이터 사용
-    // 실제로는 API 호출을 통해 데이터를 불러오면 됩니다.
-    const postData = mockData;
-
-    setTitle(postData.title);
-    setCategory(postData.category);
-    setContent(postData.content);
-
-    // Quill 에디터 초기화 및 기존 내용 설정
-    if (quillRef.current) {
-      const quillInstance = new Quill(quillRef.current, {
-        theme: 'snow',
-        placeholder: '내용을 입력하세요...',
-        modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ align: [] }],
-            [{ color: [] }, { background: [] }],
-            ['link', 'image', 'video'],
-            ['clean']
-          ],
-        },
-      });
-
-      // Quill 에디터에 기존 내용 넣기
-      quillInstance.clipboard.dangerouslyPasteHTML(postData.content);
-    }
+    // 게시글 데이터를 불러오는 API 호출
+    fetch(`http://10.125.121.188:8080/api/qboard/${id}`)
+      .then(response => response.json())
+      .then(data => {
+        setTitle(data.title);
+        setCategory(data.boardType); // boardType 필드로 변경
+        setContent(data.content); // <--- 이 부분은 존재하는 상태에 데이터를 설정합니다.
+        // Quill 에디터 초기화 및 기존 내용 설정
+        if (quillRef.current) {
+          const quill = new Quill(quillRef.current, {
+            theme: 'snow',
+            placeholder: '내용을 입력하세요...',
+            modules: {
+              toolbar: [
+                [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ align: [] }],
+                [{ color: [] }, { background: [] }],
+                ['link', 'image', 'video'],
+                ['clean']
+              ],
+            },
+          });
+          quill.clipboard.dangerouslyPasteHTML(data.content);
+          setQuillInstance(quill); // quillInstance 설정
+        }
+      })
+      .catch(error => console.error('게시글을 불러오는 중 오류가 발생했습니다.', error));
   }, [id]);
 
-  const handleSubmitClick = () => {
-    const quillInstance = quillRef.current.__quill;
+  const handleSubmitClick = async () => {
+    if (!quillInstance) {
+      console.error('Quill 에디터가 초기화되지 않았습니다.');
+      return;
+    }
+
     const updatedContent = quillInstance.root.innerHTML; // 수정된 내용 가져오기
 
-    // 수정한 데이터를 서버에 전송하는 로직 (예: axios.post('/api/qna', { title, category, content }))
-    // 예: axios.post(`/api/qna/${id}`, { title, category, content: updatedContent })
+    // 수정한 데이터를 서버에 전송하는 로직
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('boardType', category);
+    formData.append('content', updatedContent);
+    if (file) {
+      formData.append('images', file);
+    }
 
-    // 수정 완료 후 해당 게시글의 View 페이지로 이동
-    navigate(`/qna/${id}`);
+    try {
+      const response = await fetch(`http://10.125.121.188:8080/api/qboard/${id}`, {
+        method: 'PUT',
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('게시글이 수정되었습니다.');
+        navigate(`/qna/${id}`);
+      } else {
+        throw new Error('게시글 수정에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('게시글 수정 중 오류가 발생했습니다.', error);
+      alert('서버에 문제가 발생했습니다. 나중에 다시 시도해주세요.');
+    }
   };
 
   const handleCancelClick = () => {
     navigate('/qna');  // Q&A 게시판으로 이동
+  };
+
+  // 첨부 파일 변경 시 동작
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
   return (
@@ -109,7 +132,13 @@ const Modify = () => {
           </tr>
           <tr>
             <th>첨부파일</th>
-            <td><input type="file" className="modify-form-file-input" /></td>
+            <td>
+              <input 
+                type="file" 
+                className="modify-form-file-input"
+                onChange={handleFileChange}
+              />
+            </td>
           </tr>
         </tbody>
       </table>

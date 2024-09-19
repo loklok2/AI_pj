@@ -32,12 +32,18 @@ const Login = () => {
                 localStorage.setItem('role', data.role); // role 저장
                 localStorage.setItem('username', data.username); // username 저장
                 localStorage.removeItem('guestLogin'); // 비회원 상태 제거
-                
+
+                 // /products 페이지로 이동
+                navigate('/products'); 
+
+                // 페이지 리로딩
+                window.location.reload(); 
+
                 // 권한에 따른 페이지 리다이렉션
                 if (data.role === 'ADMIN') {
                     navigate('/manager'); // 관리자 페이지로 이동
                 } else {
-                    navigate('/'); // 사용자 홈으로 이동
+                    navigate('/products'); // 사용자 홈으로 이동
                 }
             } else {
                 const errorData = await response.json();

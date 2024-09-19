@@ -2,28 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Board.css';
 
-const mockData = [
-  { id: 1, category: '상품문의', title: '상품 문의 1', writer: 'User1', date: '2023-09-01' },
-  { id: 2, category: '상품문의', title: '상품 문의 2', writer: 'User2', date: '2023-09-02' },
-  { id: 3, category: '상품문의', title: '상품 문의 3', writer: 'User3', date: '2023-09-03' },
-  { id: 4, category: '상품문의', title: '상품 문의 4', writer: 'User4', date: '2023-09-04' },
-  { id: 5, category: '상품문의', title: '상품 문의 5', writer: 'User5', date: '2023-09-05' },
-  { id: 6, category: '상품문의', title: '상품 문의 6', writer: 'User6', date: '2023-09-06' },
-  { id: 7, category: '상품문의', title: '상품 문의 7', writer: 'User7', date: '2023-09-07' },
-  { id: 8, category: '상품문의', title: '상품 문의 8', writer: 'User8', date: '2023-09-08' },
-  { id: 9, category: '기타문의', title: '기타 문의 9', writer: 'User9', date: '2023-09-09' },
-  { id: 10, category: '기타문의', title: '기타 문의 10', writer: 'User10', date: '2023-09-10' },
-  { id: 11, category: '기타문의', title: '기타 문의 11', writer: 'User11', date: '2023-09-11' },
-  { id: 12, category: '기타문의', title: '기타 문의 12', writer: 'User12', date: '2023-09-12' },
-  { id: 13, category: '기타문의', title: '기타 문의 13', writer: 'User13', date: '2023-09-13' },
-  { id: 14, category: '기타문의', title: '기타 문의 14', writer: 'User14', date: '2023-09-14' },
-  { id: 15, category: '기타문의', title: '기타 문의 15', writer: 'User15', date: '2023-09-15' },
-  { id: 16, category: '기타문의', title: '기타 문의 15', writer: 'User16', date: '2023-09-15' },
-  { id: 17, category: '기타문의', title: '기타 문의 15', writer: 'User17', date: '2023-09-15' },
-  { id: 18, category: '기타문의', title: '기타 문의 15', writer: 'User18', date: '2023-09-15' },
-  { id: 19, category: '기타문의', title: '기타 문의 15', writer: 'User19', date: '2023-09-15' },
-];
-
 const Board = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +9,7 @@ const Board = () => {
   const [isGuest, setIsGuest] = useState(false); // 비회원 로그인 상태 관리
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
   const [showModal, setShowModal] = useState(false); // 모달 창 상태 추가
+  const [qnaData, setQnaData] = useState([]); // Q&A 데이터 상태
   const itemsPerPage = 15;
 
   useEffect(() => {
@@ -39,6 +18,19 @@ const Board = () => {
 
     if (guestLogin) setIsGuest(true);
     if (userLoggedIn) setIsLoggedIn(true);
+
+    // API를 사용하여 Q&A 데이터를 가져옵니다.
+    fetch('http://10.125.121.188:8080/api/qboard')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('데이터를 가져오는 데 실패했습니다.');
+        }
+        return response.json();
+      })
+      .then((data) => setQnaData(data))
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
   }, []);
 
   // 페이지 변경 함수
@@ -51,8 +43,8 @@ const Board = () => {
   // 카테고리 필터 적용된 데이터
   const filteredData =
     categoryFilter === '전체'
-      ? mockData
-      : mockData.filter((item) => item.category === categoryFilter);
+      ? qnaData
+      : qnaData.filter((item) => item.category === categoryFilter);
 
   // 데이터 페이징 처리
   const indexOfLastItem = currentPage * itemsPerPage;

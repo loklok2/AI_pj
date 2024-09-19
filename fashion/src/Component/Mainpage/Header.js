@@ -24,8 +24,8 @@ const Header = () => {
 
   const handleLogout = () => {
     setIsGuest(false);
-    setUsername('');
-    setRole('');
+    setUsername(''); // 유저 이름 초기화
+    setRole(''); // 역할 초기화
     sessionStorage.removeItem('guestLogin'); // 로그아웃 시 비회원 상태 제거
     localStorage.removeItem('username'); // 로그아웃 시 username 제거
     localStorage.removeItem('role'); // 로그아웃 시 role 제거
@@ -36,7 +36,7 @@ const Header = () => {
     <div className="header">
       <div className="header-left">
         <h1 className="logo">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/products" style={{ textDecoration: 'none', color: 'inherit' }}>
             TREND FLOW
           </Link>
         </h1>
@@ -58,9 +58,7 @@ const Header = () => {
             </>
           ) : username ? (
             <>
-              <li>
-                {role === 'ADMIN' ? '관리자님' : `${username}님`} {/* 관리자 또는 사용자 이름 표시 */}
-              </li>
+              <li>{`${username}님`}</li> {/* 로그인한 사용자 이름 표시 */}
               <li>
                 <button onClick={handleLogout} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'inherit' }}>로그아웃</button>
               </li>

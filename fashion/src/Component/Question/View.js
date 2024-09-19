@@ -1,31 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import '../../CSS/View.css'; 
 
-const mockData = [
-  { id: 1, category: '상품문의', title: '상품 문의 1', writer: 'User1', date: '2023-09-01', content: '이 상품의 배송 기간이 어떻게 되나요?' },
-  { id: 2, category: '상품문의', title: '상품 문의 2', writer: 'User2', date: '2023-09-02', content: '이 상품에 대한 설명이 더 필요합니다.' },
-  { id: 3, category: '상품문의', title: '상품 문의 3', writer: 'User3', date: '2023-09-03', content: '이 상품의 색상이 실제와 동일한가요?' },
-  { id: 4, category: '상품문의', title: '상품 문의 4', writer: 'User4', date: '2023-09-04', content: '할인이 언제까지 지속되나요?' },
-  { id: 5, category: '상품문의', title: '상품 문의 5', writer: 'User5', date: '2023-09-05', content: '이 상품은 재고가 충분한가요?' },
-  { id: 6, category: '상품문의', title: '상품 문의 6', writer: 'User6', date: '2023-09-06', content: '제품의 크기가 어떻게 되나요?' },
-  { id: 7, category: '상품문의', title: '상품 문의 7', writer: 'User7', date: '2023-09-07', content: '이 상품의 환불 규정은 어떻게 되나요?' },
-  { id: 8, category: '상품문의', title: '상품 문의 8', writer: 'User8', date: '2023-09-08', content: '이 제품의 세부 사항을 알려주세요.' },
-  { id: 9, category: '기타문의', title: '기타 문의 9', writer: 'User9', date: '2023-09-09', content: '기타 문의 사항이 있습니다.' },
-  { id: 10, category: '기타문의', title: '기타 문의 10', writer: 'User10', date: '2023-09-10', content: '기타 문의 10의 내용입니다.' },
-];
-
 const View = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const post = mockData.find((item) => item.id === parseInt(id));
-
-  const [comment, setComment] = useState('');
+  const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
+  const [images, setImages] = useState([]); // 이미지 상태 추가
+  const [comment, setComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
+
+  useEffect(() => {
+    // 게시글 데이터 가져오기
+    fetch(`http://10.125.121.188:8080/api/qboard/${id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('게시글을 불러오는 데 실패했습니다.');
+        }
+        return response.json();
+      })
+      .then(data => setPost(data))
+      .catch(error => {
+        console.error('Error fetching post:', error);
+      });
+
+    // 댓글 데이터 가져오기
+    fetch(`http://10.125.121.188:8080/api/comments/qboard/${id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('댓글을 불러오는 데 실패했습니다.');
+        }
+        return response.json();
+      })
+      .then(data => setComments(data))
+      .catch(error => {
+        console.error('Error fetching comments:', error);
+      });
+
+    // 이미지 데이터 가져오기
+    fetch(`http://10.125.121.188:8080/api/qboard/${id}/images`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('이미지를 불러오는 데 실패했습니다.');
+        }
+        return response.json();
+      })
+      .then(data => setImages(data))
+      .catch(error => {
+        console.error('Error fetching images:', error);
+      });
+  }, [id]);
 
   const handleCommentChange = (e) => {
     setComment(e.target.value);
@@ -37,29 +65,77 @@ const View = () => {
       return;
     }
 
-    const newComment = { id: Date.now(), content: comment, writer: '사용자' };
-    setComments([...comments, newComment]);
-    setComment('');
+    // 댓글 추가 요청
+    fetch(`http://10.125.121.188:8080/api/comments/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: comment }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('댓글 작성에 실패했습니다.');
+        }
+        return response.json();
+      })
+      .then(newComment => {
+        setComments([...comments, newComment]);
+        setComment('');
+      })
+      .catch(error => {
+        console.error('Error adding comment:', error);
+      });
   };
 
-  const handleDeleteComment = (id) => {
-    setComments(comments.filter((comment) => comment.id !== id));
+  const handleDeleteComment = (commentId) => {
+    // 댓글 삭제 요청
+    fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('댓글 삭제에 실패했습니다.');
+        }
+        setComments(comments.filter((comment) => comment.id !== commentId));
+      })
+      .catch(error => {
+        console.error('Error deleting comment:', error);
+      });
   };
 
-  const handleEditComment = (id) => {
-    if (editingCommentId === id) {
-      // 수정 중인 댓글을 저장
-      setComments(
-        comments.map((cmt) =>
-          cmt.id === editingCommentId ? { ...cmt, content: editingContent } : cmt
-        )
-      );
-      setEditingCommentId(null);
-      setEditingContent('');
+  const handleEditComment = (commentId) => {
+    if (editingCommentId === commentId) {
+      // 댓글 수정 저장
+      fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: editingContent }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('댓글 수정에 실패했습니다.');
+          }
+          return response.json();
+        })
+        .then(updatedComment => {
+          setComments(
+            comments.map((cmt) =>
+              cmt.id === editingCommentId ? { ...cmt, content: updatedComment.content } : cmt
+            )
+          );
+          setEditingCommentId(null);
+          setEditingContent('');
+        })
+        .catch(error => {
+          console.error('Error editing comment:', error);
+        });
     } else {
       // 수정 모드로 변경
-      const commentToEdit = comments.find((cmt) => cmt.id === id);
-      setEditingCommentId(id);
+      const commentToEdit = comments.find((cmt) => cmt.id === commentId);
+      setEditingCommentId(commentId);
       setEditingContent(commentToEdit.content);
     }
   };
@@ -103,7 +179,22 @@ const View = () => {
             <button className="view-qna-delete-btn">삭제</button>
           </div>
         </div>
-        <div className="view-qna-question-content">{post.content}</div>
+        <div className="view-qna-question-content">
+          {/* 이미지 렌더링 */}
+          {images.length > 0 && (
+            <div className="view-qna-images">
+              {images.map((img) => (
+                <img 
+                  key={img.qimgId}
+                  src={`http://10.125.121.188:8080${img.qimgPath}`} 
+                  alt={`이미지 ${img.qimgId}`} 
+                  className="post-image" 
+                />
+              ))}
+            </div>
+          )}
+          <p>{post.content}</p>
+        </div>
       </div>
 
       <div className="view-qna-comment-section">

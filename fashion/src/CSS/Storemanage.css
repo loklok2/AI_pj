@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+.storemanage-container {
+    margin-left: 240px;
+    padding: 50px;
+    font-family: 'Noto Sans KR', sans-serif;
+    padding-bottom: 100px;
+    margin-top: 0px;
+}
+
+.storemanage-title {
+    font-size: 28px;
+    margin-bottom: 0px;
+    font-weight: bold;
+}
+
+.storemanage-welcome-text {
+    margin-bottom: 20px;
+    color: #919191;
+}
+
+.storemanage-search-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.storemanage-dropdown {
+    padding: 5px;
+    font-size: 14px;
+    width: 350px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.custom-date-input {
+    width: 100px; /* 원하는 크기로 설정 */
+    padding: 5px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    height: 35px; /* 다른 입력 필드와 맞추기 위해 높이 조정 */
+}
+
+.storemanage-search-buttons {
+    padding: 6px 14px;
+    background-color: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+.storemanage-search-buttons:hover {
+    background-color: #333;
+}
+
+.storemanage-search-button {
+    padding: 6px 14px;
+    background-color: black;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.storemanage-search-button:hover {
+    background-color: #333;
+}
+
+.storemanage-search-title {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.storemanage-sales-charts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 100px;
+}
+
+.storemanage-sales-chart {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 300px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.storemanage-single-chart {
+    display: flex;
+    justify-content: center;
+}
+
+.storemanage-single-chart .storemanage-sales-chart {
+    width: 80%;
+    height: 600px;
+}
+
+.storemanage-chart-view-mode {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.storemanage-view-mode-button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    cursor: pointer;
+    border: 1px solid #333;
+    background-color: #fff;
+    color: #333;
+}
+
+.storemanage-view-mode-button.active {
+    background-color: #333;
+    color: #fff;
+}
+
+/* 달력 입력 칸 스타일 */
+.react-datepicker-wrapper {
+    width: 150px !important; /* 원하는 크기로 설정 */
+  }
+  
+  .react-datepicker__input-container input {
+    width: 150px !important; /* 원하는 크기로 설정 */
+    padding: 8px !important; /* 패딩을 늘려서 더 넓어 보이게 */
+    font-size: 14px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 3px !important;
+  }
+
+  .storemanage-dropdown {
+    border: 1px solid #ccc; /* 테두리 색상 */
+    border-radius: 4px; /* 둥근 모서리 */
+    padding: 5px; /* 내부 여백 */
+    margin: 0 5px; /* 좌우 여백 */
+  }
+
+  .storemanage-dropdown {
+    border: 1px solid #ccc; /* 테두리 색상 */
+    border-radius: 4px; /* 둥근 모서리 */
+    padding: 5px; /* 내부 여백 */
+    margin: 0 5px; /* 좌우 여백 */
+    width: 100px; /* 기본 너비 */
+  }
+  
+  .storemanage-dropdown.wide {
+    width: 150px; /* '매장 전체 보기'를 위한 넓은 드롭박스 */
+  }
+
+  .storemanage-dropdown.month-input {
+    width: 65px; /* 원하는 크기로 설정 */
+}
