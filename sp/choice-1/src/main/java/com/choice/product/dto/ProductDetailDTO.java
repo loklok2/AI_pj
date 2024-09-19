@@ -1,9 +1,11 @@
 package com.choice.product.dto;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
-public class ProductAllDTO {
+public class ProductDetailDTO {
     private Long productId;
     private String name;
     private String info;
@@ -11,6 +13,6 @@ public class ProductAllDTO {
     private Long likeCount;
     private Long view;
     private String category;
-    private String pimgName;
-    private String pimgPath;
+    private List<String> images;
+    private List<AttributeDTO> attributes;
 }

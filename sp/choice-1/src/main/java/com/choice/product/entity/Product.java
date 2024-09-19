@@ -22,6 +22,8 @@ public class Product {
 
     private Long sell; // 상품 판매량
 
+    private String category; // 상품 카테고리
+
     @Column(name = "price", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long price; // 상품 가격 (원 단위)
 

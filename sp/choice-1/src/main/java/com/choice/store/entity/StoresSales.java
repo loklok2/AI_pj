@@ -41,19 +41,14 @@ public class StoresSales {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "price_type")
-    private String priceType;
-
-    @Column(name = "sale_type")
-    private String saleType;
-
     @Column(name = "transaction_type")
     private String transactionType;
 
-    @Column(name = "year")
-    private String year;
+    @Column(name = "price")
+    private Long price;
 
-    @Column(name = "month")
-    private String month;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private StoreCategory category;
 
 }

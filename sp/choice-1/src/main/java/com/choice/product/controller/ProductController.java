@@ -7,11 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.choice.product.dto.ProductAllDTO;
+import com.choice.product.dto.ProductDetailDTO;
 import com.choice.product.service.ProductService;
 
 @RestController
@@ -21,20 +23,13 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // @GetMapping
-    // public ResponseEntity<Page<ProductAllDTO>> getAllProducts(
-    // @PageableDefault(page = 0, size = 25, sort = "productId") Pageable pageable)
-    // {
-    // Page<ProductAllDTO> products = productService.getAllProducts(pageable);
-    // return ResponseEntity.ok(products);
-    // }
 
     @GetMapping
-    // public ResponseEntity<Page<ProductAllDTO>> getAllProducts(
     public ResponseEntity<?> getAllProducts(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "25") Integer size,
             @RequestParam(name = "sort", defaultValue = "productPriceHigh") String sort) {
+
         Pageable pageable = null;
 
         if (sort.equalsIgnoreCase("productPriceHigh")) {
@@ -47,6 +42,12 @@ public class ProductController {
 
         Page<ProductAllDTO> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDetailDTO> getProductDetail(@PathVariable("id") Long id) {
+        ProductDetailDTO product = productService.getProductDetail(id);
+        return ResponseEntity.ok(product);
     }
 
 }
