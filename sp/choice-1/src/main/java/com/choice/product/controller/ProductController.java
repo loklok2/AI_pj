@@ -34,8 +34,17 @@ public class ProductController {
     public ResponseEntity<?> getAllProducts(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "25") Integer size,
-            @RequestParam(name = "sort", defaultValue = "productId") String sort) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(sort));
+            @RequestParam(name = "sort", defaultValue = "productPriceHigh") String sort) {
+        Pageable pageable = null;
+
+        if (sort.equalsIgnoreCase("productPriceHigh")) {
+            pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "price"));
+        } else if (sort.equalsIgnoreCase("productPriceLow")) {
+            pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "price"));
+        } else if (sort.equalsIgnoreCase("likeCount")) {
+            pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "likeCount"));
+        }
+
         Page<ProductAllDTO> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);
     }
