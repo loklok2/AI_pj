@@ -1,5 +1,7 @@
 package com.choice.product.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = "SELECT * FROM product_details_view WHERE product_id IN (:productIds)", nativeQuery = true)
     List<Object[]> findProductDetailsById(@Param("productIds") List<Long> productIds);
+
+    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.images",
+           countQuery = "SELECT COUNT(p) FROM Product p")
+    Page<Product> findAllWithImages(Pageable pageable);
 }
