@@ -61,7 +61,7 @@ const Payment = () => {
       const orderDate = new Date().toLocaleDateString();
       
       // 주문 번호 생성
-      const orderNumber = Math.floor(10000 + Math.random() * 90000).toString(); // 5자리 랜덤 숫자 생성
+      const orderNumber = generateOrderNumber();
       
       const orderInfo = {
         orderNumber, // 주문 번호 추가
@@ -91,15 +91,15 @@ const Payment = () => {
     setAddress('');
   };
 
-  const handleRemoveItem = (itemId) => {
-    const updatedItems = orderItems.filter(item => item.id !== itemId);
+  const handleRemoveItem = (productId) => {
+    const updatedItems = orderItems.filter(item => item.productId !== productId);
     setOrderItems(updatedItems);
     sessionStorage.setItem('selectedItems', JSON.stringify(updatedItems));
   };
 
   const calculateTotalPrice = () => {
     return orderItems.reduce((acc, item) => {
-      const price = parseInt(item.price.replace(/,/g, '')) || 0;
+      const price = item.price || 0;
       return acc + (price * item.quantity);
     }, 0);
   };
@@ -114,14 +114,14 @@ const Payment = () => {
         <h2>주문 상품정보</h2>
         {orderItems.length > 0 ? (
           orderItems.map((item) => (
-            <div key={item.id} className="payment-order-item">
+            <div key={item.productId} className="payment-order-item">
               <div className="payment-order-item-image-placeholder">
                 {/* 실제 이미지가 있을 경우 <img> 태그로 대체 */}
               </div>
               <div className="payment-order-item-details">
                 <p className="payment-order-item-name">{item.name}</p>
                 <p className="payment-order-item-price">
-                  {(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString()}원
+                  {(item.price * item.quantity).toLocaleString()}원
                 </p>
                 <p className="payment-order-item-quantity">
                   수량: {item.quantity}개
@@ -130,7 +130,7 @@ const Payment = () => {
                   사이즈: {item.size} {/* 사이즈 표시 */}
                 </p>
               </div>
-              <button className="remove-item-btn" onClick={() => handleRemoveItem(item.id)}>
+              <button className="remove-item-btn" onClick={() => handleRemoveItem(item.productId)}>
                 x
               </button>
             </div>
@@ -176,15 +176,8 @@ const Payment = () => {
       {/* 주문 요청 사항 */}
       <div className="payment-request-info">
         <h2>주문 요청 사항</h2>
-        <input 
-          type="text" 
-          className="payment-input-field" 
-          placeholder="요청 사항을 입력하세요." 
-          value={request} 
-          onChange={(e) => setRequest(e.target.value)} 
-        />
         <select 
-          className="payment-input-fieldes" 
+          className="payment-input-fields" 
           value={request} 
           onChange={(e) => setRequest(e.target.value)}
         >
@@ -196,6 +189,15 @@ const Payment = () => {
           <option value="택배 보관함에 보관해주세요.">택배 보관함에 보관해주세요.</option>
           <option value="직접 입력">직접 입력</option>
         </select>
+        {request === '직접 입력' && (
+          <input 
+            type="text" 
+            className="payment-input-fields" 
+            placeholder="요청 사항을 직접 입력하세요." 
+            value={request} 
+            onChange={(e) => setRequest(e.target.value)} 
+          />
+        )}
       </div>
 
       {/* 결제 수단 */}

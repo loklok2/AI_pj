@@ -35,12 +35,12 @@
 }
 
 .custom-date-input {
-    width: 100px; /* 원하는 크기로 설정 */
+    width: 100px;
     padding: 5px;
     font-size: 12px;
     border: 1px solid #ccc;
     border-radius: 3px;
-    height: 35px; /* 다른 입력 필드와 맞추기 위해 높이 조정 */
+    height: 35px;
 }
 
 .storemanage-search-buttons {
@@ -104,58 +104,99 @@
     height: 600px;
 }
 
-.storemanage-chart-view-mode {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px;
-}
-
-.storemanage-view-mode-button {
-    padding: 8px 16px;
-    margin: 0 5px;
-    cursor: pointer;
-    border: 1px solid #333;
-    background-color: #fff;
-    color: #333;
-}
-
-.storemanage-view-mode-button.active {
-    background-color: #333;
-    color: #fff;
-}
-
-/* 달력 입력 칸 스타일 */
 .react-datepicker-wrapper {
-    width: 150px !important; /* 원하는 크기로 설정 */
-  }
+    width: 150px !important;
+}
   
-  .react-datepicker__input-container input {
-    width: 150px !important; /* 원하는 크기로 설정 */
-    padding: 8px !important; /* 패딩을 늘려서 더 넓어 보이게 */
+.react-datepicker__input-container input {
+    width: 150px !important;
+    padding: 8px !important;
     font-size: 14px !important;
     border: 1px solid #ccc !important;
     border-radius: 3px !important;
-  }
-
-  .storemanage-dropdown {
-    border: 1px solid #ccc; /* 테두리 색상 */
-    border-radius: 4px; /* 둥근 모서리 */
-    padding: 5px; /* 내부 여백 */
-    margin: 0 5px; /* 좌우 여백 */
-  }
-
-  .storemanage-dropdown {
-    border: 1px solid #ccc; /* 테두리 색상 */
-    border-radius: 4px; /* 둥근 모서리 */
-    padding: 5px; /* 내부 여백 */
-    margin: 0 5px; /* 좌우 여백 */
-    width: 100px; /* 기본 너비 */
-  }
-  
-  .storemanage-dropdown.wide {
-    width: 150px; /* '매장 전체 보기'를 위한 넓은 드롭박스 */
-  }
-
-  .storemanage-dropdown.month-input {
-    width: 65px; /* 원하는 크기로 설정 */
 }
+
+.storemanage-dropdown {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    margin: 0 5px;
+    width: 100px;
+}
+
+.storemanage-dropdown.wide {
+    width: 250px;
+}
+
+.storemanage-dropdown.month-input {
+    width: 65px;
+}
+
+.circle-checkbox {
+    appearance: none;
+    border: 2px solid #000;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    position: relative;
+    cursor: pointer;
+}
+
+.circle-checkbox:checked::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background-color: #4a7aff;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.product-item {
+    display: inline-block;
+    width: 230px;
+    margin: 20px;
+    text-align: center;
+}
+
+.product-image-placeholder {
+    width: 230px;
+    height: 230px;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.product-name {
+    font-size: 14px;
+    color: #333;
+}
+
+.store-name{
+    margin-top: 30px;
+    font-size: 20px;
+}
+
+.related-item-title{
+    margin-top: 30px;
+    font-size: 20px;
+
+}
+
+.product-list {
+    display: flex;
+    justify-content: center;
+}
+
+.related-items-list {
+    display: flex;
+    justify-content: center;
+  }

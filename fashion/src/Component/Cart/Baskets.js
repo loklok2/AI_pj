@@ -29,12 +29,18 @@ const Baskets = () => {
             'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
           },
         })
-          .then(response => response.json())
-          .then(data => setItems(data.map(item => ({ ...item, isSelected: false }))))
-          .catch(error => console.error('장바구니 가져오기 실패:', error));
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to fetch cart items');
+            }
+            return response.json();
+          })
+          .then((data) => setItems(data.map((item) => ({ ...item, isSelected: false }))))
+          .catch((error) => console.error('Failed to fetch cart items:', error));
       } else {
+        // 세션에서 데이터를 가져와 상태에 저장
         const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
-        setItems(storedItems.map(item => ({ ...item, isSelected: false })));
+        setItems(storedItems.map((item) => ({ ...item, isSelected: false })));
       }
     } else {
       setShowLoginModal(true);
@@ -42,15 +48,11 @@ const Baskets = () => {
   }, [navigate, userId]);
 
   const totalPrice = items
-    .filter(item => item.isSelected)
-    .reduce((acc, item) => {
-      const price = parseInt(item.price, 10) || 0;
-      const quantity = parseInt(item.quantity, 10) || 1;
-      return acc + (price * quantity);
-    }, 0);
+    .filter((item) => item.isSelected)
+    .reduce((acc, item) => acc + (parseInt(item.price, 10) || 0) * (parseInt(item.quantity, 10) || 1), 0);
 
   const handlePayment = () => {
-    const selectedItems = items.filter(item => item.isSelected);
+    const selectedItems = items.filter((item) => item.isSelected);
     if (selectedItems.length === 0) {
       setShowModal(true);
     } else {
@@ -60,24 +62,29 @@ const Baskets = () => {
   };
 
   const handleSelectAll = () => {
-    const newSelectAll = !selectAll;
-    setSelectAll(newSelectAll);
-    setItems(items.map(item => ({ ...item, isSelected: newSelectAll })));
+    setSelectAll((prevSelectAll) => {
+      const newSelectAll = !prevSelectAll;
+      setItems((prevItems) => prevItems.map((item) => ({ ...item, isSelected: newSelectAll })));
+      return newSelectAll;
+    });
   };
 
   const handleSelectItem = (id) => {
-    const updatedItems = items.map(item =>
-      item.id === id ? { ...item, isSelected: !item.isSelected } : item
-    );
-    setItems(updatedItems);
+    setItems((prevItems) => {
+      const updatedItems = prevItems.map((item) =>
+        item.productId === id ? { ...item, isSelected: !item.isSelected } : item
+      );
 
-    // 전체 선택 체크박스 상태 업데이트
-    const allSelected = updatedItems.every(item => item.isSelected);
-    setSelectAll(allSelected);
+      // 모든 아이템이 선택되었는지 확인
+      const allSelected = updatedItems.every((item) => item.isSelected);
+      setSelectAll(allSelected); // 모든 아이템이 선택되었을 때만 전체 선택 박스를 체크
+
+      return updatedItems;
+    });
   };
 
   const handleDeleteSelected = () => {
-    const remainingItems = items.filter(item => !item.isSelected);
+    const remainingItems = items.filter((item) => !item.isSelected);
     setItems(remainingItems);
 
     if (isLoggedIn) {
@@ -88,16 +95,15 @@ const Baskets = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
         },
         body: JSON.stringify({ items: remainingItems }),
-      })
-        .catch(error => console.error('장바구니 업데이트 실패:', error));
+      }).catch((error) => console.error('Failed to update cart:', error));
     } else {
       sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
     }
   };
 
-  const handleIncreaseQuantity = (id) => {
-    const updatedItems = items.map(item => 
-      item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+  const handleQuantityChange = (id, newQuantity) => {
+    const updatedItems = items.map((item) =>
+      item.productId === id && newQuantity >= 1 ? { ...item, quantity: newQuantity } : item
     );
     setItems(updatedItems);
 
@@ -109,36 +115,14 @@ const Baskets = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
         },
         body: JSON.stringify(updatedItems),
-      })
-        .catch(error => console.error('장바구니 업데이트 실패:', error));
-    } else {
-      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
-    }
-  };
-
-  const handleDecreaseQuantity = (id) => {
-    const updatedItems = items.map(item => 
-      item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
-    );
-    setItems(updatedItems);
-
-    if (isLoggedIn) {
-      fetch(`/api/cart/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(updatedItems),
-      })
-        .catch(error => console.error('장바구니 업데이트 실패:', error));
+      }).catch((error) => console.error('Failed to update cart:', error));
     } else {
       sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
     }
   };
 
   const handleDeleteItem = (id) => {
-    const remainingItems = items.filter(item => item.id !== id);
+    const remainingItems = items.filter((item) => item.productId !== id);
     setItems(remainingItems);
 
     if (isLoggedIn) {
@@ -149,33 +133,9 @@ const Baskets = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
         },
         body: JSON.stringify({ items: remainingItems }),
-      })
-        .catch(error => console.error('장바구니 업데이트 실패:', error));
+      }).catch((error) => console.error('Failed to update cart:', error));
     } else {
       sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
-    }
-  };
-
-  const handleQuantityChange = (id, value) => {
-    if (value >= 1) {
-      const updatedItems = items.map(item =>
-        item.id === id ? { ...item, quantity: value } : item
-      );
-      setItems(updatedItems);
-
-      if (isLoggedIn) {
-        fetch(`/api/cart/${userId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(updatedItems),
-        })
-          .catch(error => console.error('장바구니 업데이트 실패:', error));
-      } else {
-        sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
-      }
     }
   };
 
@@ -196,43 +156,35 @@ const Baskets = () => {
       </p>
 
       <div className="basket-selection">
-        <input
-          type="checkbox"
-          id="select-all"
-          checked={selectAll}
-          onChange={handleSelectAll}
-        />
+        <input type="checkbox" id="select-all" checked={selectAll} onChange={handleSelectAll} />
         <label htmlFor="select-all">전체 선택</label>
       </div>
 
       {items.map((item) => (
-        <div key={item.id} className="basket-item">
+        <div key={item.productId} className="basket-item">
           <div className="basket-item-checkbox">
-            <input
-              type="checkbox"
-              checked={item.isSelected}
-              onChange={() => handleSelectItem(item.id)}
-            />
+            <input type="checkbox" checked={item.isSelected} onChange={() => handleSelectItem(item.productId)} />
           </div>
+
           <div className="basket-item-info">
             <p>{item.name}</p>
             <p className="basket-item-price">{parseInt(item.price, 10).toLocaleString()}원</p>
           </div>
           <div className="basket-item-controls">
-            <button className="quantity-btn" onClick={() => handleDecreaseQuantity(item.id)}>-</button>
+            <button className="quantity-btn" onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}>-</button>
             <input
               type="number"
-              value={item.quantity !== undefined ? item.quantity : 1}
+              value={item.quantity}
               min="1"
-              onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value))}
-              style={{ textAlign: 'center' }} 
+              onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value))}
+              style={{ textAlign: 'center' }}
             />
-            <button className="quantity-btn" onClick={() => handleIncreaseQuantity(item.id)}>+</button>
+            <button className="quantity-btn" onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}>+</button>
           </div>
           <div className="basket-item-total">
-            <p>총 {(parseInt(item.price, 10) * parseInt(item.quantity)).toLocaleString()}원</p>
+            <p>총 {(item.price * item.quantity).toLocaleString()}원</p>
           </div>
-          <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>x</button>
+          <button className="delete-btn" onClick={() => handleDeleteItem(item.productId)}>x</button>
         </div>
       ))}
 
