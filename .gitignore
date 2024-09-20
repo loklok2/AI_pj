@@ -1,2 +1,2 @@
 ai_model/checkpoint/kfashion_style/model_best.pth.tar
-ai_model/output/image_features(2).csv
+ai_model/output/image_features(2).csv__pycache__
