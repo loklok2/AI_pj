@@ -114,7 +114,7 @@ public class AuthService {
         String accessToken = JWTUtil.getJWT(member.getUsername());
         String refreshToken = JWTUtil.getRefreshToken(member.getUsername());
 
-        return new LoginResponseDTO(accessToken, refreshToken, member.getRole().toString());
+        return new LoginResponseDTO(accessToken, refreshToken, member.getRole().toString(), member.getUserId());
     }
 
     // 이메일 인증
@@ -199,6 +199,6 @@ public class AuthService {
         String newAccessToken = JWTUtil.getJWT(username);
         String newRefreshToken = JWTUtil.getRefreshToken(username);
 
-        return new LoginResponseDTO(newAccessToken, newRefreshToken, member.getRole().toString());
+        return new LoginResponseDTO(newAccessToken, newRefreshToken, member.getRole().toString(), member.getUserId());
     }
 }

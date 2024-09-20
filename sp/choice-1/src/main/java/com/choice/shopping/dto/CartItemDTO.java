@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class CartItemDTO {
     private Long productId;
-    private String imageUrl; // imageData 대신 imageUrl 사용
+    private String pimgPath;
     private String productName;
     private String category;
     private Integer quantity;

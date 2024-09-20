@@ -25,4 +25,5 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
     @Query(nativeQuery = true, value = "SELECT * FROM cart_summary_view WHERE user_id = :userId")
     List<CartItemDTO> findCartSummaryByUserId(@Param("userId") Long userId);
+
 }
