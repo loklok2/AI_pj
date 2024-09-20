@@ -1,7 +1,2 @@
-POST http://localhost:8080/api/auth/reset-password-confirm HTTP/1.1
+GET http://localhost:8080/api/sales/top-products?year=2023&storeId=1 HTTP/1.1
 Content-Type: application/json;
-
-{
-    "token":"Bearer20eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imxva2xvazIiLCJleHAiOjE3MjYyOTAyNDh9.5Qxrw3X7TsmJ7gv7be0_M0RTgWYY3JKmh92jmAcPylc",
-    "newPassword": "FHRfhrdl2@"
-}

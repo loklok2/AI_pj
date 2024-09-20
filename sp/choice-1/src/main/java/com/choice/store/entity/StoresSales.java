@@ -9,10 +9,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedStoredProcedureQueries;
+import jakarta.persistence.NamedStoredProcedureQuery;
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureParameter;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "stores_sales")
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(name = "getTopSellingProducts", procedureName = "get_top_selling_products", parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_year", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_month", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_day", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_store_id", type = Long.class)
+        }),
+        @NamedStoredProcedureQuery(name = "getStoreSales", procedureName = "get_store_sales", parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_year", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_month", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_day", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_store_id", type = Long.class)
+        })
+})
 public class StoresSales {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
