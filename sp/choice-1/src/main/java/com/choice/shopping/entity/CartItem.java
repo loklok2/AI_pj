@@ -29,4 +29,6 @@ public class CartItem {
     private Product product; // 상품 ID
 
     private Integer quantity; // 수량
+
+    private String sessionId; // 세션 ID
 }

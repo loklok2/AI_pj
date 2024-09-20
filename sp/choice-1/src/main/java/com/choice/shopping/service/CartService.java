@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductImg;
 import com.choice.product.repository.ProductRepository;
@@ -14,8 +13,6 @@ import com.choice.shopping.entity.Cart;
 import com.choice.shopping.entity.CartItem;
 import com.choice.shopping.repository.CartItemRepository;
 import com.choice.shopping.repository.CartRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 
@@ -129,20 +126,23 @@ public class CartService {
                                 .build();
         }
 
-        public List<CartItemDTO> getCartItems(String cartItems) {
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                        return mapper.readValue(cartItems, new TypeReference<List<CartItemDTO>>() {
-                        });
-                } catch (JsonProcessingException e) {
-                        throw new RuntimeException("장바구니 아이템 파싱 중 오류가 발생했습니다.", e);
-                }
+        public List<CartItemDTO> getCartItems(String sessionId) {
+                // 세션 ID를 사용하여 비로그인 사용자의 장바구니 아이템 조회
+                return cartItemRepository.findCartSummaryBySessionId(sessionId);
         }
 
-        public void mergeCart(Long userId, List<CartItemDTO> localCartItems) {
-                for (CartItemDTO item : localCartItems) {
+        public void mergeCart(Long userId, String sessionId) {
+                List<CartItemDTO> sessionCartItems = getCartItems(sessionId);
+                for (CartItemDTO item : sessionCartItems) {
                         addToCart(userId, item);
                 }
+                // 세션 장바구니 비우기
+                clearSessionCart(sessionId);
+        }
+
+        private void clearSessionCart(String sessionId) {
+                // 세션 ID에 해당하는 장바구니 아이템 삭제
+                cartItemRepository.deleteBySessionId(sessionId);
         }
 
 }
