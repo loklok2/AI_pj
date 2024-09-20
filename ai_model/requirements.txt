@@ -1,0 +1,17 @@
+numpy
+torch>=1.4.0
+torchvision>=0.5.0
+pyyaml
+pandas
+faiss-cpu
+opencv-python
+ultralytics
+Pillow
+scikit-learn
+matplotlib
+tqdm
+flask
+flask-cors
+streamlit
+koreanize-matplotlib
+
