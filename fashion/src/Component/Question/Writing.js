@@ -12,6 +12,33 @@ const Writing = () => {
   const [file, setFile] = useState(null);
   const [quillInstance, setQuillInstance] = useState(null);
 
+  // 이미지 업로드 핸들러
+  const handleImageUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.url; // 서버에서 받은 이미지 URL
+
+        // Quill 에디터에 이미지 삽입
+        const range = quillInstance.getSelection();
+        quillInstance.insertEmbed(range.index, 'image', imageUrl);
+      } else {
+        throw new Error('이미지 업로드에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    }
+  };
+
   // 텍스트 에디터 초기화
   useEffect(() => {
     if (quillRef.current) {
@@ -19,15 +46,32 @@ const Writing = () => {
         theme: 'snow',
         placeholder: '내용을 입력하세요...',
         modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ align: [] }],
-            [{ color: [] }, { background: [] }],
-            ['link', 'image', 'video'],
-            ['clean']
-          ],
+          toolbar: {
+            container: [
+              [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
+              [{ list: 'ordered' }, { list: 'bullet' }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ align: [] }],
+              [{ color: [] }, { background: [] }],
+              ['link', 'image', 'video'],
+              ['clean']
+            ],
+            handlers: {
+              image: () => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                input.click();
+
+                input.onchange = () => {
+                  const file = input.files[0];
+                  if (file) {
+                    handleImageUpload(file); // 선택한 파일을 서버에 업로드
+                  }
+                };
+              },
+            },
+          },
         },
       });
       setQuillInstance(quill); // Quill 인스턴스 저장
@@ -41,7 +85,8 @@ const Writing = () => {
       return;
     }
 
-    const content = quillInstance.root.innerHTML; // 에디터의 내용 가져오기
+    // Quill 에디터 내용을 Delta(JSON) 형식으로 가져옴
+    const content = quillInstance.getContents(); // JSON 데이터로 가져오기
 
     if (!title || !category || !content) {
       alert('모든 필드를 입력해주세요.');
@@ -52,7 +97,7 @@ const Writing = () => {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('category', category);
-    formData.append('content', content);
+    formData.append('content', JSON.stringify(content)); // JSON으로 변환 후 추가
     if (file) {
       formData.append('images', file); // 이미지 파일 추가
     }
