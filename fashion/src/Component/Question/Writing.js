@@ -85,6 +85,15 @@ const Writing = () => {
       });
     }
 
+    // 전송할 데이터를 콘솔에 출력
+    console.log('전송할 데이터:', {
+      title,
+      category,
+      content: JSON.stringify(content),
+      files: files.map(file => file.name)
+    });
+
+
     try {
       const response = await fetch('http://10.125.121.188:8080/api/qboard', {
         method: 'POST',

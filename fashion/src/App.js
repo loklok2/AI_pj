@@ -28,6 +28,8 @@ import Admheader from './Component/Admins/Admheader';
 import Home from "./Component/Mainpage/Home";
 import Managers from './Component/Admins/Managers';
 import Storemanage from './Component/Admins/Storemanage';
+import FloatingCircle from './Component/Mainpage/FloatingCircle';
+import AnotherFloatingCircle from './Component/Mainpage/AnotherFloatingCircle';
 
 function App() {
   const location = useLocation();
@@ -70,7 +72,15 @@ function App() {
       </div>
 
       {!noHeaderFooterRoutes.includes(location.pathname) && <Footer />}
+      {!noHeaderFooterRoutes.includes(location.pathname) && (
+        <>
+          <FloatingCircle />
+          <AnotherFloatingCircle />
+        </>
+      )}
     </div>
+
+    
   );
 }
 

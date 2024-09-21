@@ -41,7 +41,7 @@ const Login = () => {
 
                 // 권한에 따른 페이지 리다이렉션
                 if (data.role === 'ADMIN') {
-                    navigate('/manager'); // 관리자 페이지로 이동
+                    navigate('/products'); 
                 } else {
                     navigate('/products'); // 사용자 홈으로 이동
                 }

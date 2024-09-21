@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { format, getDay } from 'date-fns';
+import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Line, Doughnut } from 'react-chartjs-2';
 import Admheader from '../Admins/Admheader';
@@ -34,9 +34,10 @@ ChartJS.register(
 registerLocale('ko', ko);
 
 const Manager = () => {
-  const [totalVisits, setTotalVisits] = useState(3420);
-  const [inquiries, setInquiries] = useState(120);
-  const [inquiryReplies, setInquiryReplies] = useState(110);
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [dailyVisitors, setDailyVisitors] = useState(0);
+  const [inquiries, setInquiries] = useState(0);
+  const [inquiryReplies, setInquiryReplies] = useState(0);
   const [orderList, setOrderList] = useState([]);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [chartType, setChartType] = useState('realtime');
@@ -45,6 +46,32 @@ const Manager = () => {
   const [filteredData, setFilteredData] = useState({
     labels: [],
     datasets: [{ label: '일별 매출', data: [] }],
+  });
+  const [doughnutData, setDoughnutData] = useState({
+    labels: [],
+    datasets: [{
+      label: '카테고리별 판매율',
+      data: [],
+      backgroundColor: [
+        'rgba(54, 162, 235, 0.5)',
+        'rgba(75, 192, 192, 0.5)',
+        'rgba(255, 206, 86, 0.5)',
+        'rgba(153, 102, 255, 0.5)',
+        'rgba(255, 99, 132, 0.5)',
+        'rgba(255, 159, 64, 0.5)',
+        'rgba(128, 0, 128, 0.5)',
+      ],
+      borderColor: [
+        'rgba(54, 162, 235, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 99, 132, 1)',
+        'rgba(255, 159, 64, 1)',
+        'rgba(128, 0, 128, 1)',
+      ],
+      borderWidth: 1,
+    }],
   });
 
   const realTimeData = {
@@ -73,35 +100,6 @@ const Manager = () => {
     ],
   };
 
-  const doughnutData = {
-    labels: ['캐주얼', '포멀', '스포티', '빈티지', '보헤미안', '미니멀리즘', '스트릿웨어'],
-    datasets: [
-      {
-        label: '카테고리별 판매율',
-        data: [300, 500, 100, 200, 400, 250, 333],
-        backgroundColor: [
-          'rgba(54, 162, 235, 0.5)',
-          'rgba(75, 192, 192, 0.5)',
-          'rgba(255, 206, 86, 0.5)',
-          'rgba(153, 102, 255, 0.5)',
-          'rgba(255, 99, 132, 0.5)',
-          'rgba(255, 159, 64, 0.5)',
-          'rgba(128, 0, 128, 0.5)',
-        ],
-        borderColor: [
-          'rgba(54, 162, 235, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 99, 132, 1)',
-          'rgba(255, 159, 64, 1)',
-          'rgba(128, 0, 128, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
-
   const doughnutOptions = {
     plugins: {
       legend: {
@@ -116,26 +114,160 @@ const Manager = () => {
     maintainAspectRatio: false,
   };
 
-  const handleCheckboxChange = (orderId) => {
-    setSelectedOrders((prevSelected) =>
-      prevSelected.includes(orderId)
-        ? prevSelected.filter((id) => id !== orderId)
-        : [...prevSelected, orderId]
-    );
+  const API_BASE_URL = 'http://10.125.121.188:8080/api/admin';
+  const VISITOR_API_URL = 'http://10.125.121.188:8080/api/visitors';
+
+  // 데이터 가져오기
+  useEffect(() => {
+    const fetchTotalMembers = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/members/count`);
+        if (response.ok) {
+          const data = await response.json();
+          setTotalMembers(data);
+        }
+      } catch (error) {
+        console.error('총 회원 수를 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    const fetchDailyVisitors = async () => {
+      try {
+        const response = await fetch(`${VISITOR_API_URL}/count`);
+        if (response.ok) {
+          const data = await response.json();
+          setDailyVisitors(data);
+        }
+      } catch (error) {
+        console.error('일일 방문자 수를 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    const fetchInquiriesCount = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/qboards/count`);
+        if (response.ok) {
+          const data = await response.json();
+          setInquiries(data);
+        }
+      } catch (error) {
+        console.error('문의 건수를 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    const fetchInquiryRepliesCount = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/comments/admin/count`);
+        if (response.ok) {
+          const data = await response.json();
+          setInquiryReplies(data);
+        }
+      } catch (error) {
+        console.error('답변된 문의 건수를 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/orders`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrderList(data);
+        }
+      } catch (error) {
+        console.error('주문 목록을 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    const fetchCategorySalesPercentage = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/sales/category-percentage`);
+        if (response.ok) {
+          const data = await response.json();
+          const labels = Object.keys(data);
+          const salesData = Object.values(data);
+          setDoughnutData({
+            labels: labels,
+            datasets: [{
+              label: '카테고리별 판매율',
+              data: salesData,
+              backgroundColor: [
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(75, 192, 192, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(153, 102, 255, 0.5)',
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(255, 159, 64, 0.5)',
+                'rgba(128, 0, 128, 0.5)',
+              ],
+              borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(128, 0, 128, 1)',
+              ],
+              borderWidth: 1,
+            }],
+          });
+        }
+      } catch (error) {
+        console.error('카테고리별 판매율을 가져오는 중 오류 발생:', error);
+      }
+    };
+
+    fetchTotalMembers();
+    fetchDailyVisitors();
+    fetchInquiriesCount();
+    fetchInquiryRepliesCount();
+    fetchOrders();
+    fetchCategorySalesPercentage();
+  }, []);
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newStatus }),
+      });
+
+      if (response.ok) {
+        setOrderList((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId ? { ...order, deliveryStatus: newStatus } : order
+          )
+        );
+      } else {
+        console.error('주문 상태 업데이트 중 오류 발생:', response.statusText);
+      }
+    } catch (error) {
+      console.error('주문 상태 업데이트 중 오류 발생:', error);
+    }
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    setOrderList((prevOrders) =>
-      prevOrders.map((order) =>
-        order.orderId === orderId ? { ...order, deliveryStatus: newStatus } : order
-      )
-    );
-  };
+  const handleDeleteClick = async () => {
+    try {
+      await Promise.all(
+        selectedOrders.map(async (orderId) => {
+          const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
+            method: 'PATCH',
+          });
+          if (!response.ok) {
+            console.error(`주문 취소 중 오류 발생 (Order ID: ${orderId}):`, response.statusText);
+          }
+        })
+      );
 
-  const handleDeleteClick = () => {
-    const updatedOrderList = orderList.filter(order => !selectedOrders.includes(order.orderId));
-    setOrderList(updatedOrderList);
-    setSelectedOrders([]);
+      setOrderList(orderList.filter(order => !selectedOrders.includes(order.orderId)));
+      setSelectedOrders([]);
+    } catch (error) {
+      console.error('주문 취소 중 오류 발생:', error);
+    }
   };
 
   const handleSaveClick = () => {
@@ -145,70 +277,6 @@ const Manager = () => {
   const handleSearchClick = () => {
     console.log("조회 시작 날짜: ", startDate ? format(startDate, 'yyyy.MM.dd') : "선택 안 됨");
     console.log("조회 종료 날짜: ", endDate ? format(endDate, 'yyyy.MM.dd') : "선택 안 됨");
-
-    if (chartType === 'realtime') {
-      const filteredLabels = realTimeData.labels.filter((label, index) => {
-        const parts = label.match(/(\d+)월 (\d+)일/);
-        if (!parts) return false;
-
-        const month = parts[1].padStart(2, '0');
-        const day = parts[2].padStart(2, '0');
-        const labelDate = new Date(`2024-${month}-${day}`);
-
-        return (!startDate || labelDate >= new Date(startDate)) && (!endDate || labelDate <= new Date(endDate));
-      });
-
-      const filteredDataValues = realTimeData.datasets[0].data.filter((_, index) => {
-        const parts = realTimeData.labels[index].match(/(\d+)월 (\d+)일/);
-        if (!parts) return false;
-
-        const month = parts[1].padStart(2, '0');
-        const day = parts[2].padStart(2, '0');
-        const labelDate = new Date(`2024-${month}-${day}`);
-
-        return (!startDate || labelDate >= new Date(startDate)) && (!endDate || labelDate <= new Date(endDate));
-      });
-
-      setFilteredData({
-        labels: filteredLabels,
-        datasets: [
-          {
-            label: '일별 매출',
-            data: filteredDataValues,
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            tension: 0.1,
-          },
-        ],
-      });
-    } else if (chartType === 'cumulative') {
-      const filteredLabels = cumulativeData.labels.filter((label, index) => {
-        const monthStartDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-01`);
-        const monthEndDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-31`);
-
-        return (!startDate || monthEndDate >= new Date(startDate)) && (!endDate || monthStartDate <= new Date(endDate));
-      });
-
-      const filteredDataValues = cumulativeData.datasets[0].data.filter((_, index) => {
-        const monthStartDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-01`);
-        const monthEndDate = new Date(`2024-${(index + 1).toString().padStart(2, '0')}-31`);
-
-        return (!startDate || monthEndDate >= new Date(startDate)) && (!endDate || monthStartDate <= new Date(endDate));
-      });
-
-      setFilteredData({
-        labels: filteredLabels,
-        datasets: [
-          {
-            label: '월별 누적 매출',
-            data: filteredDataValues,
-            fill: false,
-            borderColor: 'rgba(255,99,132,1)',
-            tension: 0.1,
-          },
-        ],
-      });
-    }
   };
 
   useEffect(() => {
@@ -219,19 +287,13 @@ const Manager = () => {
     }
   }, [chartType]);
 
-  useEffect(() => {
-    setOrderList([
-      { orderId: '76015-1', userId: 'user001', productInfo: '와일드 퀘스트 바람막이 자켓', totalPrice: '29,900원', orderDate: '2024-09-10', deliveryStatus: '배송 중' },
-      { orderId: '76015-2', userId: 'user002', productInfo: '블랙 헬릭스 셔츠', totalPrice: '39,900원', orderDate: '2024-09-11', deliveryStatus: '배송 중' },
-      { orderId: '76015-3', userId: 'user003', productInfo: '바디크림', totalPrice: '39,800원', orderDate: '2024-09-12', deliveryStatus: '배송 중' },
-      { orderId: '76015-4', userId: 'user004', productInfo: '플로팅 로트리 스마트', totalPrice: '37,900원', orderDate: '2024-09-13', deliveryStatus: '배송 중' },
-      { orderId: '76015-5', userId: 'user005', productInfo: '다이렉트 스텝 커버 레드', totalPrice: '52,900원', orderDate: '2024-09-14', deliveryStatus: '배송 중' },
-      { orderId: '76015-5', userId: 'user005', productInfo: '다이렉트 스텝 커버 레드', totalPrice: '52,900원', orderDate: '2024-09-14', deliveryStatus: '배송 중' },
-      { orderId: '76015-5', userId: 'user005', productInfo: '다이렉트 스텝 커버 레드', totalPrice: '52,900원', orderDate: '2024-09-14', deliveryStatus: '배송 중' },
-    ]);
-
-    setFilteredData(realTimeData);
-  }, []);
+  const handleCheckboxChange = (orderId) => {
+    setSelectedOrders((prevSelected) =>
+      prevSelected.includes(orderId)
+        ? prevSelected.filter((id) => id !== orderId)
+        : [...prevSelected, orderId]
+    );
+  };
 
   return (
     <div>
@@ -242,12 +304,12 @@ const Manager = () => {
 
         <div className="manager-dashboard-stats">
           <div className="manager-dashboard-stat-box">
-            <p>총 회원수</p>
-            <p>{totalVisits}</p>
+            <p>총 회원 수</p>
+            <p>{totalMembers}</p>
           </div>
           <div className="manager-dashboard-stat-box">
-            <p>총 방문자</p>
-            <p>{totalVisits}</p>
+            <p>총 방문자 수</p>
+            <p>{dailyVisitors}</p>
           </div>
           <div className="manager-dashboard-stat-box">
             <p>고객 문의</p>
