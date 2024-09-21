@@ -21,6 +21,7 @@ const Order = () => {
     address: '',
     orderDate: '',
     request: '',
+    orderNumber: '', // 주문번호 추가
   });
 
   // sessionStorage에서 주문 데이터를 불러오는 함수
@@ -33,6 +34,7 @@ const Order = () => {
       address: '서울특별시 강남구 테헤란로 123, 5층',
       orderDate: formatDate(new Date()), // 날짜를 YYYY.MM.DD 형식으로 변환
       request: '문 앞에 두고 가주세요.',
+      orderNumber: '12345', // 목업 주문번호 추가
     };
     
     setOrderItems(storedOrderItems);
@@ -49,11 +51,26 @@ const Order = () => {
         {orderItems.length > 0 ? (
           orderItems.map((item, index) => (
             <div key={index} className="order-page-item">
-              <div className="order-page-item-shape"></div>
+              <div className="order-page-item-image-placeholder">
+                {item.images && item.images.length > 0 ? (
+                  <img
+                    src={`http://10.125.121.188:8080${item.images[0]}`}
+                    alt={item.name}
+                    className="order-page-item-image"
+                    onError={(e) => (e.target.src = '/images/default-placeholder.png')} // 이미지 로드 실패 시 대체 이미지
+                  />
+                ) : (
+                  <img
+                    src="/images/default-placeholder.png"
+                    alt="Placeholder"
+                    className="order-page-item-image"
+                  />
+                )}
+              </div>
               <div className="order-page-item-details">
                 <p className="order-page-item-name">{item.name}</p>
                 <p className="order-page-item-price">
-                  {(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString()}원
+                  {(item.price * item.quantity).toLocaleString()}원 {/* 수정된 부분 */}
                 </p>
                 <p className="order-page-item-quantity">수량: {item.quantity}</p>
                 <p className="order-page-item-size">사이즈: {item.size}</p> {/* 사이즈 추가 */}
@@ -69,6 +86,7 @@ const Order = () => {
       <div className="order-page-info">
         <h3 className="order-page-info-title">주문 정보</h3>
         <div className="order-page-info-details">
+          <p><strong>주문번호:</strong> {orderInfo.orderNumber}</p> {/* 주문번호 추가 */}
           <p><strong>주문자명:</strong> {orderInfo.recipientName}</p>
           <p><strong>전화번호:</strong> {orderInfo.phoneNumber}</p>
           <p><strong>주소:</strong> {orderInfo.address}</p>
@@ -79,7 +97,7 @@ const Order = () => {
 
       {/* 버튼 */}
       <div className="order-page-buttons">
-        <button className="order-page-main-button" onClick={() => navigate('/')}>메인 홈 가기</button>
+        <button className="order-page-main-button" onClick={() => navigate('/products')}>메인 홈 가기</button>
         <button className="order-page-mypage-button" onClick={() => navigate('/mypage')}>마이페이지</button>
       </div>
     </div>

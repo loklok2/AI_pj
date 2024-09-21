@@ -26,7 +26,7 @@ const PayCompleted = () => {
   };
 
   const handleMainPage = () => {
-    navigate('/'); // 메인 페이지로 이동
+    navigate('/products'); // 메인 페이지로 이동
   };
 
   return (

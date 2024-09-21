@@ -117,8 +117,8 @@ const Product = () => {
     }
   };
 
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
+  const handleCategorySelect = (categoryKo) => {
+    setSelectedCategory(categoryKo);
     setCurrentPage(1);
   };
 
@@ -212,7 +212,7 @@ const CategoryBar = ({ categories, selectedCategory, setSelectedCategory }) => (
       <span
         key={index}
         className={`category-item ${selectedCategory === category.ko ? 'active' : ''}`}
-        onClick={() => setSelectedCategory(category.ko)}
+        onClick={() => setSelectedCategory(category.ko)} // 한국어 이름을 전달하도록 수정
       >
         {category.ko} / {category.en} {/* 한국어와 영어를 같이 표시 */}
       </span>

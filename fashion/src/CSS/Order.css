@@ -117,3 +117,12 @@
 .order-page-mypage-button:hover {
     background-color: #333;
 }
+
+/* Order.css */
+.order-page-item-image {
+    width: 120px;  /* 이미지 너비 조정 */
+    height: 120px; /* 이미지 높이 조정 */
+    object-fit: cover; /* 이미지가 영역에 맞게 잘리도록 설정 */
+    border-radius: 0px; /* 모서리를 둥글게 처리 */
+    margin-right: 30px;
+  }

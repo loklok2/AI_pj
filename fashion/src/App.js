@@ -33,8 +33,8 @@ import AnotherFloatingCircle from './Component/Mainpage/AnotherFloatingCircle';
 
 function App() {
   const location = useLocation();
-
   const noHeaderFooterRoutes = ['/admin', '/manager', '/managers', '/storemanage'];
+  const userRole = localStorage.getItem('role'); // 로그인 유저의 role 정보를 가져옵니다.
 
   return (
     <div>
@@ -74,13 +74,12 @@ function App() {
       {!noHeaderFooterRoutes.includes(location.pathname) && <Footer />}
       {!noHeaderFooterRoutes.includes(location.pathname) && (
         <>
-          <FloatingCircle />
           <AnotherFloatingCircle />
+          {/* userRole이 'ADMIN'인 경우에만 AnotherFloatingCircle 표시 */}
+          {userRole === 'ADMIN' && <FloatingCircle />}
         </>
       )}
     </div>
-
-    
   );
 }
 
