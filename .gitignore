@@ -1,0 +1,12 @@
+checkpoint/
+data/
+output/
+db/csv
+web/
+
+
+.log
+.index
+.ipynb
+.pt
+.pth
