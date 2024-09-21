@@ -28,6 +28,7 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
         @Query(nativeQuery = true, value = "SELECT * FROM category_sales_percentage")
         List<Object[]> findCategorySalesPercentage();
 
+        // 주문 상세 조회
         @Query(nativeQuery = true, value = "SELECT * FROM order_details_view WHERE user_id = :userId")
         List<OrderDTO> findOrderDetailsByUserId(@Param("userId") Long userId);
 
