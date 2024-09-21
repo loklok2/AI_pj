@@ -5,19 +5,24 @@ import '../../CSS/Board.css';
 const Board = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [categoryFilter, setCategoryFilter] = useState('전체'); // 카테고리 필터 상태 추가
-  const [isGuest, setIsGuest] = useState(false); // 비회원 로그인 상태 관리
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
-  const [showModal, setShowModal] = useState(false); // 모달 창 상태 추가
-  const [qnaData, setQnaData] = useState([]); // Q&A 데이터 상태
+  const [categoryFilter, setCategoryFilter] = useState('전체');
+  const [isGuest, setIsGuest] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(''); // 사용자 역할 상태 추가
+  const [showModal, setShowModal] = useState(false);
+  const [qnaData, setQnaData] = useState([]);
   const itemsPerPage = 15;
 
   useEffect(() => {
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
-    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+    const accessToken = localStorage.getItem('accessToken');
+    const role = localStorage.getItem('role'); // 사용자 역할 가져오기
 
     if (guestLogin) setIsGuest(true);
-    if (userLoggedIn) setIsLoggedIn(true);
+    if (accessToken) {
+      setIsLoggedIn(true);
+      setUserRole(role); // 역할 상태 설정
+    }
 
     // API를 사용하여 Q&A 데이터를 가져옵니다.
     fetch('http://10.125.121.188:8080/api/qboard')
@@ -33,20 +38,16 @@ const Board = () => {
       });
   }, []);
 
-  // 페이지 변경 함수
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
   };
 
-  // 카테고리 필터 적용된 데이터
-  const filteredData =
-    categoryFilter === '전체'
-      ? qnaData
-      : qnaData.filter((item) => item.category === categoryFilter);
+  const filteredData = categoryFilter === '전체'
+    ? qnaData
+    : qnaData.filter((item) => item.category === categoryFilter);
 
-  // 데이터 페이징 처리
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
@@ -55,7 +56,7 @@ const Board = () => {
 
   const handleWriteClick = () => {
     if (!isGuest && !isLoggedIn) {
-      setShowModal(true); // 모달 창 표시
+      setShowModal(true);
       return;
     }
     navigate('/write');
@@ -63,7 +64,7 @@ const Board = () => {
 
   const handleRowClick = (id) => {
     if (!isGuest && !isLoggedIn) {
-      setShowModal(true); // 모달 창 표시
+      setShowModal(true);
       return;
     }
     navigate(`/qna/${id}`);
@@ -71,7 +72,7 @@ const Board = () => {
 
   const closeModal = () => {
     setShowModal(false);
-    navigate('/login'); // 모달 닫은 후 로그인 페이지로 이동
+    navigate('/login');
   };
 
   return (
@@ -102,7 +103,7 @@ const Board = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((item, index) => (
+            {currentItems.map((item) => (
               <tr
                 key={item.id}
                 onClick={() => handleRowClick(item.id)}
@@ -120,10 +121,12 @@ const Board = () => {
       </div>
 
       <div className="qna-board-actions">
-        <button onClick={handleWriteClick}>작성</button>
+        {/* 관리자 또는 비회원/일반 로그인한 사용자만 '작성' 버튼 보이도록 설정 */}
+        {(isGuest || isLoggedIn) && userRole !== 'GUEST' && (
+          <button onClick={handleWriteClick}>작성</button>
+        )}
       </div>
 
-      {/* 페이지 네이션 */}
       <div className="qna-board-pagination">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
@@ -150,7 +153,6 @@ const Board = () => {
         </button>
       </div>
 
-      {/* 모달 창 */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">

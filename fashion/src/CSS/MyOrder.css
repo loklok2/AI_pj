@@ -74,11 +74,26 @@
 }
 
 .myorder-input {
-  width: 30%;
-  padding: 10px;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-family: 'Noto Sans KR', sans-serif;
+  margin-right: 5px;
+}
+
+.date-picker-input {
+  width: 350px; /* 시작 날짜와 종료 날짜 입력 칸을 넓게 설정 */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.input-with-icon .myorder-input {
+  width: 450px; /* 시작 날짜와 종료 날짜 입력 칸만 넓게 설정 */
+}
+
+.product-name-input {
+  width: 300px; /* 원하는 상품명 입력 칸의 너비 설정 */
 }
 
 .myorder-search-btn {

@@ -1,64 +1,97 @@
-import React, { useState } from 'react'; 
-import Admheader from '../Admins/Admheader'; 
+import React, { useState, useEffect } from 'react';
+import Admheader from '../Admins/Admheader';
 import '../../CSS/Managers.css';
 
 const Managers = () => {
-  const [users, setUsers] = useState([
-    { name: '홍길동', id: 'user001', email: 'user001@example.com', phone: '010-1234-5678', address: '서울시 강남구', style: '캐주얼' },
-    { name: '김철수', id: 'user002', email: 'user002@example.com', phone: '010-2345-6789', address: '부산시 해운대구', style: '스포티' },
-    { name: '이영희', id: 'user003', email: 'user003@example.com', phone: '010-3456-7890', address: '대구시 북구', style: '포멀' },
-    { name: '홍길동', id: 'user001', email: 'user001@example.com', phone: '010-1234-5678', address: '서울시 강남구', style: '캐주얼' },
-    { name: '김철수', id: 'user002', email: 'user002@example.com', phone: '010-2345-6789', address: '부산시 해운대구', style: '스포티' },
-    { name: '홍길동', id: 'user001', email: 'user001@example.com', phone: '010-1234-5678', address: '서울시 강남구', style: '캐주얼' },
-    { name: '김철수', id: 'user002', email: 'user002@example.com', phone: '010-2345-6789', address: '부산시 해운대구', style: '스포티' }
-  ]);
-
+  const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [posts, setPosts] = useState([
-    { id: 1, category: '일반', title: '배송 문의', author: 'user001', date: '2024-09-10' },
-    { id: 2, category: '제품', title: '상품 품질 관련', author: 'user002', date: '2024-09-11' },
-    { id: 3, category: '결제', title: '환불 요청', author: 'user003', date: '2024-09-12' },
-    { id: 3, category: '결제', title: '환불 요청', author: 'user003', date: '2024-09-12' },
-    { id: 3, category: '결제', title: '환불 요청', author: 'user003', date: '2024-09-12' },
-    { id: 3, category: '결제', title: '환불 요청', author: 'user003', date: '2024-09-12' },
-  ]);
-
+  const [posts, setPosts] = useState([]);
   const [selectedPosts, setSelectedPosts] = useState([]);
-  const [products, setProducts] = useState([
-    { image: 'tshirt.png', name: '티셔츠', info: '면 소재', price: '₩20,000', size: 'M, L, XL', date: '2024-09-01', style: '캐주얼' },
-    { image: 'jeans.png', name: '청바지', info: '데님 소재', price: '₩40,000', size: '30, 32, 34', date: '2024-09-02', style: '포멀' },
-    { image: 'shoes.png', name: '운동화', info: '합성 가죽', price: '₩60,000', size: '250, 260, 270', date: '2024-09-03', style: '스포티' },
-    { image: 'tshirt.png', name: '티셔츠', info: '면 소재', price: '₩20,000', size: 'M, L, XL', date: '2024-09-01', style: '캐주얼' },
-    { image: 'jeans.png', name: '청바지', info: '데님 소재', price: '₩40,000', size: '30, 32, 34', date: '2024-09-02', style: '포멀' },
-    { image: 'tshirt.png', name: '티셔츠', info: '면 소재', price: '₩20,000', size: 'M, L, XL', date: '2024-09-01', style: '캐주얼' },
-    { image: 'jeans.png', name: '청바지', info: '데님 소재', price: '₩40,000', size: '30, 32, 34', date: '2024-09-02', style: '포멀' },
-  ]);
-
+  const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [originalProduct, setOriginalProduct] = useState(null);
   const [newProduct, setNewProduct] = useState({ image: '', name: '', info: '', price: '', size: '', date: '', style: '' });
 
+  const styleOptions = [
+    { value: '클래식', label: '클래식' },
+    { value: '매니시', label: '매니시' },
+    { value: '페미니', label: '페미니' },
+    { value: '에스닉', label: '에스닉' },
+    { value: '컨템포러리', label: '컨템포러리' },
+    { value: '내추럴', label: '내추럴' },
+    { value: '젠더리스', label: '젠더리스' },
+    { value: '스포티', label: '스포티' },
+    { value: '서브컬처', label: '서브컬처' },
+    { value: '캐주얼', label: '캐주얼' },
+  ];
+
+  useEffect(() => {
+    fetchUsers();
+    fetchPosts();
+    fetchProducts();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/members');
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/qboards');
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/products');
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   const handleCheckboxChange = (id) => {
-    setSelectedUsers(prevState => 
+    setSelectedUsers((prevState) =>
       prevState.includes(id) ? prevState.filter(userId => userId !== id) : [...prevState, id]
     );
   };
 
-  const handleDeleteUsers = () => {
-    setUsers(users.filter(user => !selectedUsers.includes(user.id)));
-    setSelectedUsers([]);
+  const handleDeleteUsers = async () => {
+    try {
+      await Promise.all(selectedUsers.map(id => fetch(`http://10.125.121.188:8080/api/admin/members/${id}`, { method: 'DELETE' })));
+      setUsers(users.filter(user => !selectedUsers.includes(user.id)));
+      setSelectedUsers([]);
+    } catch (error) {
+      console.error('Error deleting users:', error);
+    }
   };
 
   const handlePostCheckboxChange = (id) => {
-    setSelectedPosts(prevState => 
+    setSelectedPosts((prevState) =>
       prevState.includes(id) ? prevState.filter(postId => postId !== id) : [...prevState, id]
     );
   };
 
-  const handleDeletePosts = () => {
-    setPosts(posts.filter(post => !selectedPosts.includes(post.id)));
-    setSelectedPosts([]);
+  const handleDeletePosts = async () => {
+    try {
+      await Promise.all(selectedPosts.map(id => fetch(`http://10.125.121.188:8080/api/admin/qboards/${id}`, { method: 'DELETE' })));
+      setPosts(posts.filter(post => !selectedPosts.includes(post.id)));
+      setSelectedPosts([]);
+    } catch (error) {
+      console.error('Error deleting posts:', error);
+    }
   };
 
   const handleProductChange = (e, index) => {
@@ -75,9 +108,26 @@ const Managers = () => {
     setNewProduct(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const handleAddProduct = () => {
-    setProducts([newProduct, ...products]);
-    setNewProduct({ image: '', name: '', info: '', price: '', size: '', date: '', style: '' });
+  const handleAddProduct = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProduct),
+      });
+
+      if (response.ok) {
+        const addedProduct = await response.json();
+        setProducts([addedProduct, ...products]);
+        setNewProduct({ image: '', name: '', info: '', price: '', size: '', date: '', style: '' });
+      } else {
+        console.error('Failed to add product');
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+    }
   };
 
   const handleEditProduct = (index) => {
@@ -85,9 +135,25 @@ const Managers = () => {
     setOriginalProduct(products[index]);
   };
 
-  const handleUpdateProduct = () => {
-    setEditIndex(null);
-    setOriginalProduct(null);
+  const handleUpdateProduct = async () => {
+    try {
+      const response = await fetch(`http://10.125.121.188:8080/api/admin/products/${products[editIndex].id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(products[editIndex]),
+      });
+
+      if (response.ok) {
+        setEditIndex(null);
+        setOriginalProduct(null);
+      } else {
+        console.error('Failed to update product');
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -100,9 +166,14 @@ const Managers = () => {
     setOriginalProduct(null);
   };
 
-  const handleDeleteProducts = () => {
-    setProducts(products.filter((_, index) => !selectedProducts.includes(index)));
-    setSelectedProducts([]);
+  const handleDeleteProducts = async () => {
+    try {
+      await Promise.all(selectedProducts.map(index => fetch(`http://10.125.121.188:8080/api/admin/products/${products[index].id}`, { method: 'DELETE' })));
+      setProducts(products.filter((_, index) => !selectedProducts.includes(index)));
+      setSelectedProducts([]);
+    } catch (error) {
+      console.error('Error deleting products:', error);
+    }
   };
 
   const handleProductCheckboxChange = (index) => {
@@ -112,11 +183,11 @@ const Managers = () => {
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0]; // 파일 하나만 선택
+    const file = e.target.files[0];
     if (file) {
       setNewProduct((prevState) => ({
         ...prevState,
-        image: file.name // 이미지 파일 이름 저장
+        image: file.name
       }));
     }
   };
@@ -131,19 +202,6 @@ const Managers = () => {
       });
     }
   };
-
-  const styleOptions = [
-    { value: '클래식', label: '클래식' },
-    { value: '매니시', label: '매니시' },
-    { value: '페미니', label: '페미니' },
-    { value: '에스닉', label: '에스닉' },
-    { value: '컨템포러리', label: '컨템포러리' },
-    { value: '내추럴', label: '내추럴' },
-    { value: '젠더리스', label: '젠더리스' },
-    { value: '스포티', label: '스포티' },
-    { value: '서브컬처', label: '서브컬처' },
-    { value: '캐주얼', label: '캐주얼' },
-  ];
 
   return (
     <div>
@@ -165,7 +223,7 @@ const Managers = () => {
           <table className="managers-dashboard-order-table">
             <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white' }}>
               <tr>
-                <th></th> {/* 체크박스 칸 */}
+                <th></th>
                 <th>이름</th>
                 <th>아이디</th>
                 <th>이메일</th>
@@ -203,7 +261,7 @@ const Managers = () => {
           <table className="managers-dashboard-order-table">
             <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white' }}>
               <tr>
-                <th></th> {/* 체크박스 칸 */}
+                <th></th>
                 <th>게시글 번호</th>
                 <th>카테고리</th>
                 <th>제목</th>
@@ -249,8 +307,8 @@ const Managers = () => {
           <table className="managers-dashboard-order-table">
             <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white' }}>
               <tr>
-                <th></th> {/* 체크박스 칸 */}
-                <th>상품 이미지</th> {/* 이미지 필드 추가 */}
+                <th></th>
+                <th>상품 이미지</th>
                 <th>상품명</th>
                 <th>정보</th>
                 <th>가격</th>
@@ -266,13 +324,8 @@ const Managers = () => {
                 <td></td>
                 <td>
                   <label htmlFor="image-upload">첨부</label>
-                  <input
-                    type="file"
-                    id="image-upload"
-                    style={{ display: 'none' }} // 기본 파일 선택 버튼 숨기기
-                    onChange={handleImageUpload}
-                  />
-                  {newProduct.image && <span>{newProduct.image}</span>} {/* 선택된 이미지 파일 이름 표시 */}
+                  <input type="file" id="image-upload" style={{ display: 'none' }} onChange={handleImageUpload} />
+                  {newProduct.image && <span>{newProduct.image}</span>}
                 </td>
                 <td><input type="text" name="name" value={newProduct.name} onChange={handleNewProductChange} /></td>
                 <td><input type="text" name="info" value={newProduct.info} onChange={handleNewProductChange} /></td>
@@ -295,53 +348,18 @@ const Managers = () => {
                     {editIndex === index ? (
                       <>
                         <label htmlFor={`image-upload-${index}`}>이미지 선택</label>
-                        <input
-                          type="file"
-                          id={`image-upload-${index}`}
-                          style={{ display: 'none' }}
-                          onChange={(e) => handleImageEditUpload(e, index)}
-                        />
+                        <input type="file" id={`image-upload-${index}`} style={{ display: 'none' }} onChange={(e) => handleImageEditUpload(e, index)} />
                         {product.image && <span>{product.image}</span>}
                       </>
                     ) : (
                       product.image
                     )}
                   </td>
-                  <td>
-                    {editIndex === index ? (
-                      <input type="text" name="name" value={product.name} onChange={(e) => handleProductChange(e, index)} />
-                    ) : (
-                      product.name
-                    )}
-                  </td>
-                  <td>
-                    {editIndex === index ? (
-                      <input type="text" name="info" value={product.info} onChange={(e) => handleProductChange(e, index)} />
-                    ) : (
-                      product.info
-                    )}
-                  </td>
-                  <td>
-                    {editIndex === index ? (
-                      <input type="text" name="price" value={product.price} onChange={(e) => handleProductChange(e, index)} />
-                    ) : (
-                      product.price
-                    )}
-                  </td>
-                  <td>
-                    {editIndex === index ? (
-                      <input type="text" name="size" value={product.size} onChange={(e) => handleProductChange(e, index)} />
-                    ) : (
-                      product.size
-                    )}
-                  </td>
-                  <td>
-                    {editIndex === index ? (
-                      <input type="text" name="date" value={product.date} onChange={(e) => handleProductChange(e, index)} />
-                    ) : (
-                      product.date
-                    )}
-                  </td>
+                  <td>{editIndex === index ? <input type="text" name="name" value={product.name} onChange={(e) => handleProductChange(e, index)} /> : product.name}</td>
+                  <td>{editIndex === index ? <input type="text" name="info" value={product.info} onChange={(e) => handleProductChange(e, index)} /> : product.info}</td>
+                  <td>{editIndex === index ? <input type="text" name="price" value={product.price} onChange={(e) => handleProductChange(e, index)} /> : product.price}</td>
+                  <td>{editIndex === index ? <input type="text" name="size" value={product.size} onChange={(e) => handleProductChange(e, index)} /> : product.size}</td>
+                  <td>{editIndex === index ? <input type="text" name="date" value={product.date} onChange={(e) => handleProductChange(e, index)} /> : product.date}</td>
                   <td>
                     {editIndex === index ? (
                       <select name="style" value={product.style} onChange={(e) => handleProductChange(e, index)}>
@@ -368,6 +386,6 @@ const Managers = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Managers;

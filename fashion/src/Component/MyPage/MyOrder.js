@@ -10,28 +10,29 @@ import '../../CSS/MyOrder.css';
 registerLocale('ko', ko);
 
 const MyOrder = () => {
-  const [orders, setOrders] = useState([]); // 주문 데이터를 담을 상태
+  const [orders, setOrders] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [visibleOrdersCount, setVisibleOrdersCount] = useState(5); // 기본으로 5개만 보여줌
+  const [visibleOrdersCount, setVisibleOrdersCount] = useState(5);
 
-  // 세션 스토리지에서 주문 데이터 불러오기
+  const [userRole, setUserRole] = useState(''); // 사용자 역할 상태 추가
+  const [isGuest, setIsGuest] = useState(false); // 비회원 로그인 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+
   useEffect(() => {
+    // 세션 스토리지에서 주문 데이터 불러오기
     const storedOrderItems = JSON.parse(sessionStorage.getItem('orderItems')) || [];
     const orderInfo = JSON.parse(sessionStorage.getItem('orderInfo')) || {};
-    const orderNumber = orderInfo.orderNumber || 'N/A'; // 저장된 주문 번호 가져오기
-    const orderDate = orderInfo.orderDate || new Date().toLocaleDateString(); // 주문 날짜
-
-    // 주문 상태 (예시로 "배송 중"으로 설정)
+    const orderNumber = orderInfo.orderNumber || 'N/A';
+    const orderDate = orderInfo.orderDate || new Date().toLocaleDateString();
     const orderStatus = '배송 중';
 
-    // 주문 데이터 구성
     const formattedOrders = storedOrderItems.map((item, index) => ({
-      id: orderNumber + '-' + (index + 1), // 주문 번호에 인덱스 추가하여 고유 번호 생성
+      id: orderNumber + '-' + (index + 1),
       product: item.name,
       price: `${(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString()}원`,
       date: orderDate,
@@ -42,44 +43,47 @@ const MyOrder = () => {
 
     setOrders(formattedOrders);
     setFilteredOrders(formattedOrders);
+
+    // 로그인 상태 및 역할 체크
+    const accessToken = localStorage.getItem('accessToken');
+    const role = localStorage.getItem('role');
+    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
+
+    if (accessToken) {
+      setIsLoggedIn(true);
+      setUserRole(role); // 사용자 역할 설정
+    } else if (guestLogin) {
+      setIsGuest(true);
+      setUserRole('GUEST'); // 비회원 상태 설정
+    }
   }, []);
 
-  // 검색 기능
   const handleSearch = () => {
     const lowerCasedSearchTerm = searchTerm.toLowerCase();
 
     const filtered = orders.filter((order) => {
       const orderDate = new Date(order.date);
-
-      // 날짜 범위 필터링
       const isWithinDateRange =
         (!startDate || orderDate >= startDate) &&
         (!endDate || orderDate <= endDate);
 
-      // 상품명 필터링
       const matchesProduct = order.product.toLowerCase().includes(lowerCasedSearchTerm);
 
       return isWithinDateRange && matchesProduct;
     });
 
     setFilteredOrders(filtered);
-    setVisibleOrdersCount(5); // 검색 시 처음 5개만 표시
+    setVisibleOrdersCount(5);
   };
 
-  // 더보기 기능
   const handleShowMore = () => {
     setVisibleOrdersCount((prevCount) => prevCount + 5);
   };
 
-  // 요일에 따라 CSS 클래스를 적용하는 함수
   const dayClassName = (date) => {
     const day = date.getDay();
-    if (day === 6) {
-      return 'saturday'; // 토요일
-    }
-    if (day === 0) {
-      return 'sunday'; // 일요일
-    }
+    if (day === 6) return 'saturday';
+    if (day === 0) return 'sunday';
     return '';
   };
 
@@ -92,12 +96,29 @@ const MyOrder = () => {
         <div className="myorder-avatar">
           <FontAwesomeIcon icon={faUser} size="2x" />
         </div>
-        <p className="myorder-no-orders">
-          <strong>[Guest]</strong>님의 주문/배송 내역입니다.<br />
-          <strong>
-            <Link to="/mypage" style={{ color: 'black' }}>여기</Link>
-          </strong>를 클릭하면 마이페이지로 이동합니다.
-        </p>
+        {/* 로그인 상태에 따른 메시지 표시 */}
+        {isGuest ? (
+          <p className="myorder-no-orders">
+            <strong>[Guest]</strong>님의 주문/배송 내역입니다.<br />
+            <strong>
+              <Link to="/mypage" style={{ color: 'black' }}>여기</Link>
+            </strong>를 클릭하면 마이페이지로 이동합니다.
+          </p>
+        ) : isLoggedIn && userRole === 'ADMIN' ? (
+          <p className="myorder-no-orders">
+            <strong>[관리자]</strong>님의 주문/배송 내역입니다.<br />
+            <strong>
+              <Link to="/mypage" style={{ color: 'black' }}>여기</Link>
+            </strong>를 클릭하면 마이페이지로 이동합니다.
+          </p>
+        ) : (
+          <p className="myorder-no-orders">
+            <strong>[회원]</strong>님의 주문/배송 내역입니다.<br />
+            <strong>
+              <Link to="/mypage" style={{ color: 'black' }}>여기</Link>
+            </strong>를 클릭하면 마이페이지로 이동합니다.
+          </p>
+        )}
       </div>
 
       <div className="myorder-section-header">주문/배송 내역 조회</div>
@@ -120,7 +141,7 @@ const MyOrder = () => {
           />
           <FontAwesomeIcon
             icon={faCalendar}
-            className="calendar-icon"
+            className="calendar-icon calendar-icon-left"
             onClick={() => setStartDateOpen(!startDateOpen)}
           />
         </div>
@@ -143,13 +164,13 @@ const MyOrder = () => {
           />
           <FontAwesomeIcon
             icon={faCalendar}
-            className="calendar-icon"
+            className="calendar-icon calendar-icon-right"
             onClick={() => setEndDateOpen(!endDateOpen)}
           />
         </div>
         <input
           type="text"
-          className="myorder-input"
+          className="myorder-input product-name-input"
           placeholder="상품명을 입력하세요."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}

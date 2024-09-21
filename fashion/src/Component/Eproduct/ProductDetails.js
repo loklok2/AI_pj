@@ -191,6 +191,21 @@ const ProductDetails = () => {
         <p>상품등록일: 20140612</p>
       </div>
 
+      {/* AI 추천 영역 추가 */}
+      <div className="product-details-page-ai-recommendation">
+        <hr />
+        <p><strong>AI 추천</strong></p>
+        <div className="ai-recommendation-shapes">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="shape-placeholder-wrapper">
+              <div className="shape-placeholder"></div>
+              <p className="item-title">AI Item {index + 1}</p>
+              <p className="item-price">{(Math.random() * 100000).toFixed(0)}원</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* 배송 정보 */}
       <div className="product-details-page-additional-infos">
         <hr />

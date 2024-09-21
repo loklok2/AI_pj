@@ -202,3 +202,42 @@ hr {
 .product-details-page-additional-infoss p {
   margin: 5px 0;
 }
+
+/* AI 추천 스타일 */
+.product-details-page-ai-recommendation {
+  margin-top: 20px;
+  text-align: left;
+  font-size: 16px;
+  color: #000000;
+}
+
+.ai-recommendation-shapes {
+  display: flex;
+  justify-content: space-around; 
+  margin-top: 10px;
+}
+
+.shape-placeholder-wrapper {
+  text-align: center;
+}
+
+.shape-placeholder {
+  width: 150px;
+  height: 150px;
+  background-color: #e0e0e0;
+  border: 1px solid #ccc;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+.item-title {
+  margin: 5px 0;
+  font-size: 14px;
+  color: rgb(51, 51, 51);
+  font-weight: bold;
+}
+
+.item-price {
+  font-size: 14px;
+  color: gray;
+}

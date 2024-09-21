@@ -32,7 +32,7 @@ const Payment = () => {
 
   const handlePaymentSubmit = () => {
     let valid = true;
-  
+
     // 유효성 검사: 필수 입력 항목 체크
     if (recipientName === '') {
       setRecipientError(true);
@@ -40,44 +40,44 @@ const Payment = () => {
     } else {
       setRecipientError(false);
     }
-  
+
     if (phoneNumber === '') {
       setPhoneError(true);
       valid = false;
     } else {
       setPhoneError(false);
     }
-  
+
     if (address === '') {
       setAddressError(true);
       valid = false;
     } else {
       setAddressError(false);
     }
-  
+
     // 모든 입력이 유효할 경우 결제 완료 페이지로 이동
     if (valid) {
       const totalPrice = calculateTotalPrice();
       const orderDate = new Date().toLocaleDateString();
-      
+
       // 주문 번호 생성
       const orderNumber = generateOrderNumber();
-      
+
       const orderInfo = {
-        orderNumber, // 주문 번호 추가
+        orderNumber,
         recipientName,
         phoneNumber,
         address,
         request,
-        userId: 'mockUser', // mock user data 사용
+        userId: 'mockUser',
         orderDate,
       };
-  
+
       // sessionStorage에 데이터 저장
       sessionStorage.setItem('orderInfo', JSON.stringify(orderInfo));
       sessionStorage.setItem('orderItems', JSON.stringify(orderItems));
       sessionStorage.setItem('totalPrice', totalPrice);
-  
+
       // 결제 완료 페이지로 이동
       navigate('/paycompleted');
     }
@@ -116,19 +116,28 @@ const Payment = () => {
           orderItems.map((item) => (
             <div key={item.productId} className="payment-order-item">
               <div className="payment-order-item-image-placeholder">
-                {/* 실제 이미지가 있을 경우 <img> 태그로 대체 */}
+                {item.images && item.images.length > 0 ? (
+                  <img
+                    src={`http://10.125.121.188:8080${item.images[0]}`}
+                    alt={item.name}
+                    className="payment-order-item-image"
+                    onError={(e) => (e.target.src = '/images/default-placeholder.png')}
+                  />
+                ) : (
+                  <img
+                    src="/images/default-placeholder.png"
+                    alt="Placeholder"
+                    className="payment-order-item-image"
+                  />
+                )}
               </div>
               <div className="payment-order-item-details">
                 <p className="payment-order-item-name">{item.name}</p>
                 <p className="payment-order-item-price">
                   {(item.price * item.quantity).toLocaleString()}원
                 </p>
-                <p className="payment-order-item-quantity">
-                  수량: {item.quantity}개
-                </p>
-                <p className="payment-order-item-size">
-                  사이즈: {item.size} {/* 사이즈 표시 */}
-                </p>
+                <p className="payment-order-item-quantity">수량: {item.quantity}개</p>
+                <p className="payment-order-item-size">사이즈: {item.size}</p>
               </div>
               <button className="remove-item-btn" onClick={() => handleRemoveItem(item.productId)}>
                 x
