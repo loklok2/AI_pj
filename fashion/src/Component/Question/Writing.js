@@ -9,37 +9,9 @@ const Writing = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); 
   const [quillInstance, setQuillInstance] = useState(null);
 
-  // 이미지 업로드 핸들러
-  const handleImageUpload = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await fetch('http://10.125.121.188:8080/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const imageUrl = data.url; // 서버에서 받은 이미지 URL
-
-        // Quill 에디터에 이미지 삽입
-        const range = quillInstance.getSelection();
-        quillInstance.insertEmbed(range.index, 'image', imageUrl);
-      } else {
-        throw new Error('이미지 업로드에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('이미지 업로드에 실패했습니다.');
-    }
-  };
-
-  // 텍스트 에디터 초기화
   useEffect(() => {
     if (quillRef.current) {
       const quill = new Quill(quillRef.current, {
@@ -61,12 +33,21 @@ const Writing = () => {
                 const input = document.createElement('input');
                 input.setAttribute('type', 'file');
                 input.setAttribute('accept', 'image/*');
+                input.setAttribute('multiple', true);
                 input.click();
 
                 input.onchange = () => {
-                  const file = input.files[0];
-                  if (file) {
-                    handleImageUpload(file); // 선택한 파일을 서버에 업로드
+                  const selectedFiles = Array.from(input.files);
+                  if (selectedFiles.length > 0) {
+                    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+                    selectedFiles.forEach((file) => {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const range = quill.getSelection();
+                        quill.insertEmbed(range.index, 'image', reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    });
                   }
                 };
               },
@@ -74,32 +55,34 @@ const Writing = () => {
           },
         },
       });
-      setQuillInstance(quill); // Quill 인스턴스 저장
+      setQuillInstance(quill);
     }
   }, []);
 
-  // 작성 버튼 클릭 시 동작
   const handleSubmitClick = async () => {
     if (!quillInstance) {
       console.error('Quill 인스턴스가 초기화되지 않았습니다.');
       return;
     }
 
-    // Quill 에디터 내용을 Delta(JSON) 형식으로 가져옴
-    const content = quillInstance.getContents(); // JSON 데이터로 가져오기
+    const content = quillInstance.getContents(); 
 
     if (!title || !category || !content) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
 
-    // 서버로 전송할 데이터 생성
     const formData = new FormData();
-    formData.append('title', title);
-    formData.append('category', category);
-    formData.append('content', JSON.stringify(content)); // JSON으로 변환 후 추가
-    if (file) {
-      formData.append('images', file); // 이미지 파일 추가
+    formData.append('qboard', new Blob([JSON.stringify({
+      title,
+      category,
+      content: JSON.stringify(content)
+    })], { type: "application/json" }));
+
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('images', file);
+      });
     }
 
     try {
@@ -120,14 +103,17 @@ const Writing = () => {
     }
   };
 
-  // 취소 버튼 클릭 시 동작
   const handleCancelClick = () => {
     navigate('/qna');
   };
 
-  // 첨부 파일 변경 시 동작
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFiles = Array.from(e.target.files);
+    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+  };
+
+  const handleRemoveFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   return (
@@ -173,12 +159,28 @@ const Writing = () => {
           </tr>
           <tr>
             <th>첨부파일</th>
-            <td>
-              <input 
-                type="file" 
-                className="writing-form-file-input"
-                onChange={handleFileChange}
-              />
+            <td style={{ display: "flex", alignItems: "center" }}>
+              <div className="custom-file-input">
+                <button className="file-select-button" onClick={() => document.getElementById('file-upload').click()}>
+                  파일 선택
+                </button>
+                <input 
+                  id="file-upload"
+                  type="file" 
+                  className="writing-form-file-input"
+                  multiple
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+              </div>
+              <div className="file-preview-container" style={{ marginLeft: '10px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {files.map((file, index) => (
+                  <div key={index} className="file-preview-item" style={{ display: 'flex', alignItems: 'center' }}>
+                    <span>{file.name}</span>
+                    <button onClick={() => handleRemoveFile(index)} className="remove-file-button" style={{ marginLeft: '5px' }}>x</button>
+                  </div>
+                ))}
+              </div>
             </td>
           </tr>
         </tbody>

@@ -10,8 +10,8 @@ const Modify = () => {
   const quillRef = useRef(null);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
-  const [file, setFile] = useState(null); // 첨부파일 상태 추가
-  const [content, setContent] = useState(''); // <--- 이 부분을 추가합니다.
+  const [files, setFiles] = useState([]); // 다중 파일을 위해 배열로 변경
+  const [content, setContent] = useState(''); 
   const [quillInstance, setQuillInstance] = useState(null);
 
   useEffect(() => {
@@ -20,27 +20,54 @@ const Modify = () => {
       .then(response => response.json())
       .then(data => {
         setTitle(data.title);
-        setCategory(data.boardType); // boardType 필드로 변경
-        setContent(data.content); // <--- 이 부분은 존재하는 상태에 데이터를 설정합니다.
+        setCategory(data.boardType); 
+        setContent(data.content); 
         // Quill 에디터 초기화 및 기존 내용 설정
         if (quillRef.current) {
           const quill = new Quill(quillRef.current, {
             theme: 'snow',
             placeholder: '내용을 입력하세요...',
             modules: {
-              toolbar: [
-                [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ align: [] }],
-                [{ color: [] }, { background: [] }],
-                ['link', 'image', 'video'],
-                ['clean']
-              ],
+              toolbar: {
+                container: [
+                  [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
+                  [{ list: 'ordered' }, { list: 'bullet' }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  [{ align: [] }],
+                  [{ color: [] }, { background: [] }],
+                  ['link', 'image', 'video'],
+                  ['clean']
+                ],
+                handlers: {
+                  image: () => {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', 'image/*');
+                    input.setAttribute('multiple', true); 
+                    input.click();
+
+                    input.onchange = () => {
+                      const selectedFiles = Array.from(input.files);
+                      if (selectedFiles.length > 0) {
+                        setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+
+                        selectedFiles.forEach((file) => {
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const range = quill.getSelection();
+                            quill.insertEmbed(range.index, 'image', reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        });
+                      }
+                    };
+                  },
+                },
+              },
             },
           });
           quill.clipboard.dangerouslyPasteHTML(data.content);
-          setQuillInstance(quill); // quillInstance 설정
+          setQuillInstance(quill); 
         }
       })
       .catch(error => console.error('게시글을 불러오는 중 오류가 발생했습니다.', error));
@@ -59,8 +86,12 @@ const Modify = () => {
     formData.append('title', title);
     formData.append('boardType', category);
     formData.append('content', updatedContent);
-    if (file) {
-      formData.append('images', file);
+
+    // files 배열에 있는 모든 이미지를 FormData에 추가
+    if (files.length > 0) {
+      files.forEach((file) => {
+        formData.append('images', file);
+      });
     }
 
     try {
@@ -82,12 +113,13 @@ const Modify = () => {
   };
 
   const handleCancelClick = () => {
-    navigate('/qna');  // Q&A 게시판으로 이동
+    navigate('/qna'); 
   };
 
   // 첨부 파일 변경 시 동작
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFiles = Array.from(e.target.files);
+    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]); 
   };
 
   return (
@@ -136,6 +168,7 @@ const Modify = () => {
               <input 
                 type="file" 
                 className="modify-form-file-input"
+                multiple // 다중 파일 선택 가능
                 onChange={handleFileChange}
               />
             </td>
