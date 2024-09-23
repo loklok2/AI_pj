@@ -19,12 +19,12 @@ const MyOrder = () => {
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [visibleOrdersCount, setVisibleOrdersCount] = useState(5);
 
-  const [userRole, setUserRole] = useState(''); // 사용자 역할 상태 추가
-  const [isGuest, setIsGuest] = useState(false); // 비회원 로그인 상태
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+  const [userRole, setUserRole] = useState(''); 
+  const [isGuest, setIsGuest] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // 세션 스토리지에서 주문 데이터 불러오기
+    // sessionStorage에서 주문 데이터 불러오기
     const storedOrderItems = JSON.parse(sessionStorage.getItem('orderItems')) || [];
     const orderInfo = JSON.parse(sessionStorage.getItem('orderInfo')) || {};
     const orderNumber = orderInfo.orderNumber || 'N/A';
@@ -34,7 +34,7 @@ const MyOrder = () => {
     const formattedOrders = storedOrderItems.map((item, index) => ({
       id: orderNumber + '-' + (index + 1),
       product: item.name,
-      price: `${(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString()}원`,
+      price: `${(item.price * item.quantity).toLocaleString()}원`, // 숫자를 그대로 사용하여 금액 계산
       date: orderDate,
       status: orderStatus,
       size: item.size,
@@ -51,10 +51,10 @@ const MyOrder = () => {
 
     if (accessToken) {
       setIsLoggedIn(true);
-      setUserRole(role); // 사용자 역할 설정
+      setUserRole(role);
     } else if (guestLogin) {
       setIsGuest(true);
-      setUserRole('GUEST'); // 비회원 상태 설정
+      setUserRole('GUEST');
     }
   }, []);
 

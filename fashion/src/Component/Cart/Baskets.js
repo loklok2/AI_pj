@@ -11,18 +11,30 @@ const Baskets = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // 관리자인지 여부를 저장할 상태 추가
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
     const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+    const userRole = localStorage.getItem('role'); // 역할 정보 가져오기
+
+    if (!userId && userLoggedIn) {
+      navigate('/login');
+      return;
+    }
 
     if (guestLogin || userLoggedIn) {
       setIsGuest(guestLogin);
       setIsLoggedIn(userLoggedIn);
 
+      // 역할에 따라 isAdmin 상태 설정
+      if (userRole === 'ADMIN') {
+        setIsAdmin(true);
+      }
+
       if (userLoggedIn) {
-        fetch(`/api/cart/${userId}`, {
+        fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -30,6 +42,7 @@ const Baskets = () => {
           },
         })
           .then((response) => {
+            console.log('Response:', response);
             if (!response.ok) {
               throw new Error('Failed to fetch cart items');
             }
@@ -37,8 +50,7 @@ const Baskets = () => {
           })
           .then((data) => setItems(data.map((item) => ({ ...item, isSelected: false }))))
           .catch((error) => console.error('Failed to fetch cart items:', error));
-      } else {
-        // 세션에서 데이터를 가져와 상태에 저장
+      } else if (guestLogin) {
         const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
         setItems(storedItems.map((item) => ({ ...item, isSelected: false })));
       }
@@ -75,9 +87,8 @@ const Baskets = () => {
         item.productId === id ? { ...item, isSelected: !item.isSelected } : item
       );
 
-      // 모든 아이템이 선택되었는지 확인
       const allSelected = updatedItems.every((item) => item.isSelected);
-      setSelectAll(allSelected); // 모든 아이템이 선택되었을 때만 전체 선택 박스를 체크
+      setSelectAll(allSelected);
 
       return updatedItems;
     });
@@ -88,7 +99,7 @@ const Baskets = () => {
     setItems(remainingItems);
 
     if (isLoggedIn) {
-      fetch(`/api/cart/${userId}`, {
+      fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +107,7 @@ const Baskets = () => {
         },
         body: JSON.stringify({ items: remainingItems }),
       }).catch((error) => console.error('Failed to update cart:', error));
-    } else {
+    } else if (isGuest) {
       sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
     }
   };
@@ -108,7 +119,7 @@ const Baskets = () => {
     setItems(updatedItems);
 
     if (isLoggedIn) {
-      fetch(`/api/cart/${userId}`, {
+      fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +127,7 @@ const Baskets = () => {
         },
         body: JSON.stringify(updatedItems),
       }).catch((error) => console.error('Failed to update cart:', error));
-    } else {
+    } else if (isGuest) {
       sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
     }
   };
@@ -126,7 +137,7 @@ const Baskets = () => {
     setItems(remainingItems);
 
     if (isLoggedIn) {
-      fetch(`/api/cart/${userId}`, {
+      fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +145,7 @@ const Baskets = () => {
         },
         body: JSON.stringify({ items: remainingItems }),
       }).catch((error) => console.error('Failed to update cart:', error));
-    } else {
+    } else if (isGuest) {
       sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
     }
   };
@@ -150,9 +161,9 @@ const Baskets = () => {
 
   return (
     <div className="basket-container">
-      <h1 className="basket-title">장바구니</h1>
+      <h1 className="basket-title">{isAdmin ? '관리자 장바구니' : '장바구니'}</h1>
       <p className="basket-description">
-        판매자 설정에 따라, 개별 배송되는 상품이 있습니다.
+        {isAdmin ? '관리자 전용 상품 목록입니다.' : '판매자 설정에 따라, 개별 배송되는 상품이 있습니다.'}
       </p>
 
       <div className="basket-selection">
@@ -167,6 +178,11 @@ const Baskets = () => {
           </div>
 
           <div className="basket-item-info">
+            <img
+              src={`http://10.125.121.188:8080${item.images[0]}`} 
+              alt={item.name} 
+              className="basket-item-image"
+            />
             <p>{item.name}</p>
             <p className="basket-item-price">{parseInt(item.price, 10).toLocaleString()}원</p>
           </div>

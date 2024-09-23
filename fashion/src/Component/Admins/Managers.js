@@ -34,6 +34,7 @@ const Managers = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log('Fetching users from /api/admin/members');
       const response = await fetch('http://10.125.121.188:8080/api/admin/members');
       const data = await response.json();
       setUsers(data);
@@ -44,6 +45,7 @@ const Managers = () => {
 
   const fetchPosts = async () => {
     try {
+      console.log('Fetching posts from /api/admin/qboards');
       const response = await fetch('http://10.125.121.188:8080/api/admin/qboards');
       const data = await response.json();
       setPosts(data);
@@ -54,9 +56,33 @@ const Managers = () => {
 
   const fetchProducts = async () => {
     try {
+      console.log('Fetching products from /api/admin/products');
       const response = await fetch('http://10.125.121.188:8080/api/admin/products');
-      const data = await response.json();
-      setProducts(data);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Failed to fetch products: ${response.status} - ${errorText}`);
+        return;
+      }
+  
+      // 응답을 문자열로 먼저 출력하여 확인
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
+  
+      // JSON 파싱 시도
+      try {
+        const data = JSON.parse(responseText);
+        
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          console.error('Unexpected data format:', data);
+        }
+  
+      } catch (jsonError) {
+        console.error('Error parsing JSON:', jsonError, 'Response text:', responseText);
+      }
+  
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -70,6 +96,7 @@ const Managers = () => {
 
   const handleDeleteUsers = async () => {
     try {
+      console.log('Deleting selected users:', selectedUsers);
       await Promise.all(selectedUsers.map(id => fetch(`http://10.125.121.188:8080/api/admin/members/${id}`, { method: 'DELETE' })));
       setUsers(users.filter(user => !selectedUsers.includes(user.id)));
       setSelectedUsers([]);
@@ -86,6 +113,7 @@ const Managers = () => {
 
   const handleDeletePosts = async () => {
     try {
+      console.log('Deleting selected posts:', selectedPosts);
       await Promise.all(selectedPosts.map(id => fetch(`http://10.125.121.188:8080/api/admin/qboards/${id}`, { method: 'DELETE' })));
       setPosts(posts.filter(post => !selectedPosts.includes(post.id)));
       setSelectedPosts([]);
@@ -110,6 +138,7 @@ const Managers = () => {
 
   const handleAddProduct = async () => {
     try {
+      console.log('Adding a new product:', newProduct);
       const response = await fetch('http://10.125.121.188:8080/api/admin/products', {
         method: 'POST',
         headers: {
@@ -137,6 +166,7 @@ const Managers = () => {
 
   const handleUpdateProduct = async () => {
     try {
+      console.log(`Updating product with ID: ${products[editIndex].id}`, products[editIndex]);
       const response = await fetch(`http://10.125.121.188:8080/api/admin/products/${products[editIndex].id}`, {
         method: 'PUT',
         headers: {
@@ -168,6 +198,7 @@ const Managers = () => {
 
   const handleDeleteProducts = async () => {
     try {
+      console.log('Deleting selected products:', selectedProducts.map(index => products[index].id));
       await Promise.all(selectedProducts.map(index => fetch(`http://10.125.121.188:8080/api/admin/products/${products[index].id}`, { method: 'DELETE' })));
       setProducts(products.filter((_, index) => !selectedProducts.includes(index)));
       setSelectedProducts([]);

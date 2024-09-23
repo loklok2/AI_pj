@@ -30,7 +30,6 @@ ChartJS.register(
   Legend
 );
 
-// 한국어 로케일 등록
 registerLocale('ko', ko);
 
 const Manager = () => {
@@ -114,136 +113,117 @@ const Manager = () => {
     maintainAspectRatio: false,
   };
 
-  const API_BASE_URL = 'http://10.125.121.188:8080/api/admin';
-  const VISITOR_API_URL = 'http://10.125.121.188:8080/api/visitors';
-
-  // 데이터 가져오기
   useEffect(() => {
-    const fetchTotalMembers = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/members/count`);
-        if (response.ok) {
-          const data = await response.json();
-          setTotalMembers(data);
-        }
-      } catch (error) {
-        console.error('총 회원 수를 가져오는 중 오류 발생:', error);
-      }
-    };
-
-    const fetchDailyVisitors = async () => {
-      try {
-        const response = await fetch(`${VISITOR_API_URL}/count`);
-        if (response.ok) {
-          const data = await response.json();
-          setDailyVisitors(data);
-        }
-      } catch (error) {
-        console.error('일일 방문자 수를 가져오는 중 오류 발생:', error);
-      }
-    };
-
-    const fetchInquiriesCount = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/qboards/count`);
-        if (response.ok) {
-          const data = await response.json();
-          setInquiries(data);
-        }
-      } catch (error) {
-        console.error('문의 건수를 가져오는 중 오류 발생:', error);
-      }
-    };
-
-    const fetchInquiryRepliesCount = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/comments/admin/count`);
-        if (response.ok) {
-          const data = await response.json();
-          setInquiryReplies(data);
-        }
-      } catch (error) {
-        console.error('답변된 문의 건수를 가져오는 중 오류 발생:', error);
-      }
-    };
-
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/orders`);
-        if (response.ok) {
-          const data = await response.json();
-          setOrderList(data);
-        }
-      } catch (error) {
-        console.error('주문 목록을 가져오는 중 오류 발생:', error);
-      }
-    };
-
-    const fetchCategorySalesPercentage = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/sales/category-percentage`);
-        if (response.ok) {
-          const data = await response.json();
-          const labels = Object.keys(data);
-          const salesData = Object.values(data);
-          setDoughnutData({
-            labels: labels,
-            datasets: [{
-              label: '카테고리별 판매율',
-              data: salesData,
-              backgroundColor: [
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(75, 192, 192, 0.5)',
-                'rgba(255, 206, 86, 0.5)',
-                'rgba(153, 102, 255, 0.5)',
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(255, 159, 64, 0.5)',
-                'rgba(128, 0, 128, 0.5)',
-              ],
-              borderColor: [
-                'rgba(54, 162, 235, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(128, 0, 128, 1)',
-              ],
-              borderWidth: 1,
-            }],
-          });
-        }
-      } catch (error) {
-        console.error('카테고리별 판매율을 가져오는 중 오류 발생:', error);
-      }
-    };
-
     fetchTotalMembers();
     fetchDailyVisitors();
-    fetchInquiriesCount();
-    fetchInquiryRepliesCount();
-    fetchOrders();
-    fetchCategorySalesPercentage();
+    fetchCustomerInquiries();
+    fetchInquiryReplies();
+    fetchOrdersFromSession();
   }, []);
+
+  const fetchTotalMembers = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/members/count');
+      if (response.ok) {
+        const data = await response.json();
+        setTotalMembers(data);
+      } else {
+        console.error('Failed to fetch total members:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching total members:', error);
+    }
+  };
+
+  const fetchDailyVisitors = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/visitors/count');
+      if (response.ok) {
+        const data = await response.json();
+        setDailyVisitors(data);
+      } else {
+        console.error('Failed to fetch daily visitors:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching daily visitors:', error);
+    }
+  };
+
+  const fetchCustomerInquiries = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/qboards/count');
+      if (response.ok) {
+        const data = await response.json();
+        setInquiries(data);
+      } else {
+        console.error('Failed to fetch customer inquiries:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching customer inquiries:', error);
+    }
+  };
+
+  const fetchInquiryReplies = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/comments/admin/count');
+      if (response.ok) {
+        const data = await response.json();
+        setInquiryReplies(data);
+      } else {
+        console.error('Failed to fetch inquiry replies:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching inquiry replies:', error);
+    }
+  };
+
+  const fetchOrdersFromSession = () => {
+    const storedOrderItems = JSON.parse(sessionStorage.getItem('orderItems')) || [];
+    const orderInfo = JSON.parse(sessionStorage.getItem('orderInfo')) || {};
+    const orderNumber = orderInfo.orderNumber || 'N/A';
+    const orderDate = orderInfo.orderDate || new Date().toLocaleDateString();
+    const orderStatus = '배송 중';
+
+    const formattedOrders = storedOrderItems.map((item, index) => ({
+      orderId: orderNumber + '-' + (index + 1),
+      userId: '사용자ID',
+      productInfo: item.name,
+      totalPrice: `${(item.price * item.quantity).toLocaleString()}원`,
+      orderDate: orderDate,
+      deliveryStatus: orderStatus,
+      size: item.size,
+      quantity: item.quantity,
+    }));
+
+    setOrderList(formattedOrders);
+  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
-        method: 'PATCH',
+      console.log(`Updating order status: Order ID: ${orderId}, New Status: ${newStatus}`);
+
+      const response = await fetch(`http://10.125.121.188:8080/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ newStatus }),
       });
 
+      console.log('Response status:', response.status);
+
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('Response data:', responseData);
+
         setOrderList((prevOrders) =>
           prevOrders.map((order) =>
             order.orderId === orderId ? { ...order, deliveryStatus: newStatus } : order
           )
         );
       } else {
-        console.error('주문 상태 업데이트 중 오류 발생:', response.statusText);
+        const errorText = await response.text();
+        console.error('주문 상태 업데이트 중 오류 발생:', errorText);
       }
     } catch (error) {
       console.error('주문 상태 업데이트 중 오류 발생:', error);
@@ -254,8 +234,8 @@ const Manager = () => {
     try {
       await Promise.all(
         selectedOrders.map(async (orderId) => {
-          const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
-            method: 'PATCH',
+          const response = await fetch(`http://10.125.121.188:8080/api/admin/orders/${orderId}/cancel`, {
+            method: 'PUT',
           });
           if (!response.ok) {
             console.error(`주문 취소 중 오류 발생 (Order ID: ${orderId}):`, response.statusText);
@@ -287,13 +267,14 @@ const Manager = () => {
     }
   }, [chartType]);
 
-  const handleCheckboxChange = (orderId) => {
-    setSelectedOrders((prevSelected) =>
-      prevSelected.includes(orderId)
-        ? prevSelected.filter((id) => id !== orderId)
-        : [...prevSelected, orderId]
-    );
-  };
+  // Checkbox 선택/해제 함수 추가
+const handleCheckboxChange = (orderId) => {
+  setSelectedOrders((prevSelected) =>
+    prevSelected.includes(orderId)
+      ? prevSelected.filter((id) => id !== orderId)
+      : [...prevSelected, orderId]
+  );
+};
 
   return (
     <div>
@@ -405,7 +386,7 @@ const Manager = () => {
                     <td>{order.orderDate}</td>
                     <td>
                       <select
-                        value={order.deliveryStatus}
+                        value={order.deliveryStatus || "배송 준비"}
                         onChange={(e) => handleStatusChange(order.orderId, e.target.value)}
                       >
                         <option value="배송 준비">배송 준비</option>

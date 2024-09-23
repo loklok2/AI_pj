@@ -98,6 +98,10 @@ const MyPages = () => {
     }
   };
 
+  useEffect(() => {
+    console.log('Current wishlist items:', currentWishlistItems);
+  }, [currentWishlistItems]);
+
   return (
     <div className="mypages-container">
       <h2 className="mypages-title">마이페이지</h2>
@@ -192,35 +196,38 @@ const MyPages = () => {
         <FontAwesomeIcon icon={faAngleLeft} onClick={handlePreviousCartPage} className="pagination-arrow left-arrow" />
         
         <div className="mypages-cart-items">
-          {currentCartItems.length > 0 ? (
-            currentCartItems.map(item => {
-              const imageUrl = `http://10.125.121.188:8080${item.images[0]}`; // images[0]로 수정
-              return (
-                <div key={item.productId} className="mypages-item" onClick={() => handleProductClick(item.productId)}>
-                  <img
-                    src={imageUrl}
-                    alt={item.name}
-                    className="mypages-item-placeholder"
-                    onError={(e) => (e.target.src = '/images/default-placeholder.png')}
-                  />
-                  <div className="mypages-item-details">
-                    <p className="mypages-item-name">{item.name}</p>
-                    <p className="mypages-item-price">{item.price.toLocaleString()}원</p>
-                  </div>
-                  <FontAwesomeIcon
-                    icon={faTimes}
-                    className="mypages-item-remove"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveCartItem(item.productId);
-                    }}
-                  />
+        {currentCartItems.length > 0 ? (
+          currentCartItems.map(item => {
+            const imageUrl = item.images && item.images.length > 0 
+              ? `http://10.125.121.188:8080${item.images[0]}`
+              : '/images/default-placeholder.png';
+            
+            return (
+              <div key={item.productId} className="mypages-item" onClick={() => handleProductClick(item.productId)}>
+                <img
+                  src={imageUrl}
+                  alt={item.name}
+                  className="mypages-item-placeholder"
+                  onError={(e) => (e.target.src = '/images/default-placeholder.png')}
+                />
+                <div className="mypages-item-details">
+                  <p className="mypages-item-name">{item.name}</p>
+                  <p className="mypages-item-price">{item.price.toLocaleString()}원</p>
                 </div>
-              );
-            })
-          ) : (
-            <p>장바구니에 담긴 상품이 없습니다.</p>
-          )}
+                <FontAwesomeIcon
+                  icon={faTimes}
+                  className="mypages-item-remove"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveCartItem(item.productId);
+                  }}
+                />
+              </div>
+            );
+          })
+        ) : (
+          <p>장바구니에 담긴 상품이 없습니다.</p>
+        )}
         </div>
 
         <FontAwesomeIcon icon={faAngleRight} onClick={handleNextCartPage} className="pagination-arrow right-arrow" />
@@ -237,35 +244,39 @@ const MyPages = () => {
         <FontAwesomeIcon icon={faAngleLeft} onClick={handlePreviousWishlistPage} className="pagination-arrow left-arrow" />
         
         <div className="mypages-wishlist-items">
-          {currentWishlistItems.length > 0 ? (
-            currentWishlistItems.map(product => {
-              const imageUrl = `http://10.125.121.188:8080${product.images[0]}`; // images[0]로 수정
-              return (
-                <div key={product.productId} className="mypages-item" onClick={() => handleProductClick(product.productId)}>
-                  <img
-                    src={imageUrl}
-                    alt={product.name}
-                    className="product-image"
-                    onError={(e) => (e.target.src = '/images/default-placeholder.png')} 
-                  />
-                  <div className="mypages-item-details">
-                    <p className="mypages-item-name">{product.name}</p>
-                    <p className="mypages-item-price">{product.price.toLocaleString()}원</p>
-                  </div>
-                  <FontAwesomeIcon
-                    icon={faTimes}
-                    className="mypages-item-remove"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveWishlistItem(product.productId);
-                    }}
-                  />
+        {currentWishlistItems.length > 0 ? (
+          currentWishlistItems.map(product => {
+            const imageUrl = `http://10.125.121.188:8080${product.pimgPath}`;
+
+            // 이미지 URL 확인을 위한 로그
+            console.log('Wishlist item image URL:', imageUrl);
+
+            return (
+              <div key={product.productId} className="mypages-item" onClick={() => handleProductClick(product.productId)}>
+                <img
+                  src={imageUrl}
+                  alt={product.name}
+                  className="product-image"
+                  onError={(e) => (e.target.src = '/images/default-placeholder.png')} 
+                />
+                <div className="mypages-item-details">
+                  <p className="mypages-item-name">{product.name}</p>
+                  <p className="mypages-item-price">{product.price.toLocaleString()}원</p>
                 </div>
-              );
-            })
-          ) : (
-            <p>찜한 상품이 없습니다.</p>
-          )}
+                <FontAwesomeIcon
+                  icon={faTimes}
+                  className="mypages-item-remove"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveWishlistItem(product.productId);
+                  }}
+                />
+              </div>
+            );
+          })
+        ) : (
+          <p>찜한 상품이 없습니다.</p>
+        )}
         </div>
 
         <FontAwesomeIcon icon={faAngleRight} onClick={handleNextWishlistPage} className="pagination-arrow right-arrow" />

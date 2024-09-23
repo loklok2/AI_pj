@@ -31,7 +31,10 @@ const Login = () => {
                 localStorage.setItem('refreshToken', data.refreshToken); // refreshToken 저장
                 localStorage.setItem('role', data.role); // role 저장
                 localStorage.setItem('username', data.username); // username 저장
+                sessionStorage.setItem('userLoggedIn', 'true'); // 로그인 상태 저장
                 localStorage.removeItem('guestLogin'); // 비회원 상태 제거
+
+                
 
                  // /products 페이지로 이동
                 navigate('/products'); 

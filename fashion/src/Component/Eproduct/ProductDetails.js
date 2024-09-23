@@ -17,6 +17,7 @@ const ProductDetails = () => {
 
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // 관리자 상태 추가
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -26,7 +27,7 @@ const ProductDetails = () => {
           throw new Error('상품 정보를 가져오는데 실패했습니다');
         }
         const data = await response.json();
-        setProduct(data); // 상품 정보를 상태에 저장
+        setProduct(data);
 
         // 찜 목록에 있는지 확인
         const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
@@ -41,9 +42,14 @@ const ProductDetails = () => {
 
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
     const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+    const userRole = localStorage.getItem('role'); // role 정보 가져오기
 
-    if (guestLogin) setIsGuest(true);
-    if (userLoggedIn) setIsLoggedIn(true);
+    setIsGuest(guestLogin);
+    setIsLoggedIn(userLoggedIn);
+
+    if (userRole === 'ADMIN') {
+      setIsAdmin(true); // 관리자 상태 설정
+    }
   }, [id]);
 
   if (!product) {
@@ -51,12 +57,12 @@ const ProductDetails = () => {
   }
 
   const toggleLike = (e) => {
-    e.stopPropagation(); // 부모 컴포넌트로의 이벤트 전파를 막음
+    e.stopPropagation();
     if (!isGuest && !isLoggedIn) {
-      setShowLoginModal(true); // 로그인 모달을 표시
+      setShowLoginModal(true);
       return;
     }
-  
+
     const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
     if (liked) {
       const updatedWishlist = storedWishlist.filter(item => item.productId !== product.productId);
@@ -76,13 +82,13 @@ const ProductDetails = () => {
 
   const handleAddToCart = () => {
     if (!isGuest && !isLoggedIn) {
-      setShowLoginModal(true); // 로그인 모달을 표시
+      setShowLoginModal(true);
       return;
     }
 
     const cartItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
     const existingItem = cartItems.find(item => item.productId === product.productId);
-    
+
     if (existingItem) {
       existingItem.quantity += quantity;
       existingItem.size = size;
@@ -102,7 +108,7 @@ const ProductDetails = () => {
 
     const selectedItem = [{ ...product, quantity, size }];
     sessionStorage.setItem('selectedItems', JSON.stringify(selectedItem));
-    navigate('/payment'); 
+    navigate('/payment');
   };
 
   const handleCloseModal = () => {
@@ -115,13 +121,13 @@ const ProductDetails = () => {
 
   const closeLoginModal = () => {
     setShowLoginModal(false);
-    navigate('/login'); // 로그인 페이지로 이동
+    navigate('/login');
   };
 
   // 이미지 URL 생성
   const imageUrl = product.images && product.images.length > 0
-    ? `http://10.125.121.188:8080${product.images[0]}` // 이미지가 있으면 첫 번째 이미지 사용
-    : 'default-image-path.jpg'; // 기본 이미지 경로 설정 (없을 경우)
+    ? `http://10.125.121.188:8080${product.images[0]}`
+    : 'default-image-path.jpg'; 
 
   return (
     <div className="product-details-wrapper">
@@ -133,8 +139,7 @@ const ProductDetails = () => {
           <div className="product-title">
             <h2>{product.name}</h2>
             <div className="wishlist-icon" onClick={toggleLike}>
-              <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} 
-              style={{ color: liked ? '#FA5858' : 'black' }} />
+              <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} style={{ color: liked ? '#FA5858' : 'black' }} />
             </div>
           </div>
           <div className="product-details-page-price">
@@ -146,7 +151,7 @@ const ProductDetails = () => {
             <p>배송 정보: <span>3일 이내 출고</span></p>
             <p>배송비: <span>무료배송</span></p>
           </div>
-  
+
           <div className="product-details-page-size">
             <span>사이즈 </span>
             <select value={size} onChange={(e) => setSize(e.target.value)}>
@@ -157,7 +162,7 @@ const ProductDetails = () => {
               <option value="FREE">FREE</option>
             </select>
           </div>
-  
+
           <div className="product-details-page-quantity">
             <span>수량</span>
             <div className="product-details-page-quantity-controls">
@@ -182,7 +187,7 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
-  
+
       {/* 상품정보 */}
       <div className="product-details-page-additional-infos">
         <hr />
@@ -222,7 +227,7 @@ const ProductDetails = () => {
         <p>배송 받은 날로부터 7일 이내에 교환 및 반품 가능 (단, 미사용 상태 및 태그가 부착된 상태이어야 함)</p>
         <p>제품 불량이나 오배송의 경우, 교환 및 반품 배송비는 판매자가 부담합니다.</p>
       </div>
-  
+
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
@@ -234,7 +239,7 @@ const ProductDetails = () => {
           </div>
         </div>
       )}
-  
+
       {showLoginModal && (
         <div className="modal-overlay">
           <div className="modal-content">
