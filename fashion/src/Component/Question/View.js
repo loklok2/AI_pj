@@ -15,8 +15,8 @@ const View = () => {
   const [editingContent, setEditingContent] = useState('');
 
   useEffect(() => {
-    // 게시글 데이터 가져오기
-    fetch(`http://10.125.121.188:8080/api/qboards/my`)
+    // 본인이 작성한 게시글 데이터 가져오기
+    fetch('http://10.125.121.188:8080/api/qboards/my')
       .then(response => {
         if (!response.ok) {
           throw new Error('게시글을 불러오는 데 실패했습니다.');
@@ -24,7 +24,7 @@ const View = () => {
         return response.json();
       })
       .then(data => {
-        console.log('게시글 데이터:', data);
+        console.log('본인 게시글 데이터:', data);
         setPost(data);
       })
       .catch(error => {
@@ -114,7 +114,7 @@ const View = () => {
     if (editingCommentId === commentId) {
       // 댓글 수정 저장
       fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
-        method: 'PATCH', // PATCH 메서드 사용
+        method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
         },
