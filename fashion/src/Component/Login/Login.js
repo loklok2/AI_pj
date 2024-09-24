@@ -34,17 +34,15 @@ const Login = () => {
                 sessionStorage.setItem('userLoggedIn', 'true'); // 로그인 상태 저장
                 localStorage.removeItem('guestLogin'); // 비회원 상태 제거
 
-                
-
-                 // /products 페이지로 이동
-                navigate('/products'); 
+                // /products 페이지로 이동
+                navigate('/products');
 
                 // 페이지 리로딩
-                window.location.reload(); 
+                window.location.reload();
 
                 // 권한에 따른 페이지 리다이렉션
                 if (data.role === 'ADMIN') {
-                    navigate('/products'); 
+                    navigate('/products');
                 } else {
                     navigate('/products'); // 사용자 홈으로 이동
                 }
@@ -103,13 +101,13 @@ const Login = () => {
                     </div>
                 </div>
                 <div className="custom-signup-redirect">
-                    <span>아직 계정이 없으신가요? </span>
+                    <span>아직 계정이 없으신가요?</span>
                     <a href="/signup" className="custom-signup-link">가입하기</a>
                 </div>
                 <div className="custom-signup-redirects">
                     <span>계정을 잊으버리셨나요?</span>
-                    <a href="/find-username" className="custom-signup-link"> 아이디 찾기 </a>
-                    <a href="/find-password" className="custom-signup-link">/ 비밀번호 찾기</a>
+                    <a href="/find-username" className="custom-signup-link">아이디 찾기</a>
+                    <a href="/find-password" className="custom-signup-link"> / 비밀번호 찾기</a>
                 </div>
             </div>
         </div>

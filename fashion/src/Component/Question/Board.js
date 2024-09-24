@@ -5,10 +5,10 @@ import '../../CSS/Board.css';
 const Board = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [categoryFilter, setCategoryFilter] = useState('전체');
+  const [boardType, setBoardType] = useState('전체'); // 변경: categoryFilter -> boardType
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(''); // 사용자 역할 상태 추가
+  const [userRole, setUserRole] = useState(''); 
   const [showModal, setShowModal] = useState(false);
   const [qnaData, setQnaData] = useState([]);
   const itemsPerPage = 15;
@@ -16,23 +16,27 @@ const Board = () => {
   useEffect(() => {
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
     const accessToken = localStorage.getItem('accessToken');
-    const role = localStorage.getItem('role'); // 사용자 역할 가져오기
-
+    const role = localStorage.getItem('role'); 
+  
     if (guestLogin) setIsGuest(true);
     if (accessToken) {
       setIsLoggedIn(true);
-      setUserRole(role); // 역할 상태 설정
+      setUserRole(role);
     }
-
+  
     // API를 사용하여 Q&A 데이터를 가져옵니다.
-    fetch('http://10.125.121.188:8080/api/qboard')
+    fetch('http://10.125.121.188:8080/api/qboards')
       .then((response) => {
         if (!response.ok) {
           throw new Error('데이터를 가져오는 데 실패했습니다.');
         }
         return response.json();
       })
-      .then((data) => setQnaData(data))
+      .then((data) => {
+        const sortedData = data.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
+        console.log('Q&A 데이터 (최신순):', sortedData); 
+        setQnaData(sortedData);
+      })
       .catch((error) => {
         console.error('Error fetching data:', error);
       });
@@ -44,9 +48,9 @@ const Board = () => {
     }
   };
 
-  const filteredData = categoryFilter === '전체'
+  const filteredData = boardType === '전체'
     ? qnaData
-    : qnaData.filter((item) => item.category === categoryFilter);
+    : qnaData.filter((item) => item.boardType === boardType); // 변경: categoryFilter -> boardType
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -86,9 +90,9 @@ const Board = () => {
       </p>
 
       <div className="qna-board-button-group">
-        <button onClick={() => setCategoryFilter('전체')}>전체문의</button>
-        <button onClick={() => setCategoryFilter('상품문의')}>상품문의</button>
-        <button onClick={() => setCategoryFilter('기타문의')}>기타문의</button>
+        <button onClick={() => setBoardType('전체')}>전체문의</button> {/* 변경 */}
+        <button onClick={() => setBoardType('상품문의')}>상품문의</button> {/* 변경 */}
+        <button onClick={() => setBoardType('기타문의')}>기타문의</button> {/* 변경 */}
       </div>
 
       <div className={`qna-board-table-wrapper ${!isGuest && !isLoggedIn ? 'blurred' : ''}`}>
@@ -103,17 +107,22 @@ const Board = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((item) => (
+            {currentItems.map((item, index) => (
               <tr
-                key={item.id}
-                onClick={() => handleRowClick(item.id)}
+                key={`${item.qboardId}-${index}`} // `index`를 추가하여 고유한 key 값 생성
+                onClick={() => handleRowClick(item.qboardId)}
                 style={{ cursor: 'pointer' }}
               >
-                <td>{item.id}</td>
-                <td>{item.category}</td>
-                <td>{item.title}</td>
-                <td>{item.writer}</td>
-                <td>{item.date}</td>
+                <td>{item.qboardId}</td>
+                <td>{item.boardType || '기타문의'}</td>
+                <td>
+                  {index === 0 && (
+                    <span style={{ color: 'red', fontWeight: 'bold' }}>[NEW] </span>
+                  )}
+                  {item.title}
+                </td>
+                <td>{item.member?.name || '알 수 없음'}</td>
+                <td>{new Date(item.createDate).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>
@@ -121,7 +130,6 @@ const Board = () => {
       </div>
 
       <div className="qna-board-actions">
-        {/* 관리자 또는 비회원/일반 로그인한 사용자만 '작성' 버튼 보이도록 설정 */}
         {(isGuest || isLoggedIn) && userRole !== 'GUEST' && (
           <button onClick={handleWriteClick}>작성</button>
         )}

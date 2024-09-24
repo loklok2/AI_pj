@@ -9,21 +9,24 @@ const View = () => {
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-  const [images, setImages] = useState([]); // 이미지 상태 추가
+  const [images, setImages] = useState([]);
   const [comment, setComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
 
   useEffect(() => {
     // 게시글 데이터 가져오기
-    fetch(`http://10.125.121.188:8080/api/qboard/${id}`)
+    fetch(`http://10.125.121.188:8080/api/qboards/my`)
       .then(response => {
         if (!response.ok) {
           throw new Error('게시글을 불러오는 데 실패했습니다.');
         }
         return response.json();
       })
-      .then(data => setPost(data))
+      .then(data => {
+        console.log('게시글 데이터:', data);
+        setPost(data);
+      })
       .catch(error => {
         console.error('Error fetching post:', error);
       });
@@ -36,13 +39,16 @@ const View = () => {
         }
         return response.json();
       })
-      .then(data => setComments(data))
+      .then(data => {
+        console.log('댓글 데이터:', data);
+        setComments(data);
+      })
       .catch(error => {
         console.error('Error fetching comments:', error);
       });
 
     // 이미지 데이터 가져오기
-    fetch(`http://10.125.121.188:8080/api/qboard/${id}/images`)
+    fetch(`http://10.125.121.188:8080/api/qboard/{qboardId}/images`)
       .then(response => {
         if (!response.ok) {
           throw new Error('이미지를 불러오는 데 실패했습니다.');
@@ -97,7 +103,7 @@ const View = () => {
         if (!response.ok) {
           throw new Error('댓글 삭제에 실패했습니다.');
         }
-        setComments(comments.filter((comment) => comment.id !== commentId));
+        setComments(comments.filter((comment) => comment.commentId !== commentId));
       })
       .catch(error => {
         console.error('Error deleting comment:', error);
@@ -108,7 +114,7 @@ const View = () => {
     if (editingCommentId === commentId) {
       // 댓글 수정 저장
       fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
-        method: 'PUT',
+        method: 'PATCH', // PATCH 메서드 사용
         headers: {
           'Content-Type': 'application/json',
         },
@@ -123,7 +129,7 @@ const View = () => {
         .then(updatedComment => {
           setComments(
             comments.map((cmt) =>
-              cmt.id === editingCommentId ? { ...cmt, content: updatedComment.content } : cmt
+              cmt.commentId === editingCommentId ? { ...cmt, content: updatedComment.content } : cmt
             )
           );
           setEditingCommentId(null);
@@ -134,7 +140,7 @@ const View = () => {
         });
     } else {
       // 수정 모드로 변경
-      const commentToEdit = comments.find((cmt) => cmt.id === commentId);
+      const commentToEdit = comments.find((cmt) => cmt.commentId === commentId);
       setEditingCommentId(commentId);
       setEditingContent(commentToEdit.content);
     }
@@ -171,8 +177,8 @@ const View = () => {
         </div>
         <div className="view-qna-question-details">
           <p>
-            사용자 아이디: <strong>{post.writer}</strong> <span className="spacer"></span> 작성일자:{' '}
-            <strong>{post.date}</strong>
+            사용자 아이디: <strong>{post.member?.userId || '알 수 없음'}</strong> 
+            <span className="spacer"></span> 작성일자: <strong>{new Date(post.createDate).toLocaleDateString() || '알 수 없음'}</strong>
           </p>
           <div className="view-qna-question-actions">
             <button className="view-qna-edit-btn" onClick={handleEdit}>수정</button>
@@ -180,7 +186,6 @@ const View = () => {
           </div>
         </div>
         <div className="view-qna-question-content">
-          {/* 이미지 렌더링 */}
           {images.length > 0 && (
             <div className="view-qna-images">
               {images.map((img) => (
@@ -216,12 +221,17 @@ const View = () => {
       </div>
 
       <div className="view-qna-admin-response">
-        {comments.map((cmt) => (
-          <div key={cmt.id} className="view-qna-admin-reply">
+        {comments.map((cmt, index) => (
+          <div key={cmt.commentId} className="view-qna-admin-reply">
+            {index === 0 && (
+              <p style={{ fontWeight: 'bold', color: '#333' }}>
+                관리자 아이디: {post.member?.userId || '알 수 없음'}
+              </p>
+            )}
             <p>
               <strong>{cmt.writer}</strong>
             </p>
-            {editingCommentId === cmt.id ? (
+            {editingCommentId === cmt.commentId ? (
               <>
                 <textarea
                   className="view-qna-edit-comment-input"
@@ -235,10 +245,10 @@ const View = () => {
               <p>{cmt.content}</p>
             )}
             <div className="view-qna-comment-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button className="view-qna-edit-btn" onClick={() => handleEditComment(cmt.id)}>
-                {editingCommentId === cmt.id ? '저장' : '수정'}
+              <button className="view-qna-edit-btn" onClick={() => handleEditComment(cmt.commentId)}>
+                {editingCommentId === cmt.commentId ? '저장' : '수정'}
               </button>
-              <button className="view-qna-delete-btn" onClick={() => handleDeleteComment(cmt.id)}>
+              <button className="view-qna-delete-btn" onClick={() => handleDeleteComment(cmt.commentId)}>
                 삭제
               </button>
             </div>
@@ -251,3 +261,12 @@ const View = () => {
 };
 
 export default View;
+
+
+
+
+
+
+
+
+

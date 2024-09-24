@@ -37,6 +37,7 @@ const Managers = () => {
       console.log('Fetching users from /api/admin/members');
       const response = await fetch('http://10.125.121.188:8080/api/admin/members');
       const data = await response.json();
+      console.log('Fetched Users:', data);
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -48,41 +49,60 @@ const Managers = () => {
       console.log('Fetching posts from /api/admin/qboards');
       const response = await fetch('http://10.125.121.188:8080/api/admin/qboards');
       const data = await response.json();
-      setPosts(data);
+  
+      if (Array.isArray(data)) {
+        // 필요한 게시글 정보를 추출하여 상태 업데이트
+        const postsData = data.map(post => ({
+          qboardId: post.qboardId,
+          category: post.boardType || '기타 문의', // boardType이 없는 경우 기본값으로 '일반'을 사용
+          title: post.title,
+          author: post.member ? post.member.name : '알 수 없음', // 작성자 정보 설정
+          date: post.createDate.split('T')[0], // 날짜 포맷 설정
+          content: post.content, // 게시글 내용
+        }));
+        console.log('Fetched Posts:', postsData);
+        setPosts(postsData);
+      } else {
+        console.error('Unexpected data format:', data);
+      }
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
   };
 
+
   const fetchProducts = async () => {
     try {
       console.log('Fetching products from /api/admin/products');
       const response = await fetch('http://10.125.121.188:8080/api/admin/products');
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Failed to fetch products: ${response.status} - ${errorText}`);
         return;
       }
-  
-      // 응답을 문자열로 먼저 출력하여 확인
+
       const responseText = await response.text();
       console.log('Raw response text:', responseText);
-  
-      // JSON 파싱 시도
+
       try {
         const data = JSON.parse(responseText);
         
         if (Array.isArray(data)) {
-          setProducts(data);
+          const updatedProducts = data.map((product) => ({
+            ...product,
+            style: product.attributeNames[0], // 스타일 필드 설정
+            date: product.createDate.split('T')[0], // 날짜 형식 변환
+          }));
+          setProducts(updatedProducts);
         } else {
           console.error('Unexpected data format:', data);
         }
-  
+
       } catch (jsonError) {
         console.error('Error parsing JSON:', jsonError, 'Response text:', responseText);
       }
-  
+
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -98,7 +118,7 @@ const Managers = () => {
     try {
       console.log('Deleting selected users:', selectedUsers);
       await Promise.all(selectedUsers.map(id => fetch(`http://10.125.121.188:8080/api/admin/members/${id}`, { method: 'DELETE' })));
-      setUsers(users.filter(user => !selectedUsers.includes(user.id)));
+      setUsers(users.filter(user => !selectedUsers.includes(user.userId)));
       setSelectedUsers([]);
     } catch (error) {
       console.error('Error deleting users:', error);
@@ -115,7 +135,7 @@ const Managers = () => {
     try {
       console.log('Deleting selected posts:', selectedPosts);
       await Promise.all(selectedPosts.map(id => fetch(`http://10.125.121.188:8080/api/admin/qboards/${id}`, { method: 'DELETE' })));
-      setPosts(posts.filter(post => !selectedPosts.includes(post.id)));
+      setPosts(posts.filter(post => !selectedPosts.includes(post.qboardId)));
       setSelectedPosts([]);
     } catch (error) {
       console.error('Error deleting posts:', error);
@@ -166,8 +186,8 @@ const Managers = () => {
 
   const handleUpdateProduct = async () => {
     try {
-      console.log(`Updating product with ID: ${products[editIndex].id}`, products[editIndex]);
-      const response = await fetch(`http://10.125.121.188:8080/api/admin/products/${products[editIndex].id}`, {
+      console.log(`Updating product with ID: ${products[editIndex].productId}`, products[editIndex]);
+      const response = await fetch(`http://10.125.121.188:8080/api/admin/products/${products[editIndex].productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -198,8 +218,8 @@ const Managers = () => {
 
   const handleDeleteProducts = async () => {
     try {
-      console.log('Deleting selected products:', selectedProducts.map(index => products[index].id));
-      await Promise.all(selectedProducts.map(index => fetch(`http://10.125.121.188:8080/api/admin/products/${products[index].id}`, { method: 'DELETE' })));
+      console.log('Deleting selected products:', selectedProducts.map(index => products[index].productId));
+      await Promise.all(selectedProducts.map(index => fetch(`http://10.125.121.188:8080/api/admin/products/${products[index].productId}`, { method: 'DELETE' })));
       setProducts(products.filter((_, index) => !selectedProducts.includes(index)));
       setSelectedProducts([]);
     } catch (error) {
@@ -256,7 +276,7 @@ const Managers = () => {
               <tr>
                 <th></th>
                 <th>이름</th>
-                <th>아이디</th>
+                <th>번호</th>
                 <th>이메일</th>
                 <th>전화번호</th>
                 <th>주소</th>
@@ -265,10 +285,10 @@ const Managers = () => {
             </thead>
             <tbody>
               {users.map(user => (
-                <tr key={user.id}>
-                  <td><input type="checkbox" checked={selectedUsers.includes(user.id)} onChange={() => handleCheckboxChange(user.id)} /></td>
+                <tr key={user.userId}>
+                  <td><input type="checkbox" checked={selectedUsers.includes(user.userId)} onChange={() => handleCheckboxChange(user.userId)} /></td>
                   <td>{user.name}</td>
-                  <td>{user.id}</td>
+                  <td>{user.userId}</td>
                   <td>{user.email}</td>
                   <td>{user.phone}</td>
                   <td>{user.address}</td>
@@ -302,9 +322,9 @@ const Managers = () => {
             </thead>
             <tbody>
               {posts.map(post => (
-                <tr key={post.id}>
-                  <td><input type="checkbox" checked={selectedPosts.includes(post.id)} onChange={() => handlePostCheckboxChange(post.id)} /></td>
-                  <td>{post.id}</td>
+                <tr key={post.qboardId}>
+                  <td><input type="checkbox" checked={selectedPosts.includes(post.qboardId)} onChange={() => handlePostCheckboxChange(post.qboardId)} /></td>
+                  <td>{post.qboardId}</td>
                   <td>{post.category}</td>
                   <td>{post.title}</td>
                   <td>{post.author}</td>
@@ -339,11 +359,9 @@ const Managers = () => {
             <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white' }}>
               <tr>
                 <th></th>
-                <th>상품 이미지</th>
                 <th>상품명</th>
                 <th>정보</th>
                 <th>가격</th>
-                <th>사이즈</th>
                 <th>등록 날짜</th>
                 <th>스타일</th>
                 <th>수정</th>
@@ -353,16 +371,10 @@ const Managers = () => {
               {/* 새 상품 입력 행 */}
               <tr>
                 <td></td>
-                <td>
-                  <label htmlFor="image-upload">첨부</label>
-                  <input type="file" id="image-upload" style={{ display: 'none' }} onChange={handleImageUpload} />
-                  {newProduct.image && <span>{newProduct.image}</span>}
-                </td>
                 <td><input type="text" name="name" value={newProduct.name} onChange={handleNewProductChange} /></td>
                 <td><input type="text" name="info" value={newProduct.info} onChange={handleNewProductChange} /></td>
                 <td><input type="text" name="price" value={newProduct.price} onChange={handleNewProductChange} /></td>
-                <td><input type="text" name="size" value={newProduct.size} onChange={handleNewProductChange} /></td>
-                <td><input type="text" name="date" value={newProduct.date} onChange={handleNewProductChange} /></td>
+                <td><input type="date" name="date" value={newProduct.date} onChange={handleNewProductChange} /></td>
                 <td>
                   <select name="style" value={newProduct.style} onChange={handleNewProductChange}>
                     {styleOptions.map(option => (
@@ -373,24 +385,12 @@ const Managers = () => {
               </tr>
               {/* 기존 상품 목록 */}
               {products.map((product, index) => (
-                <tr key={index}>
+                <tr key={product.productId}>
                   <td><input type="checkbox" checked={selectedProducts.includes(index)} onChange={() => handleProductCheckboxChange(index)} /></td>
-                  <td>
-                    {editIndex === index ? (
-                      <>
-                        <label htmlFor={`image-upload-${index}`}>이미지 선택</label>
-                        <input type="file" id={`image-upload-${index}`} style={{ display: 'none' }} onChange={(e) => handleImageEditUpload(e, index)} />
-                        {product.image && <span>{product.image}</span>}
-                      </>
-                    ) : (
-                      product.image
-                    )}
-                  </td>
                   <td>{editIndex === index ? <input type="text" name="name" value={product.name} onChange={(e) => handleProductChange(e, index)} /> : product.name}</td>
                   <td>{editIndex === index ? <input type="text" name="info" value={product.info} onChange={(e) => handleProductChange(e, index)} /> : product.info}</td>
                   <td>{editIndex === index ? <input type="text" name="price" value={product.price} onChange={(e) => handleProductChange(e, index)} /> : product.price}</td>
-                  <td>{editIndex === index ? <input type="text" name="size" value={product.size} onChange={(e) => handleProductChange(e, index)} /> : product.size}</td>
-                  <td>{editIndex === index ? <input type="text" name="date" value={product.date} onChange={(e) => handleProductChange(e, index)} /> : product.date}</td>
+                  <td>{editIndex === index ? <input type="date" name="date" value={product.date} onChange={(e) => handleProductChange(e, index)} /> : product.date}</td>
                   <td>
                     {editIndex === index ? (
                       <select name="style" value={product.style} onChange={(e) => handleProductChange(e, index)}>

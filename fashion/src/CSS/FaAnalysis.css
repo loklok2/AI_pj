@@ -234,7 +234,6 @@
     text-align: left;
 }
 
-
 /* 관련 이미지 섹션 */
 .related-images-section {
     display: grid;
@@ -281,3 +280,68 @@
     cursor: pointer;
 }
 
+/* 고유한 모달 관련 스타일 */
+.fa-analysis-modal-overlay {
+    display: none; /* 수정 */
+}
+
+.fa-analysis-modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    text-align: center;
+}
+
+.fa-analysis-survey-modal-overlay {
+    display: none; /* 수정 */
+}
+
+.fa-analysis-survey-modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    text-align: center;
+}
+
+/* 모달창 오른쪽 하단에서 부드럽게 나오게 하는 CSS */
+.fa-analysis-modal-content-right,
+.fa-analysis-survey-modal-content-right,
+.fa-analysis-feedback-modal-content-right {
+    position: fixed;
+    right: 100px;
+    bottom: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 500px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(50px);
+    opacity: 0;
+    z-index: 1000;
+}
+
+.fa-analysis-modal-content-right.show,
+.fa-analysis-survey-modal-content-right.show,
+.fa-analysis-feedback-modal-content-right.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* 닫기 버튼 스타일 */
+.close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    margin: 5px;
+    color: black;
+    font-weight: bold;
+}

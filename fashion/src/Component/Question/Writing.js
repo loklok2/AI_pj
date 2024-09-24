@@ -8,7 +8,7 @@ const Writing = () => {
   const quillRef = useRef(null);
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
+  const [boardType, setBoardType] = useState(''); // 변경: category에서 boardType으로 변경
   const [files, setFiles] = useState([]); 
   const [quillInstance, setQuillInstance] = useState(null);
 
@@ -65,18 +65,20 @@ const Writing = () => {
       return;
     }
 
-    const content = quillInstance.getContents(); 
+    const content = quillInstance.root.innerHTML;
 
-    if (!title || !category || !content) {
+    if (!title || !boardType || !content.trim()) { // 변경: category를 boardType으로 변경
       alert('모든 필드를 입력해주세요.');
       return;
     }
 
     const formData = new FormData();
+    const userId = localStorage.getItem('userId'); // 예: 로그인 시 저장된 userId 가져오기
     formData.append('qboard', new Blob([JSON.stringify({
-      title,
-      category,
-      content: JSON.stringify(content)
+      title: title,
+      boardType: boardType,
+      content: content,
+      member: { userId: userId } // 현재 로그인된 사용자 ID를 전송
     })], { type: "application/json" }));
 
     if (files.length > 0) {
@@ -85,17 +87,15 @@ const Writing = () => {
       });
     }
 
-    // 전송할 데이터를 콘솔에 출력
     console.log('전송할 데이터:', {
       title,
-      category,
-      content: JSON.stringify(content),
+      boardType,
+      content,
       files: files.map(file => file.name)
     });
 
-
     try {
-      const response = await fetch('http://10.125.121.188:8080/api/qboard', {
+      const response = await fetch('http://10.125.121.188:8080/api/qboards', {
         method: 'POST',
         body: formData,
       });
@@ -151,8 +151,8 @@ const Writing = () => {
             <td>
               <select 
                 className="writing-form-select"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={boardType} // 변경: category를 boardType으로 변경
+                onChange={(e) => setBoardType(e.target.value)} // 변경
               >
                 <option value="">카테고리를 선택하세요.</option>
                 <option value="product">상품문의</option>
@@ -184,7 +184,7 @@ const Writing = () => {
               </div>
               <div className="file-preview-container" style={{ marginLeft: '10px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                 {files.map((file, index) => (
-                  <div key={index} className="file-preview-item" style={{ display: 'flex', alignItems: 'center' }}>
+                  <div key={file.name} className="file-preview-item" style={{ display: 'flex', alignItems: 'center' }}>
                     <span>{file.name}</span>
                     <button onClick={() => handleRemoveFile(index)} className="remove-file-button" style={{ marginLeft: '5px' }}>x</button>
                   </div>

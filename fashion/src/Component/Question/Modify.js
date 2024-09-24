@@ -16,7 +16,7 @@ const Modify = () => {
 
   useEffect(() => {
     // 게시글 데이터를 불러오는 API 호출
-    fetch(`http://10.125.121.188:8080/api/qboard/${id}`)
+    fetch(`http://10.125.121.188:8080/api/qboards/${id}`)
       .then(response => response.json())
       .then(data => {
         setTitle(data.title);
@@ -95,7 +95,7 @@ const Modify = () => {
     }
 
     try {
-      const response = await fetch(`http://10.125.121.188:8080/api/qboard/${id}`, {
+      const response = await fetch(`http://10.125.121.188:8080/api/qboards/${id}`, {
         method: 'PUT',
         body: formData,
       });

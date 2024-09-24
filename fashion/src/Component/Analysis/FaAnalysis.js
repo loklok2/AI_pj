@@ -1,19 +1,36 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faCircleXmark, faRotateRight, faCircleInfo, faAngleRight } from '@fortawesome/free-solid-svg-icons'; 
-import 'bootstrap/dist/css/bootstrap.min.css';  // Bootstrap 스타일 적용
-import '../../CSS/FaAnalysis.css';  // CSS 파일 임포트
+import { faSpinner, faCircleXmark, faRotateRight, faCircleInfo, faFaceSmile, faFaceMeh, faFaceFrown } from '@fortawesome/free-solid-svg-icons'; 
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Select from 'react-select';
+import '../../CSS/FaAnalysis.css';
+
+const styleOptions = [
+    { value: '클래식', label: '클래식' },
+    { value: '매니시', label: '매니시' },
+    { value: '페미니', label: '페미니' },
+    { value: '에스닉', label: '에스닉' },
+    { value: '컨템포러리', label: '컨템포러리' },
+    { value: '내추럴', label: '내추럴' },
+    { value: '젠더리스', label: '젠더리스' },
+    { value: '스포티', label: '스포티' },
+    { value: '서브컬처', label: '서브컬처' },
+    { value: '캐주얼', label: '캐주얼' },
+];
 
 const FaAnalysis = () => {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
-    const [topStyles, setTopStyles] = useState([]); // 상위 3개 스타일 상태
-    const [recommendedProducts, setRecommendedProducts] = useState([]); // 추천 상품 상태
-    const [captionResult, setCaptionResult] = useState(''); // 이미지 설명 상태
-    const [showRelatedStyles, setShowRelatedStyles] = useState(false); // 관련 스타일 더보기 상태
-    const [isModalOpen, setIsModalOpen] = useState(false); // 모달창 상태
+    const [topStyles, setTopStyles] = useState([]); 
+    const [recommendedProducts, setRecommendedProducts] = useState([]); 
+    const [captionResult, setCaptionResult] = useState(''); 
+    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [isSurveyModalOpen, setIsSurveyModalOpen] = useState(false); 
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [feedbackOption, setFeedbackOption] = useState(null);
+    const [selectedStyles, setSelectedStyles] = useState([]);
 
     const handleClick = () => {
         fileInputRef.current.click();
@@ -46,20 +63,14 @@ const FaAnalysis = () => {
             const formData = new FormData();
             formData.append('file', imageFile, imageFile.name);
 
-            // API 호출
             const response = await fetch('http://10.125.121.188:8080/api/recommendation/analyze', {
                 method: 'POST',
                 body: formData,
             });
             const data = await response.json();
-            
-             // 응답 데이터 로그
-            console.log('API 응답 데이터:', data);
 
-            // API 응답 처리
             const { styleindex, recommendedProducts, captionResult } = data;
 
-            // 스타일 인덱스 설정
             if (Array.isArray(styleindex)) {
                 setTopStyles(styleindex.map(style => style.nameKo));
             } else {
@@ -67,7 +78,6 @@ const FaAnalysis = () => {
                 alert('스타일 데이터를 받지 못했습니다.');
             }
 
-            // 추천 상품 설정
             if (Array.isArray(recommendedProducts)) {
                 const updatedProducts = recommendedProducts.map(product => ({
                     ...product,
@@ -79,7 +89,6 @@ const FaAnalysis = () => {
                 alert('추천 상품 데이터를 받지 못했습니다.');
             }
 
-            // 설명 결과 설정
             if (captionResult) {
                 setCaptionResult(captionResult);
             } else {
@@ -95,12 +104,50 @@ const FaAnalysis = () => {
         }
     };
 
+    useEffect(() => {
+        if (loading) {
+            const timer = setTimeout(() => {
+                setIsSurveyModalOpen(true);
+            }, 10000); // 10초 후에 모달창 나타나게 설정
+
+            return () => clearTimeout(timer); 
+        }
+    }, [loading]);
+
+    useEffect(() => {
+        if (isModalOpen) {
+            document.querySelector('.fa-analysis-modal-content-right').classList.add('show');
+        }
+        if (isSurveyModalOpen) {
+            document.querySelector('.fa-analysis-survey-modal-content-right').classList.add('show');
+        }
+        if (isFeedbackModalOpen) {
+            document.querySelector('.fa-analysis-feedback-modal-content-right').classList.add('show');
+        }
+    }, [isModalOpen, isSurveyModalOpen, isFeedbackModalOpen]);
+
     const handleReload = () => {
         window.location.reload();
     };
 
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
+    };
+
+    const toggleSurveyModal = () => {
+        setIsSurveyModalOpen(!isSurveyModalOpen);
+    };
+
+    const handleFeedbackClick = (feedback) => {
+        setFeedbackOption(feedback);
+        if (feedback === '불만족') {
+            setIsSurveyModalOpen(false);
+            setIsFeedbackModalOpen(true); // 불만족일 경우 스타일 선택 창으로 이동
+        }
+    };
+
+    const handleStyleChange = (selectedOptions) => {
+        setSelectedStyles(selectedOptions);
     };
 
     return (
@@ -172,65 +219,45 @@ const FaAnalysis = () => {
                         {loading ? "분석 중..." : "분석하기"}
                     </button>
                 </div>
-
-                {/* 분석 결과 및 옷 설명 영역 */}
-                {topStyles.length > 0 && (
-                    <div className="fa-analysis-unique-description-section">
-                        <p>이미지의 분석 결과 아래의 내용과 같습니다.</p>
-                        <h2>
-                            {topStyles.join(', ')}
-                        </h2>
-
-                        <p style={{ marginTop: '80px', marginBottom: '80px' }}>
-                            {captionResult ? captionResult : ''}
-                        </p>
-
-                        {topStyles.length > 0 && (
-                            <div style={{ textAlign: 'center', marginTop: '30px' }}>
-                                <a 
-                                    href="#" 
-                                    onClick={() => setShowRelatedStyles(true)}  
-                                    style={{ color: 'gray', textDecoration: 'none', fontSize: '18px' }}
-                                >
-                                    관련 스타일 더보기
-                                    <FontAwesomeIcon icon={faAngleRight} style={{ marginLeft: '5px' }} />
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
 
-            {/* 모달창 코드 */}
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>주의 사항</h2>
-                        <p>사물(옷)하나만 있을 경우, 옷과 관련이 없는 사물의 경우 올바른 결과가 나오지 않습니다.</p>
-                        <button onClick={toggleModal}>닫기</button>
-                    </div>
+                <div className="fa-analysis-modal-content-right">
+                    <h2>주의 사항</h2>
+                    <p>사물(옷)하나만 있을 경우, 옷과 관련이 없는 사물의 경우 올바른 결과가 나오지 않습니다.</p>
+                    <button onClick={toggleModal}>닫기</button>
                 </div>
             )}
 
-            {/* 관련 스타일 이미지 섹션 (관련 스타일 더보기 버튼을 눌러야 보임) */}
-            {showRelatedStyles && (
-                <div>
-                    <h2 className="related-styles-title">관련 스타일</h2>
-
-                    <div className="related-styles-section" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-                        {recommendedProducts.map((product) => (
-                            <div key={product.productId} className="related-style" style={{ flex: '0 0 30%', marginBottom: '20px' }}>
-                                <p className="related-style-title" style={{ textAlign: 'center' }}>{product.name}</p>
-                                <div className="related-style-inner">
-                                    <img src={product.imagePath} alt={product.name} style={{ height: '200px', width: '100%', objectFit: 'cover' }} />
-                                    <div className="related-style-info">
-                                        <p>{product.info}</p>
-                                        <p>{product.price.toLocaleString()} 원</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+            {isSurveyModalOpen && (
+                <div className="fa-analysis-survey-modal-content-right">
+                    <button className="close-button" onClick={toggleSurveyModal}>x</button>
+                    <h2>만족도 조사</h2>
+                    <p>분석 결과에 만족하셨나요?</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
+                        <FontAwesomeIcon icon={faFaceSmile} size="2x" color="black" onClick={() => handleFeedbackClick('만족')} style={{ cursor: 'pointer' }} />
+                        <FontAwesomeIcon icon={faFaceMeh} size="2x" color="black" onClick={() => handleFeedbackClick('보통')} style={{ cursor: 'pointer' }} />
+                        <FontAwesomeIcon icon={faFaceFrown} size="2x" color="black" onClick={() => handleFeedbackClick('불만족')} style={{ cursor: 'pointer' }} />
                     </div>
+                    <button onClick={toggleSurveyModal} style={{ marginTop: '20px' }}>닫기</button>
+                </div>
+            )}
+
+            {isFeedbackModalOpen && (
+                <div className="fa-analysis-feedback-modal-content-right">
+                    <button className="close-button" onClick={() => setIsFeedbackModalOpen(false)}>x</button>
+                    <h2>스타일 선택</h2>
+                    <p>이 이미지에 적합한 스타일을 선택해주세요 (최대 2개):</p>
+                    <Select
+                        isMulti
+                        value={selectedStyles}
+                        onChange={handleStyleChange}
+                        options={styleOptions}
+                        maxMenuHeight={150}
+                        placeholder="스타일 선택"
+                        menuPlacement="top"
+                    />
+                    <button onClick={() => setIsFeedbackModalOpen(false)} style={{ marginTop: '20px' }}>제출</button>
                 </div>
             )}
         </div>

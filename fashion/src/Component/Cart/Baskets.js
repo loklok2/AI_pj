@@ -3,235 +3,245 @@ import { useNavigate } from 'react-router-dom';
 import '../../CSS/Baskets.css';
 
 const Baskets = () => {
-  const navigate = useNavigate();
-  const userId = sessionStorage.getItem('userId');
+    const navigate = useNavigate();
+    const userId = localStorage.getItem('username');
 
-  const [items, setItems] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [selectAll, setSelectAll] = useState(false);
-  const [isGuest, setIsGuest] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // 관리자인지 여부를 저장할 상태 추가
-  const [showLoginModal, setShowLoginModal] = useState(false);
+    const [items, setItems] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectAll, setSelectAll] = useState(false);
+    const [isGuest, setIsGuest] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false); // 관리자인지 여부를 저장할 상태 추가
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
-  useEffect(() => {
-    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
-    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
-    const userRole = localStorage.getItem('role'); // 역할 정보 가져오기
+    useEffect(() => {
+        const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
+        const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+        const userRole = localStorage.getItem('role'); // 역할 정보 가져오기
 
-    if (!userId && userLoggedIn) {
-      navigate('/login');
-      return;
-    }
+        console.log(userId, userLoggedIn);
+        
+        if (!userId && userLoggedIn) {
+            navigate('/login');
+            return;
+        }
 
-    if (guestLogin || userLoggedIn) {
-      setIsGuest(guestLogin);
-      setIsLoggedIn(userLoggedIn);
+        if (guestLogin || userLoggedIn) {
+            setIsGuest(guestLogin);
+            setIsLoggedIn(userLoggedIn);
 
-      // 역할에 따라 isAdmin 상태 설정
-      if (userRole === 'ADMIN') {
-        setIsAdmin(true);
-      }
-
-      if (userLoggedIn) {
-        fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-          },
-        })
-          .then((response) => {
-            console.log('Response:', response);
-            if (!response.ok) {
-              throw new Error('Failed to fetch cart items');
+            if (userRole === 'ADMIN') {
+                setIsAdmin(true);
             }
-            return response.json();
-          })
-          .then((data) => setItems(data.map((item) => ({ ...item, isSelected: false }))))
-          .catch((error) => console.error('Failed to fetch cart items:', error));
-      } else if (guestLogin) {
-        const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
-        setItems(storedItems.map((item) => ({ ...item, isSelected: false })));
-      }
-    } else {
-      setShowLoginModal(true);
-    }
-  }, [navigate, userId]);
 
-  const totalPrice = items
-    .filter((item) => item.isSelected)
-    .reduce((acc, item) => acc + (parseInt(item.price, 10) || 0) * (parseInt(item.quantity, 10) || 1), 0);
+            if (userLoggedIn) {
+                fetch(`http://10.125.121.188:8080/api/cart`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': localStorage.getItem('accessToken'),
+                    },
+                })
+                    .then((response) => {
+                        console.log('Response:', response);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch cart items');
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        console.log('Fetched data:', data);
+                        setItems(data.items.map((item) => ({ 
+                            ...item, 
+                            isSelected: false,
+                            imageUrl: item.imageUrl, // 올바른 속성으로 수정
+                            name: item.productName, 
+                            quantity: item.quantity 
+                        })));
+                    })
+                    .catch((error) => console.error('Failed to fetch cart items:', error));
+            } else if (guestLogin) {
+                const storedItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
+                setItems(storedItems.map((item) => ({ ...item, isSelected: false })));
+            }
+        } else {
+            setShowLoginModal(true);
+        }
+    }, [navigate, userId]);
 
-  const handlePayment = () => {
-    const selectedItems = items.filter((item) => item.isSelected);
-    if (selectedItems.length === 0) {
-      setShowModal(true);
-    } else {
-      sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
-      navigate('/payment');
-    }
-  };
+    const totalPrice = items
+        .filter((item) => item.isSelected)
+        .reduce((acc, item) => acc + (parseInt(item.price, 10) || 0) * (parseInt(item.quantity, 10) || 1), 0);
 
-  const handleSelectAll = () => {
-    setSelectAll((prevSelectAll) => {
-      const newSelectAll = !prevSelectAll;
-      setItems((prevItems) => prevItems.map((item) => ({ ...item, isSelected: newSelectAll })));
-      return newSelectAll;
-    });
-  };
+    const handlePayment = () => {
+        const selectedItems = items.filter((item) => item.isSelected);
+        if (selectedItems.length === 0) {
+            setShowModal(true);
+        } else {
+            sessionStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+            navigate('/payment');
+        }
+    };
 
-  const handleSelectItem = (id) => {
-    setItems((prevItems) => {
-      const updatedItems = prevItems.map((item) =>
-        item.productId === id ? { ...item, isSelected: !item.isSelected } : item
-      );
+    const handleSelectAll = () => {
+        setSelectAll((prevSelectAll) => {
+            const newSelectAll = !prevSelectAll;
+            setItems((prevItems) => prevItems.map((item) => ({ ...item, isSelected: newSelectAll })));
+            return newSelectAll;
+        });
+    };
 
-      const allSelected = updatedItems.every((item) => item.isSelected);
-      setSelectAll(allSelected);
+    const handleSelectItem = (id) => {
+        setItems((prevItems) => {
+            const updatedItems = prevItems.map((item) =>
+                item.productId === id ? { ...item, isSelected: !item.isSelected } : item
+            );
 
-      return updatedItems;
-    });
-  };
+            const allSelected = updatedItems.every((item) => item.isSelected);
+            setSelectAll(allSelected);
 
-  const handleDeleteSelected = () => {
-    const remainingItems = items.filter((item) => !item.isSelected);
-    setItems(remainingItems);
+            return updatedItems;
+        });
+    };
 
-    if (isLoggedIn) {
-      fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ items: remainingItems }),
-      }).catch((error) => console.error('Failed to update cart:', error));
-    } else if (isGuest) {
-      sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
-    }
-  };
+    const handleDeleteSelected = () => {
+        const remainingItems = items.filter((item) => !item.isSelected);
+        setItems(remainingItems);
 
-  const handleQuantityChange = (id, newQuantity) => {
-    const updatedItems = items.map((item) =>
-      item.productId === id && newQuantity >= 1 ? { ...item, quantity: newQuantity } : item
-    );
-    setItems(updatedItems);
+        if (isLoggedIn) {
+            fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({ items: remainingItems }),
+            }).catch((error) => console.error('Failed to update cart:', error));
+        } else if (isGuest) {
+            sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
+        }
+    };
 
-    if (isLoggedIn) {
-      fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(updatedItems),
-      }).catch((error) => console.error('Failed to update cart:', error));
-    } else if (isGuest) {
-      sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
-    }
-  };
+    const handleQuantityChange = (id, newQuantity) => {
+        const updatedItems = items.map((item) =>
+            item.productId === id && newQuantity >= 1 ? { ...item, quantity: newQuantity } : item
+        );
+        setItems(updatedItems);
 
-  const handleDeleteItem = (id) => {
-    const remainingItems = items.filter((item) => item.productId !== id);
-    setItems(remainingItems);
+        if (isLoggedIn) {
+            fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                },
+                body: JSON.stringify(updatedItems),
+            }).catch((error) => console.error('Failed to update cart:', error));
+        } else if (isGuest) {
+            sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
+        }
+    };
 
-    if (isLoggedIn) {
-      fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ items: remainingItems }),
-      }).catch((error) => console.error('Failed to update cart:', error));
-    } else if (isGuest) {
-      sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
-    }
-  };
+    const handleDeleteItem = (id) => {
+        const remainingItems = items.filter((item) => item.productId !== id);
+        setItems(remainingItems);
 
-  const closeModal = () => {
-    setShowModal(false);
-  };
+        if (isLoggedIn) {
+            fetch(`http://10.125.121.188:8080/api/cart/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({ items: remainingItems }),
+            }).catch((error) => console.error('Failed to update cart:', error));
+        } else if (isGuest) {
+            sessionStorage.setItem('cartItems', JSON.stringify(remainingItems));
+        }
+    };
 
-  const closeLoginModal = () => {
-    setShowLoginModal(false);
-    navigate('/login');
-  };
+    const closeModal = () => {
+        setShowModal(false);
+    };
 
-  return (
-    <div className="basket-container">
-      <h1 className="basket-title">{isAdmin ? '관리자 장바구니' : '장바구니'}</h1>
-      <p className="basket-description">
-        {isAdmin ? '관리자 전용 상품 목록입니다.' : '판매자 설정에 따라, 개별 배송되는 상품이 있습니다.'}
-      </p>
+    const closeLoginModal = () => {
+        setShowLoginModal(false);
+        navigate('/login');
+    };
 
-      <div className="basket-selection">
-        <input type="checkbox" id="select-all" checked={selectAll} onChange={handleSelectAll} />
-        <label htmlFor="select-all">전체 선택</label>
-      </div>
+    return (
+        <div className="basket-container">
+            <h1 className="basket-title">{isAdmin ? '관리자 장바구니' : '장바구니'}</h1>
+            <p className="basket-description">{isAdmin ? '관리자 전용 상품 목록입니다.' : '판매자 설정에 따라, 개별 배송되는 상품이 있습니다.'}</p>
 
-      {items.map((item) => (
-        <div key={item.productId} className="basket-item">
-          <div className="basket-item-checkbox">
+            <div className="basket-selection">
+                <input type="checkbox" id="select-all" checked={selectAll} onChange={handleSelectAll} />
+                <label htmlFor="select-all">전체 선택</label>
+            </div>
+
+            {items.map((item) => (
+    <div key={item.productId} className="basket-item">
+        <div className="basket-item-checkbox">
             <input type="checkbox" checked={item.isSelected} onChange={() => handleSelectItem(item.productId)} />
-          </div>
+        </div>
 
-          <div className="basket-item-info">
+        <div className="basket-item-info">
             <img
-              src={`http://10.125.121.188:8080${item.images[0]}`} 
-              alt={item.name} 
-              className="basket-item-image"
+                 src={`http://10.125.121.188:8080/images/${item.imageUrl}`} // imageUrl을 올바르게 사용
+                alt={item.name}
+                className="basket-item-image"
             />
             <p>{item.name}</p>
             <p className="basket-item-price">{parseInt(item.price, 10).toLocaleString()}원</p>
-          </div>
-          <div className="basket-item-controls">
+        </div>
+
+        <div className="basket-item-controls">
             <button className="quantity-btn" onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}>-</button>
             <input
-              type="number"
-              value={item.quantity}
-              min="1"
-              onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value))}
-              style={{ textAlign: 'center' }}
+                type="number"
+                value={item.quantity}
+                min="1"
+                onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value))}
+                style={{ textAlign: 'center' }}
             />
             <button className="quantity-btn" onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}>+</button>
-          </div>
-          <div className="basket-item-total">
+        </div>
+
+        <div className="basket-item-total">
             <p>총 {(item.price * item.quantity).toLocaleString()}원</p>
-          </div>
-          <button className="delete-btn" onClick={() => handleDeleteItem(item.productId)}>x</button>
         </div>
-      ))}
-
-      <div className="basket-total">
-        <p>총 금액 합계: <strong>{totalPrice.toLocaleString()}원</strong></p>
-      </div>
-
-      <div className="basket-actions">
-        <button className="delete-all-btn" onClick={handleDeleteSelected}>장바구니 삭제</button>
-        <button className="purchase-btn" onClick={handlePayment}>결제하기</button>
-      </div>
-
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <p className="modal-message">상품을 선택해주세요.</p>
-            <button onClick={closeModal}>확인</button>
-          </div>
-        </div>
-      )}
-
-      {showLoginModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <p>로그인 또는 비회원 로그인이 필요합니다.</p>
-            <button onClick={closeLoginModal}>확인</button>
-          </div>
-        </div>
-      )}
+        <button className="delete-btn" onClick={() => handleDeleteItem(item.productId)}>x</button>
     </div>
-  );
+))}
+
+            <div className="basket-total">
+                <p>총 금액 합계: <strong>{totalPrice.toLocaleString()}원</strong></p>
+            </div>
+
+            <div className="basket-actions">
+                <button className="delete-all-btn" onClick={handleDeleteSelected}>장바구니 삭제</button>
+                <button className="purchase-btn" onClick={handlePayment}>결제하기</button>
+            </div>
+
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <p className="modal-message">상품을 선택해주세요.</p>
+                        <button onClick={closeModal}>확인</button>
+                    </div>
+                </div>
+            )}
+
+            {showLoginModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <p>로그인 또는 비회원 로그인이 필요합니다.</p>
+                        <button onClick={closeLoginModal}>확인</button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default Baskets;
