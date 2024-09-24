@@ -73,7 +73,7 @@ public class AdminService {
     }
 
     // 게시글 정보 조회
-    public List<Qboard> getAllQboards() {
+    public List<Qboard> getAllAdminQboards() {
         return qboardRepository.findAll();
     }
 
@@ -82,9 +82,26 @@ public class AdminService {
         return commentRepository.countByMember_Role(Role.ADMIN);
     }
 
-    // 상품 정보 조회
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDTO> getAllProductDTOs() {
+        return productRepository.findAll().stream()
+                .map(this::convertToProductDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProductDTO convertToProductDTO(Product product) {
+        ProductDTO dto = new ProductDTO();
+        dto.setProductId(product.getProductId());
+        dto.setName(product.getName());
+        dto.setInfo(product.getInfo());
+        dto.setSell(product.getSell());
+        dto.setCreateDate(product.getCreateDate());
+        dto.setPrice(product.getPrice());
+        dto.setLikeCount(product.getLikeCount());
+        dto.setView(product.getView());
+        dto.setAttributeNames(product.getAttributeLinks().stream()
+                .map(link -> link.getAttribute().getNameKo())
+                .collect(Collectors.toSet()));
+        return dto;
     }
 
     // 회원 정보 삭제
@@ -182,10 +199,10 @@ public class AdminService {
         product.setLikeCount(productDTO.getLikeCount());
         product.setView(productDTO.getView());
 
-        if (productDTO.getAttributeIds() != null) {
-            Set<ProductAttributeLink> attributeLinks = productDTO.getAttributeIds().stream()
+        if (productDTO.getAttributeNames() != null) {
+            Set<ProductAttributeLink> attributeLinks = productDTO.getAttributeNames().stream()
                     .map(id -> {
-                        ProductAttribute attribute = productAttributeRepository.findById(id)
+                        ProductAttribute attribute = productAttributeRepository.findByNameKo(id)
                                 .orElseThrow(() -> new RuntimeException("Attribute not found"));
                         ProductAttributeLink link = new ProductAttributeLink();
                         link.setProduct(product);

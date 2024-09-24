@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.choice.admin.dto.InventoryDTO;
+import com.choice.admin.dto.OrderSummaryDTO;
 import com.choice.admin.dto.ProductDTO;
 import com.choice.admin.service.AdminService;
 import com.choice.auth.entity.Member;
@@ -67,7 +68,7 @@ public class AdminController {
     @GetMapping("/qboards")
     public ResponseEntity<?> getAllQboards() {
         try {
-            List<Qboard> qboards = adminService.getAllQboards();
+            List<Qboard> qboards = adminService.getAllAdminQboards();
             return new ResponseEntity<>(qboards, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("게시판 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,7 +79,7 @@ public class AdminController {
     @GetMapping("/products")
     public ResponseEntity<?> getAllProducts() {
         try {
-            List<Product> products = adminService.getAllProducts();
+            List<ProductDTO> products = adminService.getAllProductDTOs();
             return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("상품 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -156,6 +157,17 @@ public class AdminController {
             return new ResponseEntity<>("해당 상품을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("상품 업데이트 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 전체 주문 목록 조회
+    @GetMapping("/orders")
+    public ResponseEntity<?> getAllOrders() {
+        try {
+            List<OrderSummaryDTO> orders = adminService.getAllOrders();
+            return new ResponseEntity<>(orders, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("주문 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

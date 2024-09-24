@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.choice.product.entity.Product;
-import com.choice.shopping.dto.CartItemDTO;
 import com.choice.shopping.entity.Cart;
 import com.choice.shopping.entity.CartItem;
 
@@ -24,10 +23,10 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     CartItem findByCartAndProduct_ProductId(Cart cart, Long productId);
 
     @Query(nativeQuery = true, value = "SELECT * FROM cart_summary_view WHERE user_id = :userId")
-    List<CartItemDTO> findCartSummaryByUserId(@Param("userId") Long userId);
+    List<Object[]> findCartSummaryByUserId(@Param("userId") Long userId);
 
     @Query(nativeQuery = true, value = "SELECT * FROM cart_summary_view WHERE session_id = :sessionId")
-    List<CartItemDTO> findCartSummaryBySessionId(@Param("sessionId") String sessionId);
+    List<Object[]> findCartSummaryBySessionId(@Param("sessionId") String sessionId);
 
     void deleteBySessionId(String sessionId);
 

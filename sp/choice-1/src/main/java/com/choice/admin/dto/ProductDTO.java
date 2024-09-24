@@ -1,8 +1,8 @@
 package com.choice.admin.dto;
 
-import lombok.Data;
-
 import java.util.Set;
+import java.time.LocalDateTime;
+import lombok.Data;
 
 @Data
 public class ProductDTO {
@@ -12,6 +12,7 @@ public class ProductDTO {
     private Long sell;
     private Long price;
     private Long likeCount;
+    private LocalDateTime createDate;
     private Long view;
-    private Set<Long> attributeIds;
+    private Set<String> attributeNames;
 }

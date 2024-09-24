@@ -14,6 +14,7 @@ import com.choice.product.repository.ProductRepository;
 import com.choice.shopping.dto.OrderDTO;
 import com.choice.shopping.dto.OrderItemDTO;
 import com.choice.shopping.dto.CartItemDTO;
+import com.choice.shopping.dto.CartSummaryDTO;
 import com.choice.shopping.entity.OrderItem;
 import com.choice.shopping.entity.Orders;
 import com.choice.shopping.repository.OrderRepository;
@@ -70,7 +71,8 @@ public class OrderService {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        List<CartItemDTO> cartItems = cartService.getCartItems(userId);
+        CartSummaryDTO cartSummary = cartService.getCartItemsUser(userId);
+        List<CartItemDTO> cartItems = cartSummary.getItems();
         if (cartItems.isEmpty()) {
             throw new RuntimeException("장바구니가 비어있습니다.");
         }

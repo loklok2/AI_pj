@@ -18,56 +18,76 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.choice.board.entity.Qboard;
+import com.choice.board.dto.QboardDTO;
 import com.choice.board.entity.QboardImg;
 import com.choice.board.service.QboardService;
 
 @RestController
-@RequestMapping("/api/qboard")
+@RequestMapping("/api/qboards")
 public class QboardController {
 
     @Autowired
     private QboardService qboardService;
 
+    // Q&A 게시글 생성
     @PostMapping
-    public ResponseEntity<?> createQboard(@RequestPart("qboard") Qboard qboard,
-                                          @RequestPart(value = "images", required = false) List<MultipartFile> images,
-                                          @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+    public ResponseEntity<?> createQboard(@RequestPart("qboard") QboardDTO qboardDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Qboard createdQboard = qboardService.createQboard(qboard, userDetails.getUsername(), images);
+            QboardDTO createdQboard = qboardService.createQboard(qboardDTO, userDetails.getUsername(), images);
             return new ResponseEntity<>(createdQboard, HttpStatus.CREATED);
+        } catch (IOException e) {
+            return new ResponseEntity<>("이미지 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("Q&A 게시글 작성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    // Q&A 게시글 조회
     @GetMapping("/{id}")
-    public ResponseEntity<?> getQboard(@PathVariable Long id) {
+    public ResponseEntity<?> getQboard(@PathVariable("id") Long id) {
         try {
-            Qboard qboard = qboardService.getQboard(id);
+            QboardDTO qboard = qboardService.getQboardWithComments(id);
             return new ResponseEntity<>(qboard, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("해당 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
         }
     }
 
+    // 모든 Q&A 게시글 조회
     @GetMapping
     public ResponseEntity<?> getAllQboards() {
         try {
-            List<Qboard> qboards = qboardService.getAllQboards();
+            List<QboardDTO> qboards = qboardService.getAllQboards();
             return new ResponseEntity<>(qboards, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Q&A 게시글 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateQboard(@PathVariable Long id, @RequestPart("qboard") Qboard qboardDetails,
-                                          @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages,
-                                          @RequestPart(value = "deletedImageIds", required = false) List<Long> deletedImageIds,
-                                          @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+    // 사용자의 Q&A 게시글 조회
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyQboards(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Qboard updatedQboard = qboardService.updateQboard(id, qboardDetails, userDetails.getUsername(), newImages, deletedImageIds);
+            List<QboardDTO> myQboards = qboardService.getQboardsByUserId(userDetails.getUsername());
+            return new ResponseEntity<>(myQboards, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("내 Q&A 게시글 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateQboard(@PathVariable("id") Long id, @RequestPart("qboard") QboardDTO qboardDTO,
+            @RequestPart(value = "newImages", required = false) List<MultipartFile> newImages,
+            @RequestPart(value = "deletedImageIds", required = false) List<Long> deletedImageIds,
+            @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+        try {
+            QboardDTO updatedQboard = qboardService.updateQboard(id, qboardDTO, userDetails.getUsername(),
+                    newImages,
+                    deletedImageIds);
             return new ResponseEntity<>(updatedQboard, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Q&A 게시글 업데이트 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -75,7 +95,8 @@ public class QboardController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteQboard(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> deleteQboard(@PathVariable("id") Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             qboardService.deleteQboard(id, userDetails.getUsername());
             return new ResponseEntity<>("게시글이 성공적으로 삭제되었습니다.", HttpStatus.OK);
@@ -85,7 +106,7 @@ public class QboardController {
     }
 
     @GetMapping("/{qboardId}/images")
-    public ResponseEntity<?> getImagesForQboard(@PathVariable Long qboardId) {
+    public ResponseEntity<?> getImagesForQboard(@PathVariable("qboardId") Long qboardId) {
         try {
             List<QboardImg> images = qboardService.getImagesForQboard(qboardId);
             return new ResponseEntity<>(images, HttpStatus.OK);

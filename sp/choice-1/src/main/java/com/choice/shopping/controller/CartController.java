@@ -1,7 +1,5 @@
 package com.choice.shopping.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.choice.auth.entity.Member;
-import com.choice.shopping.dto.CartItemDTO;
+import com.choice.auth.repository.MemberRepository;
 import com.choice.shopping.dto.CartSummaryDTO;
 import com.choice.shopping.dto.CartTotalDTO;
 import com.choice.shopping.service.CartService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -28,20 +28,30 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     @GetMapping
     public ResponseEntity<?> getCartItems(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
         try {
-            List<CartItemDTO> items;
+            CartSummaryDTO summary;
             if (userDetails != null) {
-                Long userId = ((Member) userDetails).getUserId();
-                items = cartService.getCartItems(userId);
+                String username = userDetails.getUsername();
+                log.debug("Fetching cart items for authenticated user: {}", username);
+                Member member = memberRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                summary = cartService.getCartItemsUser(member.getUserId());
             } else {
                 String sessionId = session.getId();
-                items = cartService.getCartItems(sessionId);
+                log.debug("Fetching cart items for session: {}", sessionId);
+                summary = cartService.getCartItemsSession(sessionId);
             }
-            return new ResponseEntity<>(items, HttpStatus.OK);
+            log.debug("Retrieved {} cart items", summary.getItems().size());
+            return new ResponseEntity<>(summary, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("장바구니 아이템을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("Error fetching cart items", e);
+            return new ResponseEntity<>("장바구니 아이템을 가져오는 중 오류가 발생했습니다: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -72,14 +82,4 @@ public class CartController {
         }
     }
 
-    // 장바구니 요약 조회
-    @GetMapping("/{userId}/summary")
-    public ResponseEntity<?> getCartSummary(@PathVariable Long userId) {
-        try {
-            CartSummaryDTO summary = cartService.getCartSummary(userId);
-            return new ResponseEntity<>(summary, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("장바구니 요약을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 }

@@ -1,9 +1,10 @@
 package com.choice.board.dto;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -16,4 +17,5 @@ public class QboardDTO {
     private String content; // 게시글 내용
     private LocalDateTime createDate; // 게시글 생성 날짜
     private LocalDateTime editedDate; // 게시글 수정 날짜
+    private List<CommentDTO> comments; // 댓글 목록
 }
