@@ -15,8 +15,8 @@ const View = () => {
   const [editingContent, setEditingContent] = useState('');
 
   useEffect(() => {
-    // 본인이 작성한 게시글 데이터 가져오기
-    fetch('http://10.125.121.188:8080/api/qboards/my')
+    // 게시글과 댓글 데이터를 함께 가져오기
+    fetch(`http://10.125.121.188:8080/api/qboards/${id}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('게시글을 불러오는 데 실패했습니다.');
@@ -24,31 +24,16 @@ const View = () => {
         return response.json();
       })
       .then(data => {
-        console.log('본인 게시글 데이터:', data);
+        console.log('게시글 데이터:', data);
         setPost(data);
+        setComments(data.comments || []); // 댓글 데이터를 설정
       })
       .catch(error => {
-        console.error('Error fetching post:', error);
-      });
-
-    // 댓글 데이터 가져오기
-    fetch(`http://10.125.121.188:8080/api/comments/qboard/${id}`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('댓글을 불러오는 데 실패했습니다.');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('댓글 데이터:', data);
-        setComments(data);
-      })
-      .catch(error => {
-        console.error('Error fetching comments:', error);
+        console.error('Error fetching post and comments:', error);
       });
 
     // 이미지 데이터 가져오기
-    fetch(`http://10.125.121.188:8080/api/qboard/{qboardId}/images`)
+    fetch(`http://10.125.121.188:8080/api/qboards/${id}/images`)
       .then(response => {
         if (!response.ok) {
           throw new Error('이미지를 불러오는 데 실패했습니다.');
@@ -70,14 +55,14 @@ const View = () => {
       alert('댓글을 입력해주세요.');
       return;
     }
-
+  
     // 댓글 추가 요청
-    fetch(`http://10.125.121.188:8080/api/comments/${id}`, {
+    fetch(`http://10.125.121.188:8080/api/comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ content: comment }),
+      body: JSON.stringify({ qboardId: id, content: comment }), // qboardId와 content 포함
     })
       .then(response => {
         if (!response.ok) {
@@ -93,7 +78,7 @@ const View = () => {
         console.error('Error adding comment:', error);
       });
   };
-
+  
   const handleDeleteComment = (commentId) => {
     // 댓글 삭제 요청
     fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
@@ -109,12 +94,12 @@ const View = () => {
         console.error('Error deleting comment:', error);
       });
   };
-
+  
   const handleEditComment = (commentId) => {
     if (editingCommentId === commentId) {
       // 댓글 수정 저장
       fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
-        method: 'PUT', 
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -139,7 +124,6 @@ const View = () => {
           console.error('Error editing comment:', error);
         });
     } else {
-      // 수정 모드로 변경
       const commentToEdit = comments.find((cmt) => cmt.commentId === commentId);
       setEditingCommentId(commentId);
       setEditingContent(commentToEdit.content);
@@ -177,7 +161,7 @@ const View = () => {
         </div>
         <div className="view-qna-question-details">
           <p>
-            사용자 아이디: <strong>{post.member?.userId || '알 수 없음'}</strong> 
+            사용자 아이디: <strong>{post.userId || '알 수 없음'}</strong> 
             <span className="spacer"></span> 작성일자: <strong>{new Date(post.createDate).toLocaleDateString() || '알 수 없음'}</strong>
           </p>
           <div className="view-qna-question-actions">
@@ -225,11 +209,11 @@ const View = () => {
           <div key={cmt.commentId} className="view-qna-admin-reply">
             {index === 0 && (
               <p style={{ fontWeight: 'bold', color: '#333' }}>
-                관리자 아이디: {post.member?.userId || '알 수 없음'}
+                관리자 아이디: {cmt.userId || '알 수 없음'}
               </p>
             )}
             <p>
-              <strong>{cmt.writer}</strong>
+              <strong>{cmt.username}</strong>
             </p>
             {editingCommentId === cmt.commentId ? (
               <>
@@ -261,12 +245,3 @@ const View = () => {
 };
 
 export default View;
-
-
-
-
-
-
-
-
-

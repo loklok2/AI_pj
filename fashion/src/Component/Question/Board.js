@@ -8,7 +8,7 @@ const Board = () => {
   const [boardType, setBoardType] = useState('전체'); // 변경: categoryFilter -> boardType
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(''); 
+  const [userRole, setUserRole] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [qnaData, setQnaData] = useState([]);
   const itemsPerPage = 15;
@@ -16,14 +16,14 @@ const Board = () => {
   useEffect(() => {
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
     const accessToken = localStorage.getItem('accessToken');
-    const role = localStorage.getItem('role'); 
-  
+    const role = localStorage.getItem('role');
+
     if (guestLogin) setIsGuest(true);
     if (accessToken) {
       setIsLoggedIn(true);
       setUserRole(role);
     }
-  
+
     // API를 사용하여 Q&A 데이터를 가져옵니다.
     fetch('http://10.125.121.188:8080/api/qboards')
       .then((response) => {
@@ -34,7 +34,7 @@ const Board = () => {
       })
       .then((data) => {
         const sortedData = data.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
-        console.log('Q&A 데이터 (최신순):', sortedData); 
+        console.log('Q&A 데이터 (최신순):', sortedData);
         setQnaData(sortedData);
       })
       .catch((error) => {
@@ -50,7 +50,7 @@ const Board = () => {
 
   const filteredData = boardType === '전체'
     ? qnaData
-    : qnaData.filter((item) => item.boardType === boardType); // 변경: categoryFilter -> boardType
+    : qnaData.filter((item) => item.boardType === boardType);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -90,9 +90,9 @@ const Board = () => {
       </p>
 
       <div className="qna-board-button-group">
-        <button onClick={() => setBoardType('전체')}>전체문의</button> {/* 변경 */}
-        <button onClick={() => setBoardType('상품문의')}>상품문의</button> {/* 변경 */}
-        <button onClick={() => setBoardType('기타문의')}>기타문의</button> {/* 변경 */}
+        <button onClick={() => setBoardType('전체')}>전체문의</button>
+        <button onClick={() => setBoardType('상품문의')}>상품문의</button>
+        <button onClick={() => setBoardType('기타문의')}>기타문의</button>
       </div>
 
       <div className={`qna-board-table-wrapper ${!isGuest && !isLoggedIn ? 'blurred' : ''}`}>
@@ -109,11 +109,11 @@ const Board = () => {
           <tbody>
             {currentItems.map((item, index) => (
               <tr
-                key={`${item.qboardId}-${index}`} // `index`를 추가하여 고유한 key 값 생성
-                onClick={() => handleRowClick(item.qboardId)}
+                key={`${item.id}-${index}`} // `index`를 추가하여 고유한 key 값 생성
+                onClick={() => handleRowClick(item.id)} // `item.id`로 수정
                 style={{ cursor: 'pointer' }}
               >
-                <td>{item.qboardId}</td>
+                <td>{item.id}</td> {/* `item.qboardId`에서 `item.id`로 변경 */}
                 <td>{item.boardType || '기타문의'}</td>
                 <td>
                   {index === 0 && (
