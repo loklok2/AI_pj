@@ -11,7 +11,7 @@ const Managers = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [originalProduct, setOriginalProduct] = useState(null);
-  const [newProduct, setNewProduct] = useState({ image: '', name: '', info: '', price: '', size: '', date: '', style: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', info: '', price: '', date: '', style: '' });
 
   const styleOptions = [
     { value: '클래식', label: '클래식' },
@@ -34,10 +34,8 @@ const Managers = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log('Fetching users from /api/admin/members');
       const response = await fetch('http://10.125.121.188:8080/api/admin/members');
       const data = await response.json();
-      console.log('Fetched Users:', data);
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -46,21 +44,18 @@ const Managers = () => {
 
   const fetchPosts = async () => {
     try {
-      console.log('Fetching posts from /api/admin/qboards');
       const response = await fetch('http://10.125.121.188:8080/api/admin/qboards');
       const data = await response.json();
-  
+
       if (Array.isArray(data)) {
-        // 필요한 게시글 정보를 추출하여 상태 업데이트
         const postsData = data.map(post => ({
           qboardId: post.qboardId,
-          category: post.boardType || '기타 문의', // boardType이 없는 경우 기본값으로 '일반'을 사용
+          category: post.boardType || '기타 문의',
           title: post.title,
-          author: post.member ? post.member.name : '알 수 없음', // 작성자 정보 설정
-          date: post.createDate.split('T')[0], // 날짜 포맷 설정
-          content: post.content, // 게시글 내용
+          author: post.member ? post.member.name : '알 수 없음',
+          date: post.createDate.split('T')[0],
+          content: post.content,
         }));
-        console.log('Fetched Posts:', postsData);
         setPosts(postsData);
       } else {
         console.error('Unexpected data format:', data);
@@ -70,39 +65,26 @@ const Managers = () => {
     }
   };
 
-
   const fetchProducts = async () => {
     try {
-      console.log('Fetching products from /api/admin/products');
       const response = await fetch('http://10.125.121.188:8080/api/admin/products');
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Failed to fetch products: ${response.status} - ${errorText}`);
-        return;
-      }
-
-      const responseText = await response.text();
-      console.log('Raw response text:', responseText);
-
-      try {
-        const data = JSON.parse(responseText);
+      if (response.ok) {
+        const data = await response.json();
         
         if (Array.isArray(data)) {
-          const updatedProducts = data.map((product) => ({
+          const updatedProducts = data.map(product => ({
             ...product,
-            style: product.attributeNames[0], // 스타일 필드 설정
-            date: product.createDate.split('T')[0], // 날짜 형식 변환
+            style: product.attributeNames[0],
+            date: product.createDate.split('T')[0],
           }));
           setProducts(updatedProducts);
         } else {
           console.error('Unexpected data format:', data);
         }
-
-      } catch (jsonError) {
-        console.error('Error parsing JSON:', jsonError, 'Response text:', responseText);
+      } else {
+        console.error('Failed to fetch products:', response.status);
       }
-
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -116,7 +98,6 @@ const Managers = () => {
 
   const handleDeleteUsers = async () => {
     try {
-      console.log('Deleting selected users:', selectedUsers);
       await Promise.all(selectedUsers.map(id => fetch(`http://10.125.121.188:8080/api/admin/members/${id}`, { method: 'DELETE' })));
       setUsers(users.filter(user => !selectedUsers.includes(user.userId)));
       setSelectedUsers([]);
@@ -133,7 +114,6 @@ const Managers = () => {
 
   const handleDeletePosts = async () => {
     try {
-      console.log('Deleting selected posts:', selectedPosts);
       await Promise.all(selectedPosts.map(id => fetch(`http://10.125.121.188:8080/api/admin/qboards/${id}`, { method: 'DELETE' })));
       setPosts(posts.filter(post => !selectedPosts.includes(post.qboardId)));
       setSelectedPosts([]);
@@ -143,50 +123,77 @@ const Managers = () => {
   };
 
   const handleProductChange = (e, index) => {
-    const { name, value } = e.target;
+    const { name, value, options } = e.target;
+  
     setProducts(prevState => {
       const updatedProducts = [...prevState];
-      updatedProducts[index] = { ...updatedProducts[index], [name]: value };
+      
+      if (name === 'style') {
+        const selectedStyles = Array.from(options).filter(option => option.selected).map(option => option.value);
+        updatedProducts[index] = { ...updatedProducts[index], [name]: selectedStyles };
+      } else {
+        updatedProducts[index] = { ...updatedProducts[index], [name]: value };
+      }
+  
       return updatedProducts;
     });
   };
 
   const handleNewProductChange = (e) => {
-    const { name, value } = e.target;
-    setNewProduct(prevState => ({ ...prevState, [name]: value }));
+    const { name, value, options } = e.target;
+    
+    if (name === 'style') {
+      const selectedStyles = Array.from(options).filter(option => option.selected).map(option => option.value);
+      setNewProduct(prevState => ({ ...prevState, [name]: selectedStyles }));
+    } else {
+      setNewProduct(prevState => ({ ...prevState, [name]: value }));
+    }
   };
+  
 
   const handleAddProduct = async () => {
     try {
       console.log('Adding a new product:', newProduct);
+      
+      // attributeNames가 배열로 전달되는지 확인
+      const productToAdd = {
+        productId: null, 
+        name: newProduct.name,
+        info: newProduct.info,
+        sell: 0, 
+        price: parseInt(newProduct.price, 10),
+        likeCount: 0, 
+        createDate: `${newProduct.date}T00:00:00`, 
+        view: 0, 
+        attributeNames: newProduct.style // 배열로 유지
+      };
+  
+      console.log('Formatted product data:', productToAdd);
+  
       const response = await fetch('http://10.125.121.188:8080/api/admin/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newProduct),
+        body: JSON.stringify(productToAdd), // 객체를 JSON 문자열로 직렬화하여 전송
       });
-
+  
       if (response.ok) {
         const addedProduct = await response.json();
+        console.log('Product successfully added:', addedProduct);
         setProducts([addedProduct, ...products]);
-        setNewProduct({ image: '', name: '', info: '', price: '', size: '', date: '', style: '' });
+        setNewProduct({ name: '', info: '', price: '', date: '', style: '' });
       } else {
-        console.error('Failed to add product');
+        const errorText = await response.text();
+        console.error('Failed to add product:', errorText);
       }
     } catch (error) {
       console.error('Error adding product:', error);
     }
   };
 
-  const handleEditProduct = (index) => {
-    setEditIndex(index);
-    setOriginalProduct(products[index]);
-  };
-
   const handleUpdateProduct = async () => {
     try {
-      console.log(`Updating product with ID: ${products[editIndex].productId}`, products[editIndex]);
       const response = await fetch(`http://10.125.121.188:8080/api/admin/products/${products[editIndex].productId}`, {
         method: 'PUT',
         headers: {
@@ -218,7 +225,6 @@ const Managers = () => {
 
   const handleDeleteProducts = async () => {
     try {
-      console.log('Deleting selected products:', selectedProducts.map(index => products[index].productId));
       await Promise.all(selectedProducts.map(index => fetch(`http://10.125.121.188:8080/api/admin/products/${products[index].productId}`, { method: 'DELETE' })));
       setProducts(products.filter((_, index) => !selectedProducts.includes(index)));
       setSelectedProducts([]);
@@ -233,25 +239,9 @@ const Managers = () => {
     );
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setNewProduct((prevState) => ({
-        ...prevState,
-        image: file.name
-      }));
-    }
-  };
-
-  const handleImageEditUpload = (e, index) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProducts((prevState) => {
-        const updatedProducts = [...prevState];
-        updatedProducts[index] = { ...updatedProducts[index], image: file.name };
-        return updatedProducts;
-      });
-    }
+  const handleEditProduct = (index) => {
+    setEditIndex(index);
+    setOriginalProduct(products[index]);
   };
 
   return (

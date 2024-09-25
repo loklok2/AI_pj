@@ -142,6 +142,9 @@ const View = () => {
     return <div>게시글을 찾을 수 없습니다.</div>;
   }
 
+  // boardType에 따라 한글로 표시
+  const boardTypeLabel = post.boardType === 'ProductQnA' ? '상품문의' : '기타문의';
+
   return (
     <div className="view-qna-container">
       <h2 className="view-qna-title">Q&A</h2>
@@ -161,8 +164,11 @@ const View = () => {
         </div>
         <div className="view-qna-question-details">
           <p>
-            사용자 아이디: <strong>{post.userId || '알 수 없음'}</strong> 
-            <span className="spacer"></span> 작성일자: <strong>{new Date(post.createDate).toLocaleDateString() || '알 수 없음'}</strong>
+            카테고리: <strong>{boardTypeLabel}</strong>
+            <span className="spacer"></span>
+            사용자 아이디: <strong>{post.userId || '알 수 없음'}</strong>
+            <span className="spacer"></span>
+            작성일자: <strong>{new Date(post.createDate).toLocaleDateString() || '알 수 없음'}</strong>
           </p>
           <div className="view-qna-question-actions">
             <button className="view-qna-edit-btn" onClick={handleEdit}>수정</button>

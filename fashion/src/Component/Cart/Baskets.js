@@ -186,13 +186,17 @@ const Baskets = () => {
         </div>
 
         <div className="basket-item-info">
-            <img
-                 src={`http://10.125.121.188:8080/images/${item.imageUrl}`} // imageUrl을 올바르게 사용
-                alt={item.name}
-                className="basket-item-image"
-            />
-            <p>{item.name}</p>
-            <p className="basket-item-price">{parseInt(item.price, 10).toLocaleString()}원</p>
+            <div className="basket-item-image">
+                <img
+                    src={item.pimgPath ? `http://10.125.121.188:8080${item.pimgPath}` : '/path/to/placeholder-image.jpg'} 
+                    alt={item.name}
+                    className="basket-item-image"
+                />
+            </div>
+            <div className="basket-item-details">
+                <p className="basket-item-name">{item.productName}</p>
+                <p className="basket-item-price">{parseInt(item.price, 10).toLocaleString()}원</p>
+            </div>
         </div>
 
         <div className="basket-item-controls">

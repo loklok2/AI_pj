@@ -38,10 +38,9 @@
     border: 1px solid #858585;
     padding: 20px;
     margin-bottom: 10px;
-    position: relative; /* 상대 위치로 설정 */
+    position: relative;
 }
 
-/* 체크박스를 왼쪽 상단에 위치시키기 위한 스타일 */
 .basket-item-checkbox {
     position: absolute;
     top: 1px;
@@ -49,12 +48,19 @@
 }
 
 .basket-item-checkbox input {
-    margin: 0; /* 기본 마진 제거 */
+    margin: 0;
+}
+
+.basket-item-info {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
 }
 
 .basket-item-image {
     width: 100px;
     height: 100px;
+    margin-right: 20px; /* 이미지와 정보 사이 간격 */
 }
 
 .placeholder-image {
@@ -64,29 +70,38 @@
     border-radius: 5px;
 }
 
-.basket-item-info {
-    flex-grow: 1;
-    text-align: left;
-    margin-left: 20px;
+.basket-item-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.basket-item-name {
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 .basket-item-price {
     font-size: 1.2em;
     color: #000;
     font-weight: bold;
+
 }
 
 .basket-item-controls {
     display: flex;
     align-items: center;
-    margin-right: 20px;
+    margin-right: 80px;
+    gap: 2px; /* 버튼들 간의 간격 설정 */
 }
 
 .quantity-btn {
     background-color: #f1f1f1;
     border: none;
-    padding: 5px 10px;
+    padding: 0px 10px;
     cursor: pointer;
+   
+    
 }
 
 .quantity-number {
@@ -115,7 +130,7 @@
 }
 
 .delete-all-btn {
-    width: 48%; /* 삭제 버튼 크기 */
+    width: 48%;
     padding: 12px;
     font-size: 14px;
     background-color: black;
@@ -125,7 +140,7 @@
 }
 
 .purchase-btn {
-    width: 48%; /* 구매 버튼 크기 */
+    width: 48%;
     padding: 12px;
     font-size: 14px;
     background-color: black;
@@ -134,23 +149,21 @@
     cursor: pointer;
 }
 
-/* 버튼 개별 호버 스타일 */
 .delete-all-btn:hover {
-    background-color: #ff4444; /* 삭제 버튼 호버 효과 */
+    background-color: #ff4444;
 }
 
 .purchase-btn:hover {
-    background-color: #444444; /* 구매 버튼 호버 효과 */
+    background-color: #444444;
 }
 
 .basket-total {
     font-size: 18px;
     margin-top: 100px;
     margin-bottom: 20px;
-    text-align: right; /* 오른쪽 정렬 */
-  }
+    text-align: right;
+}
 
-  /* 모달 오버레이 */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -161,21 +174,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  /* 모달 콘텐츠 */
-  .modal-content {
+}
+
+.modal-content {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
     text-align: center;
-  }
+}
 
-  .modal-message {
-    font-size: 18px; 
-  }
-  
-  .modal-content button {
+.modal-message {
+    font-size: 18px;
+}
+
+.modal-content button {
     margin-top: 30px;
     padding: 10px 20px;
     background-color: #000000;
@@ -183,9 +195,8 @@
     border: none;
     cursor: pointer;
     border-radius: 3px;
-    
-  }
-  
-  .modal-content button:hover {
+}
+
+.modal-content button:hover {
     background-color: #555;
-  }
+}

@@ -8,7 +8,7 @@ const Writing = () => {
   const quillRef = useRef(null);
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
-  const [boardType, setBoardType] = useState(''); // 변경: category에서 boardType으로 변경
+  const [boardType, setBoardType] = useState('');
   const [files, setFiles] = useState([]); 
   const [quillInstance, setQuillInstance] = useState(null);
 
@@ -67,20 +67,20 @@ const Writing = () => {
 
     const content = quillInstance.root.innerHTML;
 
-    if (!title || !boardType || !content.trim()) { // 변경: category를 boardType으로 변경
+    if (!title || !content.trim() || !boardType) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
 
+    // FormData 생성
     const formData = new FormData();
-    const userId = localStorage.getItem('userId'); // 예: 로그인 시 저장된 userId 가져오기
     formData.append('qboard', new Blob([JSON.stringify({
       title: title,
-      boardType: boardType,
       content: content,
-      member: { userId: userId } // 현재 로그인된 사용자 ID를 전송
+      boardType: boardType // 카테고리 정보 추가
     })], { type: "application/json" }));
 
+    // 첨부 파일이 있는 경우 FormData에 추가
     if (files.length > 0) {
       files.forEach((file) => {
         formData.append('images', file);
@@ -89,8 +89,8 @@ const Writing = () => {
 
     console.log('전송할 데이터:', {
       title,
-      boardType,
       content,
+      boardType,
       files: files.map(file => file.name)
     });
 
@@ -151,8 +151,8 @@ const Writing = () => {
             <td>
               <select 
                 className="writing-form-select"
-                value={boardType} // 변경: category를 boardType으로 변경
-                onChange={(e) => setBoardType(e.target.value)} // 변경
+                value={boardType}
+                onChange={(e) => setBoardType(e.target.value)}
               >
                 <option value="">카테고리를 선택하세요.</option>
                 <option value="product">상품문의</option>

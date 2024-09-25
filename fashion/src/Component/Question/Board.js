@@ -50,7 +50,7 @@ const Board = () => {
 
   const filteredData = boardType === '전체'
     ? qnaData
-    : qnaData.filter((item) => item.boardType === boardType);
+    : qnaData.filter((item) => item.boardType === (boardType === '상품문의' ? 'ProductQnA' : 'EtcQnA'));
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -113,8 +113,8 @@ const Board = () => {
                 onClick={() => handleRowClick(item.id)} // `item.id`로 수정
                 style={{ cursor: 'pointer' }}
               >
-                <td>{item.id}</td> {/* `item.qboardId`에서 `item.id`로 변경 */}
-                <td>{item.boardType || '기타문의'}</td>
+                <td>{item.id}</td>
+                <td>{item.boardType === 'ProductQnA' ? '상품문의' : '기타문의'}</td> {/* boardType 값에 따라 한글로 표시 */}
                 <td>
                   {index === 0 && (
                     <span style={{ color: 'red', fontWeight: 'bold' }}>[NEW] </span>

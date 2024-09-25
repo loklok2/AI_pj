@@ -118,8 +118,78 @@ const Manager = () => {
     fetchDailyVisitors();
     fetchCustomerInquiries();
     fetchInquiryReplies();
-    fetchOrdersFromSession();
+    fetchOrdersFromSession(); // 세션의 주문 목록을 가져오는 기존 코드
+    fetchOrders(); // 새로운 주문 목록 API 호출 추가
   }, []);
+
+  // 주문 상태를 한국어로 변환하는 함수
+const convertStatusToKorean = (status) => {
+  switch (status) {
+    case 'PENDING':
+      return '처리 대기';
+    case 'PROCESSING':
+      return '처리 중';
+    case 'SHIPPED':
+      return '배송 중';
+    case 'DELIVERED':
+      return '배송 완료';
+    case 'CANCELLED':
+      return '주문 취소';
+    default:
+      return status;
+  }
+};
+
+const convertStatusToEnglish = (status) => {
+  switch (status) {
+    case '처리 대기':
+      return 'PENDING';
+    case '처리 중':
+      return 'PROCESSING';
+    case '배송 중':
+      return 'SHIPPED';
+    case '배송 완료':
+      return 'DELIVERED';
+    case '주문 취소':
+      return 'CANCELLED';
+    default:
+      return '';
+  }
+};
+
+const fetchOrders = async () => {
+  try {
+    const response = await fetch('http://10.125.121.188:8080/api/admin/orders', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Fetched Order Data:', data); // 주문 데이터를 콘솔에 출력
+
+      const formattedOrders = data.map((order) => ({
+        orderId: order.orderId,
+        userId: order.username, // API에서 가져온 username을 userId로 매핑
+        productInfo: '상품 정보 없음', // API 응답에 상품 정보가 없으므로 기본값으로 설정
+        totalPrice: `${order.totalAmount.toLocaleString()}원`, // totalAmount를 totalPrice로 매핑
+        orderDate: new Date(order.orderDate).toLocaleDateString(),
+        deliveryStatus: convertStatusToKorean(order.orderStatus), // 한국어로 변환
+        size: 'N/A', // 해당 정보가 없으므로 기본값 설정
+        quantity: 0, // 해당 정보가 없으므로 기본값 설정
+      }));
+      
+      setOrderList(formattedOrders);
+    } else {
+      console.error('주문 목록을 가져오는 데 실패했습니다:', response.statusText);
+    }
+  } catch (error) {
+    console.error('주문 목록을 가져오는 중 오류 발생:', error);
+  }
+};
+
 
   const fetchTotalMembers = async () => {
     try {
@@ -182,7 +252,7 @@ const Manager = () => {
     const orderInfo = JSON.parse(sessionStorage.getItem('orderInfo')) || {};
     const orderNumber = orderInfo.orderNumber || 'N/A';
     const orderDate = orderInfo.orderDate || new Date().toLocaleDateString();
-    const orderStatus = '배송 중';
+    const orderStatus = '배송 준비';
 
     const formattedOrders = storedOrderItems.map((item, index) => ({
       orderId: orderNumber + '-' + (index + 1),
@@ -200,35 +270,35 @@ const Manager = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      console.log(`Updating order status: Order ID: ${orderId}, New Status: ${newStatus}`);
+        // 주문 상태를 영어로 변환
+        const statusInEnglish = convertStatusToEnglish(newStatus);
 
-      const response = await fetch(`http://10.125.121.188:8080/api/admin/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ newStatus }),
-      });
+        console.log(`Updating order status: Order ID: ${orderId}, New Status: ${statusInEnglish}`); // 상태 변경 정보 콘솔 출력
+  
+        const response = await fetch(`http://10.125.121.188:8080/api/admin/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: statusInEnglish }), // JSON 형식으로 전달
+        });
 
-      console.log('Response status:', response.status);
+        console.log('Response status:', response.status);
 
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('Response data:', responseData);
-
-        setOrderList((prevOrders) =>
-          prevOrders.map((order) =>
-            order.orderId === orderId ? { ...order, deliveryStatus: newStatus } : order
-          )
-        );
-      } else {
-        const errorText = await response.text();
-        console.error('주문 상태 업데이트 중 오류 발생:', errorText);
-      }
+        if (response.ok) {
+            setOrderList((prevOrders) =>
+                prevOrders.map((order) =>
+                    order.orderId === orderId ? { ...order, deliveryStatus: newStatus } : order
+                )
+            );
+        } else {
+            const errorText = await response.text();
+            console.error('주문 상태 업데이트 중 오류 발생:', errorText);
+        }
     } catch (error) {
-      console.error('주문 상태 업데이트 중 오류 발생:', error);
+        console.error('주문 상태 업데이트 중 오류 발생:', error);
     }
-  };
+};
 
   const handleDeleteClick = async () => {
     try {
@@ -386,13 +456,14 @@ const handleCheckboxChange = (orderId) => {
                     <td>{order.orderDate}</td>
                     <td>
                       <select
-                        value={order.deliveryStatus || "배송 준비"}
+                        value={order.deliveryStatus || "처리 대기"}
                         onChange={(e) => handleStatusChange(order.orderId, e.target.value)}
                       >
-                        <option value="배송 준비">배송 준비</option>
+                        <option value="처리 대기">처리 대기</option>
+                        <option value="처리 중">처리 중</option>
                         <option value="배송 중">배송 중</option>
                         <option value="배송 완료">배송 완료</option>
-                        <option value="배송 취소">주문 취소</option>
+                        <option value="주문 취소">주문 취소</option>
                       </select>
                     </td>
                   </tr>
