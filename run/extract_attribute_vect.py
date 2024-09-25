@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 from PIL import Image
-from predict.attribute_predictor_custom import AttributePredictor
+from run.predict.attribute_predictor_custom import AttributePredictor
 
 def extract_category_features_to_csv(image_folder, output_folder):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

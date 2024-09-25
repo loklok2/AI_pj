@@ -20,7 +20,8 @@ class load_data(data.Dataset):
     def get_anno(self):
         self.root = os.path.abspath(self.root)
         list_path = os.path.join(self.root, '{}_anno_custom_final_0.json'.format(self.phase))
-        self.img_list = json.load(open(list_path, 'r'))
+        # UTF-8 인코딩을 명시적으로 지정
+        self.img_list = json.load(open(list_path, 'r', encoding='utf-8'))
         self.cat2idx = json.load(open(os.path.join(self.root, 'category_custom_final.json'), 'r'))
 
     def __len__(self):
