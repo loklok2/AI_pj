@@ -13,6 +13,8 @@ public class ProductDetailDTO {
     private Long likeCount;
     private Long view;
     private String category;
-    private List<String> images;
+    private String pimgName;
+    private String pimgPath;
     private List<AttributeDTO> attributes;
+    private List<ProductRecommendationDTO> randomRecommendations;
 }

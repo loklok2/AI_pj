@@ -49,28 +49,31 @@ public class CartService {
                 return new CartSummaryDTO(items, total);
         }
 
-        public Long getCartTotal(Long userId) {
-                List<Object[]> results = cartItemRepository.findCartSummaryByUserId(userId);
-                return results.isEmpty() ? 0L : ((Number) results.get(0)[8]).longValue();
-        }
+        // public Long getCartTotal(Long userId) {
+        // List<Object[]> results = cartItemRepository.findCartSummaryByUserId(userId);
+        // return results.isEmpty() ? 0L : ((Number) results.get(0)[8]).longValue();
+        // }
 
+        // 사용자의 장바구니 아이템 조회
         public List<CartItem> getCartItemsForUser(Long userId) {
                 Cart cart = cartRepository.findByMember_UserId(userId)
                                 .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
                 return cartItemRepository.findByCart(cart);
         }
 
+        // 사용자의 장바구니 비우기
         public void clearCart(Long userId) {
                 Cart cart = cartRepository.findByMember_UserId(userId)
                                 .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
                 cartItemRepository.deleteByCart(cart);
         }
 
+        // 장바구니에 상품 추가
         @Transactional
-        public CartItemDTO addToCart(Long userId, CartItemDTO cartItemDTO) {
+        public CartItemDTO addToCart(Long userId, Long productId, Integer quantity) {
                 Cart cart = cartRepository.findByMember_UserId(userId)
                                 .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
-                Product product = productRepository.findById(cartItemDTO.getProductId())
+                Product product = productRepository.findById(productId)
                                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
 
                 CartItem cartItem = cartItemRepository.findByCartAndProduct(cart, product);
@@ -78,15 +81,16 @@ public class CartService {
                         cartItem = new CartItem();
                         cartItem.setCart(cart);
                         cartItem.setProduct(product);
-                        cartItem.setQuantity(cartItemDTO.getQuantity());
+                        cartItem.setQuantity(quantity);
                 } else {
-                        cartItem.setQuantity(cartItem.getQuantity() + cartItemDTO.getQuantity());
+                        cartItem.setQuantity(cartItem.getQuantity() + quantity);
                 }
 
                 cartItem = cartItemRepository.save(cartItem);
                 return convertToCartItemDTO(cartItem);
         }
 
+        // 장바구니에서 상품 삭제
         @Transactional
         public void removeFromCart(Long userId, Long productId) {
                 Cart cart = cartRepository.findByMember_UserId(userId)
@@ -97,6 +101,7 @@ public class CartService {
                 }
         }
 
+        // 장바구니에서 상품 수량 변경
         @Transactional
         public CartItemDTO updateCartItem(Long userId, CartItemDTO cartItemDTO) {
                 Cart cart = cartRepository.findByMember_UserId(userId)
@@ -111,6 +116,7 @@ public class CartService {
                 return convertToCartItemDTO(cartItem);
         }
 
+        // 장바구니 아이템을 DTO로 변환
         private CartItemDTO convertToCartItemDTO(CartItem cartItem) {
                 Product product = cartItem.getProduct();
                 String imagePath = null;
@@ -129,26 +135,32 @@ public class CartService {
                                 .build();
         }
 
+        // 세션 ID를 사용하여 비로그인 사용자의 장바구니 아이템 조회
         public List<Object[]> getCartItems(String sessionId) {
                 // 세션 ID를 사용하여 비로그인 사용자의 장바구니 아이템 조회
                 return cartItemRepository.findCartSummaryBySessionId(sessionId);
         }
 
+        // 세션 장바구니를 사용자 장바구니로 병합
         public void mergeCart(Long userId, String sessionId) {
                 List<Object[]> sessionCartItems = getCartItems(sessionId);
                 List<CartItemDTO> cartItemDTOs = convertToCartItemDTOList(sessionCartItems);
                 for (CartItemDTO cartItemDTO : cartItemDTOs) {
-                        addToCart(userId, cartItemDTO);
+                        Long productId = cartItemDTO.getProductId();
+                        Integer quantity = cartItemDTO.getQuantity();
+                        addToCart(userId, productId, quantity);
                 }
                 // 세션 장바구니 비우기
                 clearSessionCart(sessionId);
         }
 
+        // 세션 장바구니 비우기
         private void clearSessionCart(String sessionId) {
                 // 세션 ID에 해당하는 장바구니 아이템 삭제
                 cartItemRepository.deleteBySessionId(sessionId);
         }
 
+        // 결과를 CartItemDTO 리스트로 변환
         private List<CartItemDTO> convertToCartItemDTOList(List<Object[]> results) {
                 return results.stream().map(result -> {
                         CartItemDTO dto = new CartItemDTO();

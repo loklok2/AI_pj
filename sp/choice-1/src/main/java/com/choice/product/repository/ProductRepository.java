@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 
 import com.choice.product.entity.Product;
@@ -24,4 +25,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.images LEFT JOIN FETCH p.attributeLinks WHERE p.productId = :id")
     Optional<Product> findByIdWithDetails(@Param("id") Long id);
+
+    @Procedure(name = "getrandomproductsbycategory")
+    List<Product> getrandomproductsbycategory(
+            @Param("p_category") String category,
+            @Param("p_exclude_product_id") Long excludeProductId,
+            @Param("p_limit") Integer limit);
+
 }

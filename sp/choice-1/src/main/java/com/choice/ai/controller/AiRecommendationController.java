@@ -30,6 +30,7 @@ public class AiRecommendationController {
         this.memberRepository = memberRepository;
     }
 
+    // 이미지 분석 및 추천 상품 조회
     @PostMapping("/analyze")
     public CompletableFuture<ResponseEntity<AiAnalysisResult>> analyzeAndRecommend(
             @RequestParam("file") MultipartFile image,

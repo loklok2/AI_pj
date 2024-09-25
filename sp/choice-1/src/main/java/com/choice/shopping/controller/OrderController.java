@@ -30,6 +30,7 @@ public class OrderController {
     @Autowired
     private MemberRepository memberRepository;
 
+    // 주문 내역 조회
     @GetMapping("/{userId}")
     public ResponseEntity<?> getOrdersByUserId(@PathVariable Long userId) {
         try {
@@ -40,6 +41,7 @@ public class OrderController {
         }
     }
 
+    // 주문 생성
     @PostMapping("/create-from-cart")
     public ResponseEntity<?> createOrderFromCart(@AuthenticationPrincipal UserDetails userDetails) {
         try {

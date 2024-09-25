@@ -20,7 +20,7 @@ import com.choice.admin.dto.OrderSummaryDTO;
 import com.choice.admin.dto.ProductDTO;
 import com.choice.admin.service.AdminService;
 import com.choice.auth.entity.Member;
-import com.choice.board.entity.Qboard;
+import com.choice.board.dto.QboardDTO;
 import com.choice.product.entity.Product;
 import com.choice.shopping.entity.Orders;
 
@@ -68,7 +68,7 @@ public class AdminController {
     @GetMapping("/qboards")
     public ResponseEntity<?> getAllQboards() {
         try {
-            List<Qboard> qboards = adminService.getAllAdminQboards();
+            List<QboardDTO> qboards = adminService.getAllAdminQboards();
             return new ResponseEntity<>(qboards, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("게시판 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -125,7 +125,7 @@ public class AdminController {
 
     // 상품 삭제
     @DeleteMapping("/products/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProduct(@PathVariable("id") Long id) {
         try {
             adminService.deleteProduct(id);
             return new ResponseEntity<>("상품이 성공적으로 삭제되었습니다.", HttpStatus.OK);
@@ -140,10 +140,11 @@ public class AdminController {
     @PostMapping("/products")
     public ResponseEntity<?> addProduct(@RequestBody ProductDTO productDTO) {
         try {
-            Product newProduct = adminService.addProduct(productDTO, new InventoryDTO());
+            ProductDTO newProduct = adminService.addProduct(productDTO);
             return new ResponseEntity<>(newProduct, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>("상품 추가 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+            return new ResponseEntity<>("상품 추가 중 오류가 발생했습니다: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -173,12 +174,15 @@ public class AdminController {
 
     // 주문 상태 업데이트
     @PutMapping("/orders/{id}/status")
-    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody Orders.OrderStatus newStatus) {
+    public ResponseEntity<?> updateOrderStatus(@PathVariable("id") Long id,
+            @RequestBody Map<String, String> statusMap) {
         try {
+            String newStatusString = statusMap.get("status");
+            Orders.OrderStatus newStatus = Orders.OrderStatus.valueOf(newStatusString.toUpperCase());
             Orders updatedOrder = adminService.updateOrderStatus(id, newStatus);
             return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>("해당 주문을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("잘못된 주문 상태입니다.", HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("주문 상태 업데이트 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }

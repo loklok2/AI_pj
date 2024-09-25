@@ -1,19 +1,23 @@
 package com.choice.product.service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.choice.product.dto.AttributeDTO;
 import com.choice.product.dto.ProductAllDTO;
 import com.choice.product.dto.ProductDetailDTO;
+import com.choice.product.dto.ProductRecommendationDTO;
 import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductImg;
 import com.choice.product.repository.ProductRepository;
 
+@Transactional
 @Service
 public class ProductService {
 
@@ -62,11 +66,15 @@ public class ProductService {
         dto.setLikeCount(product.getLikeCount());
         dto.setView(product.getView());
         dto.setCategory(product.getCategory());
+        if (!product.getImages().isEmpty()) {
+            ProductImg firstImage = product.getImages().iterator().next();
+            dto.setPimgName(firstImage.getPimgName());
+            dto.setPimgPath("/images/" + firstImage.getPimgPath() + "/" + firstImage.getPimgName());
 
-        // 이미지 정보 설정
-        dto.setImages(product.getImages().stream()
-                .map(img -> "/images/" + img.getPimgPath() + "/" + img.getPimgName())
-                .collect(Collectors.toList()));
+        } else {
+            dto.setPimgName(null);
+            dto.setPimgPath(null);
+        }
 
         // 속성 정보 설정
         dto.setAttributes(product.getAttributeLinks().stream()
@@ -77,6 +85,28 @@ public class ProductService {
                 })
                 .collect(Collectors.toList()));
 
+        return dto;
+    }
+
+    // 랜덤 추천 상품 조회
+    public List<ProductRecommendationDTO> getRandomProductsByCategory(String category, Long excludeProductId,
+            int limit) {
+        List<Product> products = productRepository.getrandomproductsbycategory(category, excludeProductId, limit);
+        return products.stream()
+                .map(this::convertToRecommendationDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProductRecommendationDTO convertToRecommendationDTO(Product product) {
+        ProductRecommendationDTO dto = new ProductRecommendationDTO();
+        dto.setProductId(product.getProductId());
+        dto.setName(product.getName());
+        dto.setPrice(product.getPrice());
+        if (!product.getImages().isEmpty()) {
+            ProductImg firstImage = product.getImages().iterator().next();
+            dto.setPimgName(firstImage.getPimgName());
+            dto.setPimgPath("/images/" + firstImage.getPimgPath() + "/" + firstImage.getPimgName());
+        }
         return dto;
     }
 

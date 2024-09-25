@@ -30,7 +30,7 @@ public class Product {
     @Column(name = "create_date", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createDate; // 상품 생성 날짜
 
-    @Column(name = "like")
+    @Column(name = "like_count")
     private Long likeCount; // 상품 좋아요
 
     private Long view; // 상품 조회수

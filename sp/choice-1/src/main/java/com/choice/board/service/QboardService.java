@@ -186,6 +186,7 @@ public class QboardService {
         return QboardDTO.builder()
                 .id(qboard.getQboardId())
                 .userId(qboard.getMember().getUserId())
+                .username(qboard.getMember().getUsername())
                 .boardType(qboard.getBoardType())
                 .title(qboard.getTitle())
                 .content(qboard.getContent())

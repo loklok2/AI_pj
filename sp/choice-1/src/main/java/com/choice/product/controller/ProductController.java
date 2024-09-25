@@ -1,5 +1,7 @@
 package com.choice.product.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.choice.product.dto.ProductAllDTO;
 import com.choice.product.dto.ProductDetailDTO;
+import com.choice.product.dto.ProductRecommendationDTO;
 import com.choice.product.service.ProductService;
 
 @RestController
@@ -22,7 +25,6 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
-
 
     @GetMapping
     public ResponseEntity<?> getAllProducts(
@@ -47,6 +49,10 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductDetailDTO> getProductDetail(@PathVariable("id") Long id) {
         ProductDetailDTO product = productService.getProductDetail(id);
+        List<ProductRecommendationDTO> randomRecommendations = productService.getRandomProductsByCategory(
+                product.getCategory(),
+                id, 5);
+        product.setRandomRecommendations(randomRecommendations);
         return ResponseEntity.ok(product);
     }
 

@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.choice.product.entity.Product;
+import com.choice.product.entity.ProductImg;
+import com.choice.product.repository.ProductRepository;
 import com.choice.store.repository.StoresSalesRepository;
 
 import jakarta.transaction.Transactional;
@@ -19,11 +22,16 @@ public class StoresSalesService {
     @Autowired
     private StoresSalesRepository storesSalesRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
+
+    // 상품 판매 상위 5개 조회
     public List<Map<String, Object>> getTopSellingProducts(Integer year, Integer month, Integer day, Long storeId) {
         List<Object[]> results = storesSalesRepository.getTopSellingProducts(year, month, day, storeId);
         return convertToProductMapList(results);
     }
 
+    // 매장 판매 상위 5개 조회
     public List<Map<String, Object>> getStoreSales(Integer year, Integer month, Integer day, Long storeId) {
         List<Object[]> results = storesSalesRepository.getStoreSales(year, month, day, storeId);
         return convertToSalesMapList(results);
@@ -32,9 +40,21 @@ public class StoresSalesService {
     private List<Map<String, Object>> convertToProductMapList(List<Object[]> results) {
         return results.stream().map(result -> {
             Map<String, Object> map = new HashMap<>();
-            map.put("productId", result[0]);
+            Long productId = ((Number) result[0]).longValue();
+            map.put("productId", productId);
             map.put("productName", result[1]);
             map.put("totalQuantity", result[2]);
+
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+
+            String imagePath = null;
+            if (!product.getImages().isEmpty()) {
+                ProductImg firstImage = product.getImages().iterator().next();
+                imagePath = "/images/" + firstImage.getPimgPath() + "/" + firstImage.getPimgName();
+            }
+            map.put("pimgPath", imagePath);
+
             return map;
         }).collect(Collectors.toList());
     }

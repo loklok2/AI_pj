@@ -11,4 +11,5 @@ public class LoginResponseDTO {
     private String refreshToken; // 리프레시 토큰
     private String role; // 권한
     private Long userId; // 유저 아이디
+    private String username; // 유저 이름
 }

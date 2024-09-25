@@ -3,6 +3,7 @@ package com.choice.admin.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ import com.choice.admin.dto.ProductDTO;
 import com.choice.auth.entity.Member;
 import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
+import com.choice.board.dto.QboardDTO;
 import com.choice.board.entity.Qboard;
 import com.choice.board.repository.CommentRepository;
 import com.choice.board.repository.QboardRepository;
@@ -72,9 +74,23 @@ public class AdminService {
         return qboardRepository.count();
     }
 
-    // 게시글 정보 조회
-    public List<Qboard> getAllAdminQboards() {
-        return qboardRepository.findAll();
+    // 게시글 전체 정보 조회
+    public List<QboardDTO> getAllAdminQboards() {
+        List<Qboard> qboards = qboardRepository.findAll();
+        return qboards.stream()
+                .map(this::convertToSimpleQboardDTO)
+                .collect(Collectors.toList());
+    }
+
+    private QboardDTO convertToSimpleQboardDTO(Qboard qboard) {
+        return QboardDTO.builder()
+                .id(qboard.getQboardId())
+                .userId(qboard.getMember().getUserId())
+                .boardType(qboard.getBoardType())
+                .title(qboard.getTitle())
+                .username(qboard.getMember().getUsername())
+                .createDate(qboard.getCreateDate())
+                .build();
     }
 
     // 관리자 댓글 수 조회
@@ -161,18 +177,14 @@ public class AdminService {
     }
 
     // 상품 추가
-    public Product addProduct(ProductDTO productDTO, InventoryDTO inventoryDTO) {
+    public ProductDTO addProduct(ProductDTO productDTO) {
         Product product = new Product();
+        product.setAttributeLinks(new HashSet<>());
         updateProductFromDTO(product, productDTO);
         product.setCreateDate(LocalDateTime.now());
         product = productRepository.save(product);
 
-        ProductInventory inventory = new ProductInventory();
-        inventory.setProduct(product);
-        updateInventoryFromDTO(inventory, inventoryDTO);
-        productInventoryRepository.save(inventory);
-
-        return product;
+        return convertToProductDTO(product);
     }
 
     // 상품 업데이트

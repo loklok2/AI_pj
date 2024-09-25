@@ -21,6 +21,7 @@ public class StoresSalesController {
     @Autowired
     private StoresSalesService storesSalesService;
 
+    // 상품 판매 상위 5개 조회
     @GetMapping("/top-products")
     public ResponseEntity<List<Map<String, Object>>> getTopSellingProducts(
             @RequestParam("year") Integer year,
@@ -30,6 +31,7 @@ public class StoresSalesController {
         return ResponseEntity.ok(storesSalesService.getTopSellingProducts(year, month, day, storeId));
     }
 
+    // 매장 판매금액 조회
     @GetMapping("/store-sales")
     public ResponseEntity<List<Map<String, Object>>> getStoreSales(
             @RequestParam("year") Integer year,
