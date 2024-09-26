@@ -33,6 +33,7 @@ public class CartService {
         @Autowired
         private ProductRepository productRepository;
 
+        // 사용자의 장바구니 아이템 조회
         public CartSummaryDTO getCartItemsUser(Long userId) {
                 log.debug("Fetching cart items for user ID: {}", userId);
                 List<Object[]> results = cartItemRepository.findCartSummaryByUserId(userId);
@@ -70,7 +71,7 @@ public class CartService {
 
         // 장바구니에 상품 추가
         @Transactional
-        public CartItemDTO addToCart(Long userId, Long productId, Integer quantity) {
+        public CartItemDTO addToCart(Long userId, Long productId, Integer quantity, String size) {
                 Cart cart = cartRepository.findByMember_UserId(userId)
                                 .orElseThrow(() -> new RuntimeException("장바구니를 찾을 수 없습니다."));
                 Product product = productRepository.findById(productId)
@@ -82,6 +83,7 @@ public class CartService {
                         cartItem.setCart(cart);
                         cartItem.setProduct(product);
                         cartItem.setQuantity(quantity);
+                        cartItem.setSize(size);
                 } else {
                         cartItem.setQuantity(cartItem.getQuantity() + quantity);
                 }
@@ -132,6 +134,7 @@ public class CartService {
                                 .price(product.getPrice())
                                 .totalPrice(product.getPrice() * cartItem.getQuantity())
                                 .pimgPath(imagePath) // pimgPath 추가
+                                .size(cartItem.getSize())
                                 .build();
         }
 
@@ -148,7 +151,8 @@ public class CartService {
                 for (CartItemDTO cartItemDTO : cartItemDTOs) {
                         Long productId = cartItemDTO.getProductId();
                         Integer quantity = cartItemDTO.getQuantity();
-                        addToCart(userId, productId, quantity);
+                        String size = cartItemDTO.getSize();
+                        addToCart(userId, productId, quantity, size);
                 }
                 // 세션 장바구니 비우기
                 clearSessionCart(sessionId);
@@ -173,9 +177,9 @@ public class CartService {
                         dto.setQuantity(((Number) result[6]).intValue());
                         dto.setPrice(((Number) result[7]).longValue());
                         dto.setTotalPrice(((Number) result[8]).longValue());
-                        dto.setPimgPath((String) result[9]); // pimgPath 추가
+                        dto.setPimgPath((String) result[9]);
+                        dto.setSize((String) result[10]); // size 정보 추가
                         return dto;
                 }).collect(Collectors.toList());
         }
-
 }

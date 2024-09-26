@@ -17,6 +17,7 @@ public class CartItemDTO {
     private String productName;
     private String category;
     private Integer quantity;
+    private String size;
     private Long price;
     private Long totalPrice;
     private String pimgPath; // pimgPath 추가

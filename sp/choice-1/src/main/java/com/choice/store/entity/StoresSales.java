@@ -30,9 +30,12 @@ import jakarta.persistence.Table;
                                 @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_store_id", type = Long.class)
                 }),
                 @NamedStoredProcedureQuery(name = "getStoreSales", procedureName = "get_store_sales", parameters = {
-                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_year", type = Integer.class),
-                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_month", type = Integer.class),
-                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_day", type = Integer.class),
+                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_from_year", type = Integer.class),
+                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_from_month", type = Integer.class),
+                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_from_day", type = Integer.class),
+                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_to_year", type = Integer.class),
+                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_to_month", type = Integer.class),
+                                @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_to_day", type = Integer.class),
                                 @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_store_id", type = Long.class)
                 })
 })

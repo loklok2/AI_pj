@@ -1,6 +1,7 @@
 package com.choice.shopping.entity;
 
 import com.choice.product.entity.Product;
+import com.choice.product.entity.ProductInventory;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,4 +32,6 @@ public class CartItem {
     private Integer quantity; // 수량
 
     private String sessionId; // 세션 ID
+
+    private String size;
 }

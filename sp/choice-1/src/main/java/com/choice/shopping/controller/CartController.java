@@ -57,6 +57,7 @@ public class CartController {
         }
     }
 
+    // 장바구니에 상품 추가
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestBody CartItemDTO cartItemDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -70,7 +71,8 @@ public class CartController {
             Long userId = member.getUserId();
             Long productId = cartItemDTO.getProductId();
             Integer quantity = cartItemDTO.getQuantity();
-            CartItemDTO addedItem = cartService.addToCart(userId, productId, quantity);
+            String size = cartItemDTO.getSize();
+            CartItemDTO addedItem = cartService.addToCart(userId, productId, quantity, size);
             return ResponseEntity.ok(addedItem);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -95,6 +97,7 @@ public class CartController {
 
     @DeleteMapping
     public ResponseEntity<?> removeFromCart(@RequestParam("productId") Long productId,
+            // 장바구니에 존재하는 상품일경우의 삭제하는 코드 추가 필요
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (userDetails == null) {

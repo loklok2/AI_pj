@@ -2,7 +2,9 @@ package com.choice.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +19,10 @@ import com.choice.auth.entity.Member;
 import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
 import com.choice.config.JWTUtil;
+import com.choice.product.dto.ProductAllDTO;
+import com.choice.product.entity.Product;
+import com.choice.product.entity.ProductImg;
+import com.choice.product.repository.ProductRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +37,9 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     // 회원가입
     @Transactional
@@ -95,6 +104,14 @@ public class AuthService {
 
     private boolean isValidResidentRegistrationNumber(String number) {
         return number.length() == 7 && number.matches("\\d{6}[1-4]");
+    }
+
+    public boolean isUsernameAvailable(String username) {
+        return !memberRepository.findByUsername(username).isPresent();
+    }
+
+    public boolean isEmailAvailable(String email) {
+        return !memberRepository.findByEmail(email).isPresent();
     }
 
     // 로그인
@@ -203,4 +220,32 @@ public class AuthService {
         return new LoginResponseDTO(newAccessToken, newRefreshToken, member.getRole().toString(), member.getUserId(),
                 member.getUsername());
     }
+
+    public List<ProductAllDTO> getLikedProductsByUserId(Long userId) {
+        List<Product> likedProducts = productRepository.findLikedProductsByUserId(userId);
+        return likedProducts.stream()
+                .map(this::convertToProductAllDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ProductAllDTO convertToProductAllDTO(Product product) {
+        ProductAllDTO dto = new ProductAllDTO();
+        dto.setProductId(product.getProductId());
+        dto.setName(product.getName());
+        dto.setInfo(product.getInfo());
+        dto.setPrice(product.getPrice());
+        dto.setLikeCount(product.getLikeCount());
+        dto.setViewCount(product.getViewCount());
+        dto.setCategory(product.getCategory());
+        if (!product.getImages().isEmpty()) {
+            ProductImg firstImage = product.getImages().iterator().next();
+            dto.setPimgName(firstImage.getPimgName());
+            dto.setPimgPath("/images/" + firstImage.getPimgPath() + "/" + firstImage.getPimgName());
+        } else {
+            dto.setPimgName(null);
+            dto.setPimgPath(null);
+        }
+        return dto;
+    }
+
 }

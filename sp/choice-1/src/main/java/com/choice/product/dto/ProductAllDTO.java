@@ -9,7 +9,7 @@ public class ProductAllDTO {
     private String info;
     private Long price;
     private Long likeCount;
-    private Long view;
+    private Long viewCount;
     private String category;
     private String pimgName;
     private String pimgPath;

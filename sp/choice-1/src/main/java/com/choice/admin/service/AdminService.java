@@ -113,7 +113,7 @@ public class AdminService {
         dto.setCreateDate(product.getCreateDate());
         dto.setPrice(product.getPrice());
         dto.setLikeCount(product.getLikeCount());
-        dto.setView(product.getView());
+        dto.setViewCount(product.getViewCount());
         dto.setAttributeNames(product.getAttributeLinks().stream()
                 .map(link -> link.getAttribute().getNameKo())
                 .collect(Collectors.toSet()));
@@ -137,7 +137,7 @@ public class AdminService {
 
     // 주문 정보 조회
     public List<OrderSummaryDTO> getAllOrders() {
-        List<Orders> orders = orderRepository.findAll();
+        List<Orders> orders = orderRepository.findAllWithDetails();
         return orders.stream()
                 .map(this::convertToOrderSummaryDTO)
                 .collect(Collectors.toList());
@@ -209,7 +209,7 @@ public class AdminService {
         product.setSell(productDTO.getSell());
         product.setPrice(productDTO.getPrice());
         product.setLikeCount(productDTO.getLikeCount());
-        product.setView(productDTO.getView());
+        product.setViewCount(productDTO.getViewCount());
 
         if (productDTO.getAttributeNames() != null) {
             Set<ProductAttributeLink> attributeLinks = productDTO.getAttributeNames().stream()

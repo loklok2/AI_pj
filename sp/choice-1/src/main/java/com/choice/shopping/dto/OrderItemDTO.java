@@ -8,4 +8,7 @@ public class OrderItemDTO {
     private String productName;
     private Integer quantity;
     private Long price;
+    private String size;
+    private String pimgName;
+    private String pimgPath;
 }

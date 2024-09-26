@@ -1,8 +1,11 @@
 package com.choice.product.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import com.choice.auth.entity.MemberLike;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -33,7 +36,8 @@ public class Product {
     @Column(name = "like_count")
     private Long likeCount; // 상품 좋아요
 
-    private Long view; // 상품 조회수
+    @Column(name = "view_count")
+    private Long viewCount; // 상품 조회수
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductAttributeLink> attributeLinks; // 상품 속성 링크 엔티티와의 일대다 관계
@@ -55,5 +59,8 @@ public class Product {
     public int hashCode() {
         return Objects.hash(getProductId());
     }
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MemberLike> likedByMembers = new HashSet<>();
 
 }

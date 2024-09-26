@@ -32,4 +32,12 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
         @Query(nativeQuery = true, value = "SELECT * FROM order_details_view WHERE user_id = :userId")
         List<OrderDTO> findOrderDetailsByUserId(@Param("userId") Long userId);
 
+        @Query("SELECT DISTINCT o FROM Orders o " +
+                        "LEFT JOIN FETCH o.member " +
+                        "LEFT JOIN FETCH o.orderItems oi " +
+                        "LEFT JOIN FETCH oi.product p " +
+                        "LEFT JOIN FETCH p.images " +
+                        "ORDER BY o.orderDate DESC")
+        List<Orders> findAllWithDetails();
+
 }

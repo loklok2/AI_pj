@@ -32,4 +32,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("p_exclude_product_id") Long excludeProductId,
             @Param("p_limit") Integer limit);
 
+    @Query("SELECT ml.product FROM MemberLike ml WHERE ml.member.userId = :userId")
+    List<Product> findLikedProductsByUserId(@Param("userId") Long userId);
 }

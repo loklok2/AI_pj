@@ -31,10 +31,22 @@ public class StoresSalesService {
         return convertToProductMapList(results);
     }
 
-    // 매장 판매 상위 5개 조회
-    public List<Map<String, Object>> getStoreSales(Integer year, Integer month, Integer day, Long storeId) {
-        List<Object[]> results = storesSalesRepository.getStoreSales(year, month, day, storeId);
-        return convertToSalesMapList(results);
+    // 매장 매출 조회
+    public Map<String, Object> getStoreSales(Integer fromYear, Integer fromMonth, Integer fromDay,
+            Integer toYear, Integer toMonth, Integer toDay, Long storeId) {
+        List<Object[]> results = storesSalesRepository.getStoreSales(fromYear, fromMonth, fromDay, toYear, toMonth,
+                toDay, storeId);
+
+        double totalSales = 0.0;
+        List<Map<String, Object>> salesData = convertToSalesMapList(results, fromMonth == null, fromDay == null);
+        for (Map<String, Object> sale : salesData) {
+            totalSales += ((Number) sale.get("totalSales")).doubleValue();
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("salesData", salesData);
+        response.put("totalSales", String.format("%,d", (long) totalSales));
+        return response;
     }
 
     private List<Map<String, Object>> convertToProductMapList(List<Object[]> results) {
@@ -59,12 +71,20 @@ public class StoresSalesService {
         }).collect(Collectors.toList());
     }
 
-    private List<Map<String, Object>> convertToSalesMapList(List<Object[]> results) {
+    private List<Map<String, Object>> convertToSalesMapList(List<Object[]> results, boolean isYearlyQuery,
+            boolean isMonthlyQuery) {
         return results.stream().map(result -> {
             Map<String, Object> map = new HashMap<>();
             map.put("storeId", result[0]);
             map.put("storeName", result[1]);
-            map.put("totalSales", result[2]);
+            if (isYearlyQuery || isMonthlyQuery) {
+                map.put("year", result[2]);
+                map.put("month", result[3]);
+                map.put("totalSales", result[4]);
+            } else {
+                map.put("date", result[2]);
+                map.put("totalSales", result[3]);
+            }
             return map;
         }).collect(Collectors.toList());
     }

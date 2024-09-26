@@ -33,13 +33,54 @@ public class StoresSalesController {
 
     // 매장 판매금액 조회
     @GetMapping("/store-sales")
-    public ResponseEntity<List<Map<String, Object>>> getStoreSales(
-            @RequestParam("year") Integer year,
-            @RequestParam(value = "month", required = false) Integer month,
-            @RequestParam(value = "day", required = false) Integer day,
+    public ResponseEntity<Map<String, Object>> getStoreSales(
+            @RequestParam("fromYear") Integer fromYear,
+            @RequestParam(value = "fromMonth", required = false) Integer fromMonth,
+            @RequestParam(value = "fromDay", required = false) Integer fromDay,
+            @RequestParam(value = "toYear", required = false) Integer toYear,
+            @RequestParam(value = "toMonth", required = false) Integer toMonth,
+            @RequestParam(value = "toDay", required = false) Integer toDay,
             @RequestParam(value = "storeId", required = false) Long storeId) {
-        return ResponseEntity.ok(storesSalesService.getStoreSales(year, month, day, storeId));
+
+        if (toYear == null)
+            toYear = fromYear;
+        if (toMonth == null)
+            toMonth = fromMonth != null ? fromMonth : 12;
+        if (toDay == null)
+            toDay = fromDay != null ? fromDay : 31;
+
+        Map<String, Object> result = storesSalesService.getStoreSales(fromYear, fromMonth, fromDay, toYear, toMonth,
+                toDay, storeId);
+
+        String searchDateRange = formatSearchDateRange(fromYear, fromMonth, fromDay, toYear, toMonth, toDay);
+        result.put("searchDateRange", searchDateRange);
+
+        return ResponseEntity.ok(result);
     }
+
+    private String formatSearchDateRange(Integer fromYear, Integer fromMonth, Integer fromDay,
+            Integer toYear, Integer toMonth, Integer toDay) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(formatDate(fromYear, fromMonth, fromDay));
+        sb.append(" ~ ");
+        sb.append(formatDate(toYear, toMonth, toDay));
+        return sb.toString();
+    }
+
+    private String formatDate(Integer year, Integer month, Integer day) {
+        StringBuilder sb = new StringBuilder().append(year);
+        if (month != null) {
+            sb.append(".").append(String.format("%02d", month));
+            if (day != null) {
+                sb.append(".").append(String.format("%02d", day));
+            }
+        }
+        return sb.toString();
+    }
+
+    // private int getLastDayOfMonth(int year, int month) {
+    // return YearMonth.of(year, month).lengthOfMonth();
+    // }
 
     // // 상품 매출 조회 년도별(전체 매장 리스트로 반환)
     // @GetMapping("/top5/{year}")

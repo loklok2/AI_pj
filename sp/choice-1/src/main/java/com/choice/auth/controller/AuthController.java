@@ -1,7 +1,13 @@
 package com.choice.auth.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,14 +15,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.choice.auth.dto.EmailAvailabilityResponse;
 import com.choice.auth.dto.FindUsernameRequestDTO;
 import com.choice.auth.dto.LoginRequestDTO;
 import com.choice.auth.dto.LoginResponseDTO;
 import com.choice.auth.dto.PasswordResetDTO;
 import com.choice.auth.dto.ResetPasswordRequestDTO;
 import com.choice.auth.dto.SignupRequestDTO;
+import com.choice.auth.dto.UsernameAvailabilityResponse;
+import com.choice.auth.entity.Member;
+import com.choice.auth.repository.MemberRepository;
 import com.choice.auth.service.AuthService;
 import com.choice.config.JWTUtil;
+import com.choice.product.dto.ProductAllDTO;
 
 // import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @PostMapping("/signup")
     // 회원가입
@@ -51,6 +65,31 @@ public class AuthController {
         } catch (Exception e) {
             return new ResponseEntity<>("로그인 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // 아이디 중복 확인
+    @GetMapping("/check-username")
+    public ResponseEntity<?> checkUsernameAvailability(@RequestParam String username) {
+        try {
+            boolean isAvailable = authService.isUsernameAvailable(username);
+            return ResponseEntity.ok(new UsernameAvailabilityResponse(isAvailable));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("아이디 중복 확인 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    // 이메일 중복 확인
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmailAvailability(@RequestParam String email) {
+        try {
+            boolean isAvailable = authService.isEmailAvailable(email);
+            return ResponseEntity.ok(new EmailAvailabilityResponse(isAvailable));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("이메일 중복 확인 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
     }
 
     @GetMapping("/verify")
@@ -110,6 +149,22 @@ public class AuthController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("토큰 재발급 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/liked-products")
+    public ResponseEntity<?> getLikedProducts(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (userDetails == null) {
+                return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+            }
+            Member member = memberRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            List<ProductAllDTO> likedProducts = authService.getLikedProductsByUserId(member.getUserId());
+            return new ResponseEntity<>(likedProducts, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("좋아요한 상품 목록을 가져오는 중 오류가 발생했습니다: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

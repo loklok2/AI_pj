@@ -1,7 +1,9 @@
 package com.choice.board.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +44,7 @@ public class QboardService {
     private String uploadPath;
 
     // Q&A 게시글 생성
-    public QboardDTO createQboard(QboardDTO qboardDTO, String username, List<MultipartFile> images) throws IOException {
+    public QboardDTO createQboard(QboardDTO qboardDTO, String username, List<String> base64Images) throws IOException {
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
@@ -50,8 +52,8 @@ public class QboardService {
         qboard.setMember(member);
         Qboard savedQboard = qboardRepository.save(qboard);
 
-        if (images != null && !images.isEmpty()) {
-            addImagesToQboard(savedQboard.getQboardId(), images);
+        if (base64Images != null && !base64Images.isEmpty()) {
+            addBase64ImagesToQboard(savedQboard.getQboardId(), base64Images);
         }
 
         return convertToDTO(savedQboard);
@@ -152,13 +154,15 @@ public class QboardService {
         return qboardImgRepository.findByQboard_QboardId(qboardId);
     }
 
-    private void addImagesToQboard(Long qboardId, List<MultipartFile> images) throws IOException {
-        for (MultipartFile image : images) {
-            if (!image.isEmpty()) {
-                addImage(qboardId, image);
-            }
-        }
-    }
+    // //
+    // private void addImagesToQboard(Long qboardId, List<MultipartFile> images)
+    // throws IOException {
+    // for (MultipartFile image : images) {
+    // if (!image.isEmpty()) {
+    // addImage(qboardId, image);
+    // }
+    // }
+    // }
 
     // Q&A 게시글 이미지 추가
     private void addImage(Long qboardId, MultipartFile file) throws IOException {
@@ -228,5 +232,32 @@ public class QboardService {
         qboard.setTitle(qboardDTO.getTitle());
         qboard.setContent(qboardDTO.getContent());
         qboard.setEditedDate(qboardDTO.getEditedDate());
+    }
+
+    private void addBase64ImagesToQboard(Long qboardId, List<String> base64Images) throws IOException {
+        for (String base64Image : base64Images) {
+            if (base64Image != null && !base64Image.isEmpty()) {
+                addBase64Image(qboardId, base64Image);
+            }
+        }
+    }
+
+    private void addBase64Image(Long qboardId, String base64Image) throws IOException {
+        byte[] imageBytes = Base64.getDecoder().decode(base64Image.split(",")[1]);
+        String fileName = System.currentTimeMillis() + ".png";
+        String filePath = uploadPath + fileName;
+
+        try (FileOutputStream fos = new FileOutputStream(filePath)) {
+            fos.write(imageBytes);
+        }
+
+        QboardImg img = new QboardImg();
+        Qboard qboard = qboardRepository.findById(qboardId)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+        img.setQboard(qboard);
+        img.setQimgName(fileName);
+        img.setQimgPath(filePath);
+
+        qboardImgRepository.save(img);
     }
 }

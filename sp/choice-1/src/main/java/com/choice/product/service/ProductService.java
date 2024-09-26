@@ -1,6 +1,7 @@
 package com.choice.product.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.choice.auth.entity.Member;
+import com.choice.auth.entity.MemberLike;
+import com.choice.auth.repository.MemberLikeRepository;
+import com.choice.auth.repository.MemberRepository;
 import com.choice.product.dto.AttributeDTO;
 import com.choice.product.dto.ProductAllDTO;
 import com.choice.product.dto.ProductDetailDTO;
@@ -24,6 +29,13 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private MemberLikeRepository memberLikeRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    // 상품 전체 조회
     public Page<ProductAllDTO> getAllProducts(Pageable pageable) {
         Page<Product> products = productRepository.findAllWithImages(pageable);
         return products.map(this::convertToDTO);
@@ -36,7 +48,7 @@ public class ProductService {
         dto.setInfo(product.getInfo());
         dto.setPrice(product.getPrice());
         dto.setLikeCount(product.getLikeCount());
-        dto.setView(product.getView());
+        dto.setViewCount(product.getViewCount());
         dto.setCategory(product.getCategory());
         if (!product.getImages().isEmpty()) {
             ProductImg firstImage = product.getImages().iterator().next();
@@ -64,7 +76,7 @@ public class ProductService {
         dto.setInfo(product.getInfo());
         dto.setPrice(product.getPrice());
         dto.setLikeCount(product.getLikeCount());
-        dto.setView(product.getView());
+        dto.setViewCount(product.getViewCount());
         dto.setCategory(product.getCategory());
         if (!product.getImages().isEmpty()) {
             ProductImg firstImage = product.getImages().iterator().next();
@@ -86,6 +98,7 @@ public class ProductService {
                 .collect(Collectors.toList()));
 
         return dto;
+
     }
 
     // 랜덤 추천 상품 조회
@@ -108,6 +121,28 @@ public class ProductService {
             dto.setPimgPath("/images/" + firstImage.getPimgPath() + "/" + firstImage.getPimgName());
         }
         return dto;
+    }
+
+    @Transactional
+    public boolean toggleLike(Long userId, Long productId) {
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        Optional<MemberLike> existingLike = memberLikeRepository.findByMemberAndProduct(member, product);
+        if (existingLike.isPresent()) {
+            memberLikeRepository.delete(existingLike.get());
+            product.setLikeCount(product.getLikeCount() - 1);
+            return false; // 좋아요 취소
+        } else {
+            MemberLike newLike = new MemberLike();
+            newLike.setMember(member);
+            newLike.setProduct(product);
+            memberLikeRepository.save(newLike);
+            product.setLikeCount(product.getLikeCount() + 1);
+            return true; // 좋아요 추가
+        }
     }
 
 }

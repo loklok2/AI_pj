@@ -13,6 +13,6 @@ public class ProductDTO {
     private Long price;
     private Long likeCount;
     private LocalDateTime createDate;
-    private Long view;
+    private Long viewCount;
     private Set<String> attributeNames;
 }

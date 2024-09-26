@@ -20,10 +20,23 @@ public interface StoresSalesRepository extends JpaRepository<StoresSales, Long> 
                         @Param("p_store_id") Long storeId);
 
         @Procedure(name = "getStoreSales")
+        List<Object[]> getTotalSales(
+                        @Param("p_from_year") Integer fromYear,
+                        @Param("p_from_month") Integer fromMonth,
+                        @Param("p_from_day") Integer fromDay,
+                        @Param("p_to_year") Integer toYear,
+                        @Param("p_to_month") Integer toMonth,
+                        @Param("p_to_day") Integer toDay,
+                        @Param("p_store_id") Long storeId);
+
+        @Procedure(name = "getStoreSales")
         List<Object[]> getStoreSales(
-                        @Param("p_year") Integer year,
-                        @Param("p_month") Integer month,
-                        @Param("p_day") Integer day,
+                        @Param("p_from_year") Integer fromYear,
+                        @Param("p_from_month") Integer fromMonth,
+                        @Param("p_from_day") Integer fromDay,
+                        @Param("p_to_year") Integer toYear,
+                        @Param("p_to_month") Integer toMonth,
+                        @Param("p_to_day") Integer toDay,
                         @Param("p_store_id") Long storeId);
         // // 1. 상품별 판매량 조회 년도별
         // @Query(value = "SELECT p.product_id, p.product_name, SUM(s.quantity) as
