@@ -33,12 +33,15 @@ const MyPages = () => {
     const accessToken = localStorage.getItem('accessToken');
     const role = localStorage.getItem('role');
     
-    if (accessToken) {
+    if (accessToken && role) {
       setIsLoggedIn(true);
       setUserRole(role); 
       if (role === 'ADMIN') {
         setIsAdmin(true); 
       }
+    } else {
+      setIsLoggedIn(false);
+      setUserRole('');
     }
   }, []);
 
@@ -127,12 +130,16 @@ const MyPages = () => {
                 관리자 권한으로 사이트를 이용하실 수 있습니다.
               </p>
             </>
-          ) : (
+          ) : isLoggedIn ? (
             <>
               <p className="mypages-user-message">[회원]님 환영합니다.</p>
               <p className="mypages-user-status">
                 로그인 상태로 다양한 서비스를 이용하실 수 있습니다.
               </p>
+            </>
+          ) : (
+            <>
+              <p className="mypages-user-message">[로그인] 이후 이용 가능합니다.</p>
             </>
           )}
         </div>
@@ -247,9 +254,6 @@ const MyPages = () => {
         {currentWishlistItems.length > 0 ? (
           currentWishlistItems.map(product => {
             const imageUrl = `http://10.125.121.188:8080${product.pimgPath}`;
-
-            // 이미지 URL 확인을 위한 로그
-            console.log('Wishlist item image URL:', imageUrl);
 
             return (
               <div key={product.productId} className="mypages-item" onClick={() => handleProductClick(product.productId)}>

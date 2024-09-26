@@ -45,50 +45,62 @@ const Managers = () => {
   const fetchPosts = async () => {
     try {
       const response = await fetch('http://10.125.121.188:8080/api/admin/qboards');
-      const data = await response.json();
-
-      if (Array.isArray(data)) {
-        const postsData = data.map(post => ({
-          qboardId: post.qboardId,
-          category: post.boardType || '기타 문의',
-          title: post.title,
-          author: post.member ? post.member.name : '알 수 없음',
-          date: post.createDate.split('T')[0],
-          content: post.content,
-        }));
-        setPosts(postsData);
+      
+      // 응답 상태 확인
+      console.log('Response status:', response.status);
+  
+      if (response.ok) {
+        const data = await response.json();
+        
+        // 데이터 구조 확인
+        console.log('게시글 데이터:', data);
+  
+        if (Array.isArray(data)) {
+          const postsData = data.map(post => ({
+            id: post.id, 
+            category: post.boardType === 'ProductQnA' ? '상품 문의' : (post.boardType === 'EtcQnA' ? '기타 문의' : post.boardType),
+            title: post.title,
+            username: post.username, 
+            date: post.createDate.split('T')[0],
+            content: post.content,
+          }));
+          setPosts(postsData);
+        } else {
+          console.error('Unexpected data format:', data);
+        }
       } else {
-        console.error('Unexpected data format:', data);
+        console.error('Failed to fetch posts. Status:', response.status);
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
   };
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('http://10.125.121.188:8080/api/admin/products');
+  // Products를 가져오는 부분에서 데이터 매핑
+const fetchProducts = async () => {
+  try {
+    const response = await fetch('http://10.125.121.188:8080/api/admin/products');
 
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (Array.isArray(data)) {
-          const updatedProducts = data.map(product => ({
-            ...product,
-            style: product.attributeNames[0],
-            date: product.createDate.split('T')[0],
-          }));
-          setProducts(updatedProducts);
-        } else {
-          console.error('Unexpected data format:', data);
-        }
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        const updatedProducts = data.map(product => ({
+          ...product,
+          style: product.attributeNames && product.attributeNames.length > 0 ? product.attributeNames[0] : '', // 스타일 매핑
+          date: product.createDate ? product.createDate.split('T')[0] : '', // 날짜 매핑
+        }));
+        setProducts(updatedProducts);
       } else {
-        console.error('Failed to fetch products:', response.status);
+        console.error('Unexpected data format:', data);
       }
-    } catch (error) {
-      console.error('Error fetching products:', error);
+    } else {
+      console.error('Failed to fetch products:', response.status);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+};
 
   const handleCheckboxChange = (id) => {
     setSelectedUsers((prevState) =>
@@ -303,7 +315,7 @@ const Managers = () => {
             <thead style={{ position: 'sticky', top: 0, backgroundColor: 'white' }}>
               <tr>
                 <th></th>
-                <th>게시글 번호</th>
+                <th>번호</th>
                 <th>카테고리</th>
                 <th>제목</th>
                 <th>작성자</th>
@@ -312,12 +324,12 @@ const Managers = () => {
             </thead>
             <tbody>
               {posts.map(post => (
-                <tr key={post.qboardId}>
-                  <td><input type="checkbox" checked={selectedPosts.includes(post.qboardId)} onChange={() => handlePostCheckboxChange(post.qboardId)} /></td>
-                  <td>{post.qboardId}</td>
+                <tr key={post.id}>
+                  <td><input type="checkbox" checked={selectedPosts.includes(post.id)} onChange={() => handlePostCheckboxChange(post.id)} /></td>
+                  <td>{post.id}</td>
                   <td>{post.category}</td>
                   <td>{post.title}</td>
-                  <td>{post.author}</td>
+                  <td>{post.username}</td>
                   <td>{post.date}</td>
                 </tr>
               ))}
@@ -374,34 +386,35 @@ const Managers = () => {
                 </td>
               </tr>
               {/* 기존 상품 목록 */}
-              {products.map((product, index) => (
-                <tr key={product.productId}>
-                  <td><input type="checkbox" checked={selectedProducts.includes(index)} onChange={() => handleProductCheckboxChange(index)} /></td>
-                  <td>{editIndex === index ? <input type="text" name="name" value={product.name} onChange={(e) => handleProductChange(e, index)} /> : product.name}</td>
-                  <td>{editIndex === index ? <input type="text" name="info" value={product.info} onChange={(e) => handleProductChange(e, index)} /> : product.info}</td>
-                  <td>{editIndex === index ? <input type="text" name="price" value={product.price} onChange={(e) => handleProductChange(e, index)} /> : product.price}</td>
-                  <td>{editIndex === index ? <input type="date" name="date" value={product.date} onChange={(e) => handleProductChange(e, index)} /> : product.date}</td>
-                  <td>
-                    {editIndex === index ? (
-                      <select name="style" value={product.style} onChange={(e) => handleProductChange(e, index)}>
-                        {styleOptions.map(option => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      product.style
-                    )}
-                  </td>
-                  <td>
-                    {editIndex === index ? (
-                      <button onClick={handleCancelEdit}>취소</button>
-                    ) : (
-                      <button onClick={() => handleEditProduct(index)}>수정</button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              {/* 기존 상품 목록 */}
+                {products.map((product, index) => (
+                  <tr key={product.productId}>
+                    <td><input type="checkbox" checked={selectedProducts.includes(index)} onChange={() => handleProductCheckboxChange(index)} /></td>
+                    <td>{editIndex === index ? <input type="text" name="name" value={product.name} onChange={(e) => handleProductChange(e, index)} /> : product.name}</td>
+                    <td>{editIndex === index ? <input type="text" name="info" value={product.info} onChange={(e) => handleProductChange(e, index)} /> : product.info}</td>
+                    <td>{editIndex === index ? <input type="text" name="price" value={product.price} onChange={(e) => handleProductChange(e, index)} /> : product.price}</td>
+                    <td>{editIndex === index ? <input type="date" name="date" value={product.date} onChange={(e) => handleProductChange(e, index)} /> : product.date}</td>
+                    <td>
+                      {editIndex === index ? (
+                        <select name="style" value={product.style} onChange={(e) => handleProductChange(e, index)}>
+                          {styleOptions.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        product.style // 스타일을 그대로 표시
+                      )}
+                    </td>
+                    <td>
+                      {editIndex === index ? (
+                        <button onClick={handleCancelEdit}>취소</button>
+                      ) : (
+                        <button onClick={() => handleEditProduct(index)}>수정</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
           </table>
         </div>
       </div>

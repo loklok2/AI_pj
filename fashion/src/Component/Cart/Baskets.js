@@ -17,23 +17,24 @@ const Baskets = () => {
     useEffect(() => {
         const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
         const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
-        const userRole = localStorage.getItem('role'); // 역할 정보 가져오기
-
-        console.log(userId, userLoggedIn);
+        const userRole = localStorage.getItem('role'); 
+        const storedUserId = sessionStorage.getItem('username'); // sessionStorage에서 가져오기
+    
+        console.log(storedUserId, userLoggedIn);
         
-        if (!userId && userLoggedIn) {
+        if (!storedUserId && userLoggedIn) {
             navigate('/login');
             return;
         }
-
+    
         if (guestLogin || userLoggedIn) {
             setIsGuest(guestLogin);
             setIsLoggedIn(userLoggedIn);
-
+    
             if (userRole === 'ADMIN') {
                 setIsAdmin(true);
             }
-
+    
             if (userLoggedIn) {
                 fetch(`http://10.125.121.188:8080/api/cart`, {
                     method: 'GET',
@@ -54,7 +55,7 @@ const Baskets = () => {
                         setItems(data.items.map((item) => ({ 
                             ...item, 
                             isSelected: false,
-                            imageUrl: item.imageUrl, // 올바른 속성으로 수정
+                            imageUrl: item.imageUrl, 
                             name: item.productName, 
                             quantity: item.quantity 
                         })));
@@ -113,7 +114,7 @@ const Baskets = () => {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`,
                 },
                 body: JSON.stringify({ items: remainingItems }),
             }).catch((error) => console.error('Failed to update cart:', error));
@@ -133,7 +134,7 @@ const Baskets = () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`,
                 },
                 body: JSON.stringify(updatedItems),
             }).catch((error) => console.error('Failed to update cart:', error));
@@ -141,6 +142,10 @@ const Baskets = () => {
             sessionStorage.setItem('cartItems', JSON.stringify(updatedItems));
         }
     };
+
+    useEffect(() => {
+        console.log('Item images:', items.map(item => item.images));
+    }, [items]);
 
     const handleDeleteItem = (id) => {
         const remainingItems = items.filter((item) => item.productId !== id);
@@ -151,7 +156,7 @@ const Baskets = () => {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('accessToken')}`,
                 },
                 body: JSON.stringify({ items: remainingItems }),
             }).catch((error) => console.error('Failed to update cart:', error));
@@ -187,11 +192,11 @@ const Baskets = () => {
 
         <div className="basket-item-info">
             <div className="basket-item-image">
-                <img
-                    src={item.pimgPath ? `http://10.125.121.188:8080${item.pimgPath}` : '/path/to/placeholder-image.jpg'} 
-                    alt={item.name}
-                    className="basket-item-image"
-                />
+            <img
+            src={item.pimgPath ? `http://10.125.121.188:8080${item.pimgPath}` : '/path/to/placeholder-image.jpg'}
+            alt={item.productName}
+            className="basket-item-image"
+        />
             </div>
             <div className="basket-item-details">
                 <p className="basket-item-name">{item.productName}</p>

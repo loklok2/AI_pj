@@ -20,6 +20,10 @@ const ProductDetails = () => {
   const [isAdmin, setIsAdmin] = useState(false); // 관리자 상태 추가
 
   useEffect(() => {
+    window.scrollTo(0, 0); // 페이지 이동 시 스크롤을 맨 위로 이동
+  }, []);
+
+  useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         const response = await fetch(`http://10.125.121.188:8080/api/products/${id}`);

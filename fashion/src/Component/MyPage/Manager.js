@@ -42,6 +42,8 @@ const Manager = () => {
   const [chartType, setChartType] = useState('realtime');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [visibleOrders, setVisibleOrders] = useState(5);
+  const [sortedData, setSortedData] = useState([]);
   const [filteredData, setFilteredData] = useState({
     labels: [],
     datasets: [{ label: '일별 매출', data: [] }],
@@ -109,6 +111,22 @@ const Manager = () => {
           padding: 20,
         },
       },
+      tooltip: {
+        callbacks: {
+          label: function (tooltipItem) {
+            const label = tooltipItem.label || '';
+            if (label === '기타') {
+              // 기타 항목 이름들을 2줄로 나누어 표시
+              const otherCategoryNames = sortedData.slice(5).map(([name]) => name);
+              const half = Math.ceil(otherCategoryNames.length / 2); 
+              const firstHalf = otherCategoryNames.slice(0, half).join(', ');
+              const secondHalf = otherCategoryNames.slice(half).join(', ');
+              return [`기타 항목: ${firstHalf}`, secondHalf];
+            }
+            return `${label}: ${tooltipItem.raw.toLocaleString()}원`;
+          }
+        }
+      },
     },
     maintainAspectRatio: false,
   };
@@ -120,7 +138,58 @@ const Manager = () => {
     fetchInquiryReplies();
     fetchOrdersFromSession(); // 세션의 주문 목록을 가져오는 기존 코드
     fetchOrders(); // 새로운 주문 목록 API 호출 추가
+    fetchCategorySales();
   }, []);
+
+  const fetchCategorySales = async () => {
+    try {
+      const response = await fetch('http://10.125.121.188:8080/api/admin/sales/category-percentage');
+      if (response.ok) {
+        const data = await response.json();
+        const sortedDataArray = Object.entries(data).sort(([, a], [, b]) => b - a);
+        const top5 = sortedDataArray.slice(0, 5);
+        const others = sortedDataArray.slice(5);
+  
+        const labels = top5.map(item => item[0]);
+        const salesData = top5.map(item => item[1]);
+  
+        const otherTotal = others.reduce((sum, [, value]) => sum + value, 0);
+        labels.push('기타');
+        salesData.push(otherTotal);
+  
+        setDoughnutData({
+          labels: labels,
+          datasets: [{
+            label: '카테고리별 판매율',
+            data: salesData,
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.5)',
+              'rgba(75, 192, 192, 0.5)',
+              'rgba(255, 206, 86, 0.5)',
+              'rgba(153, 102, 255, 0.5)',
+              'rgba(255, 99, 132, 0.5)',
+              'rgba(255, 159, 64, 0.5)',
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(75, 192, 192, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(153, 102, 255, 1)',
+              'rgba(255, 99, 132, 1)',
+              'rgba(255, 159, 64, 1)',
+            ],
+            borderWidth: 1,
+          }],
+        });
+  
+        setSortedData(sortedDataArray); // sortedData 업데이트
+      } else {
+        console.error('카테고리별 판매율 데이터를 가져오는 데 실패했습니다:', response.statusText);
+      }
+    } catch (error) {
+      console.error('카테고리별 판매율 데이터를 가져오는 중 오류 발생:', error);
+    }
+  };
 
   // 주문 상태를 한국어로 변환하는 함수
 const convertStatusToKorean = (status) => {
@@ -346,6 +415,10 @@ const handleCheckboxChange = (orderId) => {
   );
 };
 
+const handleLoadMore = () => {
+  setVisibleOrders(prevVisible => prevVisible + 25);
+};
+
   return (
     <div>
       <Admheader />
@@ -439,8 +512,8 @@ const handleCheckboxChange = (orderId) => {
               </tr>
             </thead>
             <tbody>
-              {orderList.length > 0 ? (
-                orderList.map(order => (
+            {orderList.length > 0 ? (
+                orderList.slice(0, visibleOrders).map(order => (
                   <tr key={order.orderId}>
                     <td>
                       <input
@@ -476,6 +549,12 @@ const handleCheckboxChange = (orderId) => {
             </tbody>
           </table>
         </div>
+
+        {visibleOrders < orderList.length && (
+          <div style={{ textAlign: 'center', marginTop: '10px' }}>
+            <button onClick={handleLoadMore}>더보기</button>
+          </div>
+        )}
       </div>
     </div>
   );

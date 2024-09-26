@@ -58,7 +58,7 @@
 }
 
 .storemanage-search-button {
-    padding: 6px 14px;
+    padding: 6px 12px;
     background-color: black;
     color: white;
     border: none;
@@ -157,12 +157,28 @@
     transform: translate(-50%, -50%);
 }
 
+.product-display-section {
+    display: flex;
+    flex-wrap: wrap; /* 그리드 형태 유지 */
+    gap: 10px; /* 아이템 간격 추가 */
+    justify-content: flex-start;
+  }
+
 .product-item {
     display: inline-block;
     width: 230px;
     margin: 20px;
     text-align: center;
 }
+
+.product-image-container {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* 이미지 영역은 고정 크기로 유지 */
+  }
 
 .product-image-placeholder {
     width: 230px;
@@ -176,8 +192,13 @@
 }
 
 .product-name {
+    width: 100%; /* 텍스트 너비를 부모 요소에 맞춤 */
+    text-align: center;
+    margin: 5px 0;
+    white-space: normal; /* 텍스트 줄 바꿈 허용 */
     font-size: 14px;
     color: #333;
+    word-break: break-word; /* 긴 단어가 있을 때 줄바꿈 처리 */
 }
 
 .store-name{

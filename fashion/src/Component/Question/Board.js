@@ -5,41 +5,57 @@ import '../../CSS/Board.css';
 const Board = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const [boardType, setBoardType] = useState('전체'); // 변경: categoryFilter -> boardType
+  const [boardType, setBoardType] = useState('전체');
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [qnaData, setQnaData] = useState([]);
+  const [isServerConnected, setIsServerConnected] = useState(true); 
   const itemsPerPage = 15;
 
   useEffect(() => {
     const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
     const accessToken = localStorage.getItem('accessToken');
     const role = localStorage.getItem('role');
-
-    if (guestLogin) setIsGuest(true);
-    if (accessToken) {
+  
+    console.log('Access Token:', accessToken);
+    console.log('Role:', role);
+  
+    if (guestLogin) {
+      setIsGuest(true);
+      setIsLoggedIn(false);
+      console.log('Guest Login Detected');
+    } else if (accessToken) {
       setIsLoggedIn(true);
       setUserRole(role);
+      setIsGuest(false);
+      console.log('Logged in User Detected');
+    } else {
+      setIsLoggedIn(false);
+      setIsGuest(false);
+      console.log('No User Detected');
     }
-
-    // API를 사용하여 Q&A 데이터를 가져옵니다.
-    fetch('http://10.125.121.188:8080/api/qboards')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('데이터를 가져오는 데 실패했습니다.');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const sortedData = data.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
-        console.log('Q&A 데이터 (최신순):', sortedData);
-        setQnaData(sortedData);
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
+  
+    if (accessToken) {
+      fetch('http://10.125.121.188:8080/api/qboards')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('데이터를 가져오는 데 실패했습니다.');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const sortedData = data.sort((a, b) => new Date(b.createDate) - new Date(a.createDate));
+          setQnaData(sortedData);
+          setIsServerConnected(true);
+          console.log('Data fetched successfully');
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+          setIsServerConnected(false);
+        });
+    }
   }, []);
 
   const handlePageChange = (pageNumber) => {
@@ -59,19 +75,19 @@ const Board = () => {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const handleWriteClick = () => {
-    if (!isGuest && !isLoggedIn) {
+    if (isLoggedIn && (userRole === 'USER' || userRole === 'ADMIN' || userRole === 'MEMBER')) {
+      navigate('/write');
+    } else {
       setShowModal(true);
-      return;
     }
-    navigate('/write');
   };
-
+  
   const handleRowClick = (id) => {
-    if (!isGuest && !isLoggedIn) {
+    if (isLoggedIn && (userRole === 'USER' || userRole === 'ADMIN' || userRole === 'MEMBER')) {
+      navigate(`/qna/${id}`);
+    } else {
       setShowModal(true);
-      return;
     }
-    navigate(`/qna/${id}`);
   };
 
   const closeModal = () => {
@@ -95,7 +111,14 @@ const Board = () => {
         <button onClick={() => setBoardType('기타문의')}>기타문의</button>
       </div>
 
-      <div className={`qna-board-table-wrapper ${!isGuest && !isLoggedIn ? 'blurred' : ''}`}>
+      {/* 블러 처리: 로그인되지 않았거나 서버 연결 실패 시 블러 처리 */}
+      <div
+        className="qna-board-table-wrapper"
+        style={{
+          filter: (!isLoggedIn || !isServerConnected) ? 'blur(10px)' : 'none',
+          pointerEvents: (!isLoggedIn || !isServerConnected) ? 'none' : 'auto'
+        }}
+      >
         <table className="qna-board-table">
           <thead>
             <tr>
@@ -107,31 +130,39 @@ const Board = () => {
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((item, index) => (
-              <tr
-                key={`${item.id}-${index}`} // `index`를 추가하여 고유한 key 값 생성
-                onClick={() => handleRowClick(item.id)} // `item.id`로 수정
-                style={{ cursor: 'pointer' }}
-              >
-                <td>{item.id}</td>
-                <td>{item.boardType === 'ProductQnA' ? '상품문의' : '기타문의'}</td> {/* boardType 값에 따라 한글로 표시 */}
-                <td>
-                  {index === 0 && (
-                    <span style={{ color: 'red', fontWeight: 'bold' }}>[NEW] </span>
-                  )}
-                  {item.title}
-                </td>
-                <td>{item.member?.name || '알 수 없음'}</td>
-                <td>{new Date(item.createDate).toLocaleDateString()}</td>
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
+                <tr
+                  key={`${item.id}-${index}`}
+                  onClick={() => handleRowClick(item.id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <td>{item.id}</td>
+                  <td>{item.boardType === 'ProductQnA' ? '상품문의' : '기타문의'}</td>
+                  <td>
+                    {currentPage === 1 && index === 0 && (
+                      <span style={{ color: 'red', fontWeight: 'bold' }}>[NEW] </span>
+                    )}
+                    {item.title}
+                  </td>
+                  <td>{item.member?.name || '알 수 없음'}</td>
+                  <td>{new Date(item.createDate).toLocaleDateString()}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5">게시글이 없습니다.</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="qna-board-actions">
-        {(isGuest || isLoggedIn) && userRole !== 'GUEST' && (
+        {isLoggedIn && (userRole === 'USER' || userRole === 'ADMIN' || userRole === 'MEMBER') && isServerConnected ? (
           <button onClick={handleWriteClick}>작성</button>
+        ) : (
+          <button disabled className="disabled-btn">작성</button>
         )}
       </div>
 

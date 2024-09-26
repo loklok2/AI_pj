@@ -64,47 +64,52 @@ const Writing = () => {
       console.error('Quill 인스턴스가 초기화되지 않았습니다.');
       return;
     }
-
+  
     const content = quillInstance.root.innerHTML;
-
+  
     if (!title || !content.trim() || !boardType) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
-
-    // FormData 생성
-    const formData = new FormData();
-    formData.append('qboard', new Blob([JSON.stringify({
-      title: title,
-      content: content,
-      boardType: boardType // 카테고리 정보 추가
-    })], { type: "application/json" }));
-
-    // 첨부 파일이 있는 경우 FormData에 추가
-    if (files.length > 0) {
-      files.forEach((file) => {
-        formData.append('images', file);
+  
+    // Base64로 변환하여 첨부 파일 배열 생성
+    const base64Images = await Promise.all(files.map((file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
       });
-    }
-
-    console.log('전송할 데이터:', {
-      title,
-      content,
-      boardType,
-      files: files.map(file => file.name)
-    });
-
+    }));
+  
+    // JSON 데이터 생성
+    const data = {
+      qboard: {
+        title: title,
+        content: content,
+        boardType: boardType
+      },
+      base64Images: base64Images // Base64로 변환된 이미지 배열을 독립적으로 포함
+    };
+  
+    console.log('전송할 데이터:', data);
+  
     try {
       const response = await fetch('http://10.125.121.188:8080/api/qboards', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json', // JSON 형식으로 설정
+        },
+        body: JSON.stringify(data), // JSON.stringify로 데이터 변환
       });
-
+  
       if (response.ok) {
         alert('게시글이 작성되었습니다.');
         navigate('/qna');
       } else {
-        throw new Error('게시글 작성에 실패했습니다.');
+        const errorData = await response.json();
+        console.error('Error response from server:', errorData);
+        alert('게시글 작성에 실패했습니다.');
       }
     } catch (error) {
       console.error('Error submitting post:', error);
@@ -155,8 +160,8 @@ const Writing = () => {
                 onChange={(e) => setBoardType(e.target.value)}
               >
                 <option value="">카테고리를 선택하세요.</option>
-                <option value="product">상품문의</option>
-                <option value="etc">기타문의</option>
+                <option value="ProductQnA">상품문의</option>
+                <option value="EtcQnA">기타문의</option>
               </select>
             </td>
           </tr>

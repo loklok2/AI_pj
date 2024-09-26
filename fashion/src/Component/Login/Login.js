@@ -62,6 +62,13 @@ const Login = () => {
         window.location.reload(); // 헤더 상태를 갱신하기 위해 페이지를 새로고침
     };
 
+    // 엔터 키 이벤트 핸들러
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleLogin();
+        }
+    };
+
     return (
         <div className="custom-login-outer">
             <div className="custom-login-container">
@@ -78,6 +85,7 @@ const Login = () => {
                             placeholder="아이디 입력"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                            onKeyPress={handleKeyPress} // 엔터 키 입력 이벤트 추가
                         />
                     </div>
                     <div className="custom-form-group">
@@ -89,6 +97,7 @@ const Login = () => {
                             placeholder="비밀번호 입력"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onKeyPress={handleKeyPress} // 엔터 키 입력 이벤트 추가
                         />
                     </div>
                     {error && <div className="custom-error-message">{error}</div>}
