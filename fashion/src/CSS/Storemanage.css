@@ -135,7 +135,6 @@
 .circle-checkbox {
     appearance: none;
     border: 2px solid #000;
-    border-radius: 50%;
     width: 18px;
     height: 18px;
     display: inline-block;
@@ -145,17 +144,22 @@
     cursor: pointer;
 }
 
-.circle-checkbox:checked::before {
-    content: '';
-    width: 10px;
-    height: 10px;
-    background-color: #4a7aff;
-    border-radius: 50%;
+/* 체크되었을 때 표시되는 스타일 */
+.circle-checkbox:checked {
+    background-color: #000; /* 체크박스 선택 시 배경색 */
+    position: relative;
+  }
+  
+  /* 체크되었을 때 체크 표시 추가 */
+  .circle-checkbox:checked::after {
+    content: '✔'; /* 체크 표시 모양 */
+    color: white; /* 체크 표시 색상 */
+    font-size: 12px;
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-}
+    transform: translate(-50%, -50%); /* 체크 표시 중앙 정렬 */
+  }
 
 .product-display-section {
     display: flex;

@@ -65,31 +65,54 @@ const Writing = () => {
       return;
     }
   
-    const content = quillInstance.root.innerHTML;
+    let content = quillInstance.root.innerHTML;
   
     if (!title || !content.trim() || !boardType) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
   
-    // Base64로 변환하여 첨부 파일 배열 생성
-    const base64Images = await Promise.all(files.map((file) => {
+    // 이미지 태그를 찾아서 Base64로 변환하는 작업
+    const images = quillInstance.root.querySelectorAll('img');
+    const base64Promises = Array.from(images).map((img) => {
       return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
+        const src = img.getAttribute('src');
+  
+        // 이미지가 이미 base64 형식인 경우 건너뜀
+        if (src.startsWith('data:image')) {
+          resolve();
+        } else {
+          fetch(src)
+            .then((response) => response.blob())
+            .then((blob) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                img.setAttribute('src', reader.result);
+                resolve();
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+        }
       });
-    }));
+    });
+  
+    // 모든 이미지 처리가 끝나면 content 업데이트
+    try {
+      await Promise.all(base64Promises);
+      content = quillInstance.root.innerHTML;
+    } catch (error) {
+      console.error('이미지 처리 중 오류 발생:', error);
+      alert('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      return;
+    }
   
     // JSON 데이터 생성
     const data = {
-      qboard: {
         title: title,
         content: content,
         boardType: boardType
-      },
-      base64Images: base64Images // Base64로 변환된 이미지 배열을 독립적으로 포함
+      
     };
   
     console.log('전송할 데이터:', data);
@@ -98,9 +121,10 @@ const Writing = () => {
       const response = await fetch('http://10.125.121.188:8080/api/qboards', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // JSON 형식으로 설정
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
-        body: JSON.stringify(data), // JSON.stringify로 데이터 변환
+        body: JSON.stringify(data),
       });
   
       if (response.ok) {
@@ -121,6 +145,7 @@ const Writing = () => {
     navigate('/qna');
   };
 
+  // 이미지 눌러진 순간. <= 이미지 업로드 api 연결 해야함
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
