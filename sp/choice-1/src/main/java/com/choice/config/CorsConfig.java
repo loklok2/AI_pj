@@ -31,5 +31,7 @@ public class CorsConfig implements WebMvcConfigurer {
         // 특정 폴더에 저장되어 있는 리소스 호출
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:C:\\workspace_pj2\\back\\images\\");
+        registry.addResourceHandler("/qboard/**")
+        		.addResourceLocations("file:C:\\workspace_pj2\\back\\qboard\\");
     }
 }

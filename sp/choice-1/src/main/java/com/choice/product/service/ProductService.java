@@ -36,8 +36,8 @@ public class ProductService {
     private MemberRepository memberRepository;
 
     // 상품 전체 조회
-    public Page<ProductAllDTO> getAllProducts(Pageable pageable) {
-        Page<Product> products = productRepository.findAllWithImages(pageable);
+    public Page<ProductAllDTO> getAllProducts(String category, Pageable pageable) {
+        Page<Product> products = productRepository.findAllWithImagesAndCategory(category, pageable);
         return products.map(this::convertToDTO);
     }
 

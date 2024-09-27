@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.choice.board.dto.QboardCreateRequest;
 import com.choice.board.dto.QboardDTO;
 import com.choice.board.entity.QboardImg;
 import com.choice.board.service.QboardService;
@@ -31,33 +30,11 @@ public class QboardController {
     @Autowired
     private QboardService qboardService;
 
-    // Q&A 게시글 생성
-    // @PostMapping
-    // public ResponseEntity<?> createQboard(@RequestPart("qboard") QboardDTO
-    // qboardDTO,
-    // @RequestPart(value = "images", required = false) List<MultipartFile> images,
-    // @AuthenticationPrincipal UserDetails userDetails) {
-    // try {
-    // QboardDTO createdQboard = qboardService.createQboard(qboardDTO,
-    // userDetails.getUsername(), images);
-    // return new ResponseEntity<>(createdQboard, HttpStatus.CREATED);
-    // } catch (IOException e) {
-    // return new ResponseEntity<>("이미지 처리 중 오류가 발생했습니다.",
-    // HttpStatus.INTERNAL_SERVER_ERROR);
-    // } catch (RuntimeException e) {
-    // return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-    // } catch (Exception e) {
-    // return new ResponseEntity<>("Q&A 게시글 작성 중 오류가 발생했습니다.",
-    // HttpStatus.INTERNAL_SERVER_ERROR);
-    // }
-    // }
-
     @PostMapping
-    public ResponseEntity<?> createQboard(@RequestBody QboardCreateRequest request,
+    public ResponseEntity<?> createQboard(@RequestBody QboardDTO qboardDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            QboardDTO createdQboard = qboardService.createQboard(request.getQboard(), userDetails.getUsername(),
-                    request.getBase64Images());
+            QboardDTO createdQboard = qboardService.createQboard(qboardDTO, userDetails.getUsername());
             return new ResponseEntity<>(createdQboard, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>("이미지 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);

@@ -3,8 +3,12 @@ package com.choice.board.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +28,10 @@ import com.choice.board.repository.CommentRepository;
 import com.choice.board.repository.QboardImgRepository;
 import com.choice.board.repository.QboardRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
-@Transactional
 public class QboardService {
 
     @Autowired
@@ -44,19 +50,87 @@ public class QboardService {
     private String uploadPath;
 
     // Q&A 게시글 생성
-    public QboardDTO createQboard(QboardDTO qboardDTO, String username, List<String> base64Images) throws IOException {
+    @Transactional
+    public QboardDTO createQboard(QboardDTO qboardDTO, String username) throws IOException {
+        log.info("게시글 저장 시작: {}", qboardDTO);
+
+        // 사용자 정보 가져오기
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        // Qboard 엔티티로 변환
         Qboard qboard = convertToEntity(qboardDTO);
         qboard.setMember(member);
+        qboard.setCreateDate(LocalDateTime.now());
+        qboard.setEditedDate(LocalDateTime.now());
         Qboard savedQboard = qboardRepository.save(qboard);
 
-        if (base64Images != null && !base64Images.isEmpty()) {
+        // content에서 base64 이미지 추출
+        List<String> base64Images = extractBase64Images(qboardDTO.getContent());
+        if (!base64Images.isEmpty()) {
             addBase64ImagesToQboard(savedQboard.getQboardId(), base64Images);
         }
 
+        // 이미지 태그를 제거한 텍스트만 content에 저장
+        String contentWithoutImages = removeImageTags(qboardDTO.getContent());
+        savedQboard.setContent(contentWithoutImages);
+        qboardRepository.save(savedQboard);
+
+        log.info("게시글 저장 완료: {}", savedQboard);
         return convertToDTO(savedQboard);
+    }
+
+    // Base64 이미지 추출 메서드
+    private List<String> extractBase64Images(String content) {
+        List<String> base64Images = new ArrayList<>();
+        Pattern pattern = Pattern.compile("data:image/\\w+;base64,[^\"]+");
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            base64Images.add(matcher.group());
+        }
+        return base64Images;
+    }
+
+    // Base64 이미지를 파일로 저장
+    private void addBase64ImagesToQboard(Long qboardId, List<String> base64Images) throws IOException {
+        for (String base64Image : base64Images) {
+            byte[] imageBytes = Base64.getDecoder().decode(base64Image.split(",")[1]);
+            String fileName = System.currentTimeMillis() + ".png";
+            String filePath = uploadPath + File.separator + fileName;
+
+            // 이미지 파일 저장
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                fos.write(imageBytes);
+            }
+
+            // QboardImg 엔티티 저장
+            QboardImg img = new QboardImg();
+            Qboard qboard = qboardRepository.findById(qboardId)
+                    .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            img.setQboard(qboard);
+            img.setQimgName(fileName);
+            String relativePath = "/qboard/" + fileName;
+            img.setQimgPath(relativePath);
+
+            qboardImgRepository.save(img);
+        }
+    }
+
+    // // 이미지 태그를 제거하고 텍스트만 남기기
+    // private String removeImageTags(String content) {
+    // // 이미지 태그 및 그 안의 모든 속성을 제거
+    // return
+    // content.replaceAll("<img\\s*[^>]*src\\s*=\\s*['\"]?([^'\"\\s>]*)['\"]?[^>]*>",
+    // "").trim();
+    // }
+
+    // <img> 태그와 <p> 태그를 제거하고 텍스트만 남기는 메서드
+    private String removeImageTags(String content) {
+        // 1. <img> 태그를 제거
+        String withoutImgTags = content.replaceAll("<img[^>]*>", "");
+
+        // 2. <p> 태그를 제거하고 텍스트만 남기기
+        return withoutImgTags.replaceAll("<(/)?p[^>]*>", "").trim();
     }
 
     // Q&A 게시글 조회
@@ -154,16 +228,6 @@ public class QboardService {
         return qboardImgRepository.findByQboard_QboardId(qboardId);
     }
 
-    // //
-    // private void addImagesToQboard(Long qboardId, List<MultipartFile> images)
-    // throws IOException {
-    // for (MultipartFile image : images) {
-    // if (!image.isEmpty()) {
-    // addImage(qboardId, image);
-    // }
-    // }
-    // }
-
     // Q&A 게시글 이미지 추가
     private void addImage(Long qboardId, MultipartFile file) throws IOException {
         QboardImg img = new QboardImg();
@@ -217,12 +281,9 @@ public class QboardService {
     // Q&A 게시글 엔티티 변환
     private Qboard convertToEntity(QboardDTO qboardDTO) {
         Qboard qboard = new Qboard();
-        qboard.setQboardId(qboardDTO.getId());
         qboard.setBoardType(qboardDTO.getBoardType());
         qboard.setTitle(qboardDTO.getTitle());
-        qboard.setContent(qboardDTO.getContent());
-        qboard.setCreateDate(qboardDTO.getCreateDate());
-        qboard.setEditedDate(qboardDTO.getEditedDate());
+        // qboard.setContent(qboardDTO.getContent());
         return qboard;
     }
 
@@ -231,33 +292,6 @@ public class QboardService {
         qboard.setBoardType(qboardDTO.getBoardType());
         qboard.setTitle(qboardDTO.getTitle());
         qboard.setContent(qboardDTO.getContent());
-        qboard.setEditedDate(qboardDTO.getEditedDate());
-    }
-
-    private void addBase64ImagesToQboard(Long qboardId, List<String> base64Images) throws IOException {
-        for (String base64Image : base64Images) {
-            if (base64Image != null && !base64Image.isEmpty()) {
-                addBase64Image(qboardId, base64Image);
-            }
-        }
-    }
-
-    private void addBase64Image(Long qboardId, String base64Image) throws IOException {
-        byte[] imageBytes = Base64.getDecoder().decode(base64Image.split(",")[1]);
-        String fileName = System.currentTimeMillis() + ".png";
-        String filePath = uploadPath + fileName;
-
-        try (FileOutputStream fos = new FileOutputStream(filePath)) {
-            fos.write(imageBytes);
-        }
-
-        QboardImg img = new QboardImg();
-        Qboard qboard = qboardRepository.findById(qboardId)
-                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
-        img.setQboard(qboard);
-        img.setQimgName(fileName);
-        img.setQimgPath(filePath);
-
-        qboardImgRepository.save(img);
+        qboard.setEditedDate(LocalDateTime.now()); // 수정 시 현재 시간으로 갱신
     }
 }

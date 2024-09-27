@@ -1,5 +1,8 @@
 package com.choice.shopping.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +37,7 @@ public class CartController {
     @Autowired
     private MemberRepository memberRepository;
 
+    // 장바구니 조회
     @GetMapping
     public ResponseEntity<?> getCartItems(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
         try {
@@ -59,7 +64,7 @@ public class CartController {
 
     // 장바구니에 상품 추가
     @PostMapping("/add")
-    public ResponseEntity<?> addToCart(@RequestBody CartItemDTO cartItemDTO,
+    public ResponseEntity<?> addToCart(@RequestBody List<CartItemDTO> cartItemsDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (userDetails == null) {
@@ -69,11 +74,18 @@ public class CartController {
             Member member = memberRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             Long userId = member.getUserId();
-            Long productId = cartItemDTO.getProductId();
-            Integer quantity = cartItemDTO.getQuantity();
-            String size = cartItemDTO.getSize();
-            CartItemDTO addedItem = cartService.addToCart(userId, productId, quantity, size);
-            return ResponseEntity.ok(addedItem);
+
+            // 여러 CartItemDTO를 처리
+            List<CartItemDTO> addedItems = new ArrayList<>();
+            for (CartItemDTO cartItemDTO : cartItemsDTO) {
+                Long productId = cartItemDTO.getProductId();
+                Integer quantity = cartItemDTO.getQuantity();
+                String size = cartItemDTO.getSize();
+                CartItemDTO addedItem = cartService.addToCart(userId, productId, quantity, size);
+                addedItems.add(addedItem);
+            }
+
+            return ResponseEntity.ok(addedItems);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("상품 추가 중 오류가 발생했습니다: " + e.getMessage());
@@ -112,6 +124,31 @@ public class CartController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("상품 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateCartItem(
+            @RequestBody List<CartItemDTO> cartItemDTOs, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+            }
+
+            String username = userDetails.getUsername();
+            Member member = memberRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            Long userId = member.getUserId();
+
+            List<CartItemDTO> updatedCartItems = new ArrayList<>();
+            for (CartItemDTO cartItemDTO : cartItemDTOs) {
+                CartItemDTO updatedCartItem = cartService.updateCartItem(userId, cartItemDTO);
+                updatedCartItems.add(updatedCartItem);
+            }
+
+            return ResponseEntity.ok(updatedCartItems);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("장바구니 아이템 업데이트 중 오류 발생: " + e.getMessage());
         }
     }
 

@@ -17,9 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.choice.auth.entity.Member;
 import com.choice.auth.repository.MemberRepository;
-import com.choice.shopping.dto.OrderDTO;
+import com.choice.shopping.dto.OrderResponseDTO;
 import com.choice.shopping.dto.ProductOrderDTO;
-import com.choice.shopping.entity.Orders;
 import com.choice.shopping.service.OrderService;
 
 @RestController
@@ -45,14 +44,13 @@ public class OrderController {
             if (!member.getUserId().equals(userId)) {
                 return new ResponseEntity<>("접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
             }
-            List<OrderDTO> orders = orderService.getOrdersByUserId(userId);
+            List<OrderResponseDTO> orders = orderService.getOrdersByUserId(userId);
             return new ResponseEntity<>(orders, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("주문 내역을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // 장바구니에서 주문하는것으로 가는거
     @PostMapping("/create-from-cart")
     public ResponseEntity<?> createOrderFromCart(@AuthenticationPrincipal UserDetails userDetails,
             @RequestBody ProductOrderDTO productOrderDTO) {
@@ -62,7 +60,7 @@ public class OrderController {
             }
             Member member = memberRepository.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            Orders order = orderService.createOrderFromCart(member.getUserId(), productOrderDTO);
+            OrderResponseDTO order = orderService.createOrderFromCart(member.getUserId(), productOrderDTO);
             return new ResponseEntity<>(order, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("주문 생성 중 오류가 발생했습니다: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,10 +76,11 @@ public class OrderController {
             }
             Member member = memberRepository.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            Orders order = orderService.createOrderFromProduct(member.getUserId(), productOrderDTO);
+            OrderResponseDTO order = orderService.createOrderFromProduct(member.getUserId(), productOrderDTO);
             return new ResponseEntity<>(order, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("주문 생성 중 오류가 발생했습니다: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }

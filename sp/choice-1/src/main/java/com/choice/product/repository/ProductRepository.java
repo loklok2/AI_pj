@@ -20,8 +20,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT * FROM product_details_view WHERE product_id IN (:productIds)", nativeQuery = true)
     List<Object[]> findProductDetailsById(@Param("productIds") List<Long> productIds);
 
-    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.images", countQuery = "SELECT COUNT(p) FROM Product p")
-    Page<Product> findAllWithImages(Pageable pageable);
+    // @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.images", countQuery
+    // = "SELECT COUNT(p) FROM Product p")
+    // Page<Product> findAllWithImages(Pageable pageable);
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.images " +
+            "WHERE (:category IS NULL OR p.category = :category)")
+    Page<Product> findAllWithImagesAndCategory(@Param("category") String category, Pageable pageable);
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.images LEFT JOIN FETCH p.attributeLinks WHERE p.productId = :id")
     Optional<Product> findByIdWithDetails(@Param("id") Long id);
