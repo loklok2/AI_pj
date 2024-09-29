@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class AiRecommendationService {
 
-    @Value("${app.image.storage.path}")
+    @Value("${ai.image.storage.path}")
     private String imageStoragePath;
 
     private final AiAnalysisRepository aiAnalysisRepository;
@@ -61,20 +61,78 @@ public class AiRecommendationService {
         this.flaskClientService = flaskClientService;
     }
 
+    // @Transactional
+    // public CompletableFuture<AiAnalysisResult> analyzeAndRecommend(MultipartFile
+    // image, Long memberId) {
+    // return CompletableFuture.supplyAsync(() -> {
+    // try {
+    // AiAnalysisResponse flaskResponse = flaskClientService.analyzeImage(image);
+    // return processFlaskResponse(flaskResponse, image, memberId);
+    // } catch (Exception e) {
+    // log.error("이미지 분석 중 오류 발생", e);
+    // throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석
+    // 실패", e);
+    // }
+    // }).orTimeout(300, TimeUnit.SECONDS);
+    // }
+
     @Transactional
     public CompletableFuture<AiAnalysisResult> analyzeAndRecommend(MultipartFile image, Long memberId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                log.info("이미지 분석 시작: memberId={}", memberId);
                 AiAnalysisResponse flaskResponse = flaskClientService.analyzeImage(image);
-                return processFlaskResponse(flaskResponse, image, memberId);
+                log.info("Flask 응답 받음: {}", flaskResponse);
+                AiAnalysisResult result = processFlaskResponse(flaskResponse, image, memberId);
+                if (memberId != null) {
+                    log.info("분석 결과 저장 시작: memberId={}", memberId);
+                    AiAnalysis savedAnalysis = saveAnalysis(flaskResponse, image, memberId);
+                    log.info("분석 결과 저장 완료: analysisId={}", savedAnalysis.getId());
+                }
+                return result;
             } catch (Exception e) {
-                log.error("이미지 분석 중 오류 발생", e);
+                log.error("이미지 분석 중 오류 발생: memberId={}", memberId, e);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 분석 실패", e);
             }
         }).orTimeout(300, TimeUnit.SECONDS);
     }
 
-    @Transactional(readOnly = true)
+    // @Transactional
+    // private AiAnalysisResult processFlaskResponse(AiAnalysisResponse
+    // flaskResponse, MultipartFile image,
+    // Long memberId) {
+    // List<Long> productIds = flaskResponse.getRecomResult().stream()
+    // .map(Long::valueOf)
+    // .collect(Collectors.toList());
+
+    // List<Object[]> productDetails =
+    // productRepository.findProductDetailsById(productIds);
+    // List<ProductsDTO> recommendedProducts = productDetails.stream()
+    // .map(this::convertToProductDTO)
+    // .collect(Collectors.toList());
+
+    // List<StyleIndexDTO> styleIndices = flaskResponse.getStyleResult().stream()
+    // .map(index -> {
+    // ProductAttribute attribute =
+    // productAttributeRepository.findById(index.longValue())
+    // .orElseThrow(() -> new RuntimeException("스타일 속성을 찾을 수 없습니다: " + index));
+    // return new StyleIndexDTO(attribute.getAttributeId(), attribute.getNameKo());
+    // })
+    // .collect(Collectors.toList());
+
+    // AiAnalysis savedAnalysis = null;
+    // if (memberId != null) {
+    // savedAnalysis = saveAnalysis(flaskResponse, image, memberId);
+    // }
+
+    // String captionTranslated = flaskResponse.getCaptionResult();
+
+    // return new AiAnalysisResult(
+    // savedAnalysis != null ? savedAnalysis.getId().longValue() : null,
+    // recommendedProducts,
+    // styleIndices,
+    // captionTranslated);
+    // }
     private AiAnalysisResult processFlaskResponse(AiAnalysisResponse flaskResponse, MultipartFile image,
             Long memberId) {
         List<Long> productIds = flaskResponse.getRecomResult().stream()
@@ -94,15 +152,10 @@ public class AiRecommendationService {
                 })
                 .collect(Collectors.toList());
 
-        AiAnalysis savedAnalysis = null;
-        if (memberId != null) {
-            savedAnalysis = saveAnalysis(flaskResponse, image, memberId);
-        }
-
         String captionTranslated = flaskResponse.getCaptionResult();
 
         return new AiAnalysisResult(
-                savedAnalysis != null ? savedAnalysis.getId().longValue() : null,
+                null,
                 recommendedProducts,
                 styleIndices,
                 captionTranslated);
@@ -110,6 +163,7 @@ public class AiRecommendationService {
 
     @Transactional
     private AiAnalysis saveAnalysis(AiAnalysisResponse flaskResponse, MultipartFile image, Long memberId) {
+        log.info("분석 결과 저장 시작: memberId={}", memberId);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다"));
 
@@ -117,6 +171,7 @@ public class AiRecommendationService {
         aiAnalysis.setMember(member);
         aiAnalysis.setImagePath(saveImage(image, memberId));
         aiAnalysis.setAnalysisDate(LocalDateTime.now());
+        aiAnalysis.setCaptionResult(flaskResponse.getCaptionResult());
 
         for (Integer styleIndex : flaskResponse.getStyleResult()) {
             ProductAttribute attribute = productAttributeRepository.findById(styleIndex.longValue())
@@ -125,6 +180,7 @@ public class AiRecommendationService {
             style.setAiAnalysis(aiAnalysis);
             style.setAttribute(attribute);
             aiAnalysis.getStyles().add(style);
+            log.info("스타일 추가: attributeId={}", attribute.getAttributeId());
         }
 
         for (int i = 0; i < flaskResponse.getRecomResult().size(); i++) {
@@ -136,7 +192,9 @@ public class AiRecommendationService {
             aiAnalysis.getRecommendations().add(recommendation);
         }
 
-        return aiAnalysisRepository.save(aiAnalysis);
+        AiAnalysis savedAnalysis = aiAnalysisRepository.save(aiAnalysis);
+        log.info("AiAnalysis 저장 완료: analysisId={}", savedAnalysis.getId());
+        return savedAnalysis;
     }
 
     private String saveImage(MultipartFile image, Long memberId) {
@@ -166,8 +224,8 @@ public class AiRecommendationService {
         dto.setProductId((Long) productDetail[0]);
         dto.setName((String) productDetail[1]);
         dto.setInfo((String) productDetail[2]);
-        dto.setPrice((Long) productDetail[4]);
-        dto.setImagePath((String) productDetail[10]);
+        dto.setPrice((Long) productDetail[3]);
+        dto.setImagePath((String) productDetail[8]);
         return dto;
     }
 }

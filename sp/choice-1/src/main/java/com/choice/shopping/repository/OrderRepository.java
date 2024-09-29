@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.choice.shopping.dto.OrderDTO;
 import com.choice.shopping.entity.Orders;
 
 public interface OrderRepository extends JpaRepository<Orders, Long> {
@@ -27,10 +26,6 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
         // 카테고리별 매출 조회
         @Query(nativeQuery = true, value = "SELECT * FROM category_sales_percentage")
         List<Object[]> findCategorySalesPercentage();
-
-        // 주문 상세 조회
-        @Query(nativeQuery = true, value = "SELECT * FROM order_details_view WHERE user_id = :userId")
-        List<OrderDTO> findOrderDetailsByUserId(@Param("userId") Long userId);
 
         @Query("SELECT DISTINCT o FROM Orders o " +
                         "LEFT JOIN FETCH o.member " +

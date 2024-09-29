@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.choice.auth.entity.Member;
+import com.choice.shopping.dto.OrderRequsetDTO;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,11 +19,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "orders")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 // 주문 엔티티
 public class Orders {
 
@@ -36,6 +41,9 @@ public class Orders {
 
     @Column(name = "order_comment")
     private String orderComment; // 주문 코멘트
+
+    @Column(length = 100, name = "merchant_uid")
+    private String merchantUid;
 
     @Column(name = "order_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime orderDate; // 주문 날짜
@@ -57,5 +65,15 @@ public class Orders {
         SHIPPED, // 배송 중
         DELIVERED, // 배송 완료
         CANCELLED // 주문 취소
+    }
+
+    public Orders(OrderRequsetDTO payload) {
+        this.orderDate = LocalDateTime.now();
+        this.orderStatus = OrderStatus.PENDING;
+        // this.recipientName = payload.getRecipientName();
+        // this.recipientPhone = payload.getRecipientPhone();
+        // this.recipientAddress = payload.getRecipientAddress();
+        // this.recipientMessage = payload.getRecipientMessage();
+        // this.orderItems = payload.getOrderItems();
     }
 }

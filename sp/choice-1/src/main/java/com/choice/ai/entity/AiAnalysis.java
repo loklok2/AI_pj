@@ -44,6 +44,9 @@ public class AiAnalysis {
     @OneToMany(mappedBy = "aiAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AiRecommendation> recommendations = new ArrayList<>();
 
+    @Column(name = "caption_result", columnDefinition = "TEXT")
+    private String captionResult;
+
     public AiAnalysis() {
         this.analysisDate = LocalDateTime.now();
     }
