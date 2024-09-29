@@ -345,3 +345,28 @@
     color: black;
     font-weight: bold;
 }
+
+/* 중앙에 나타나는 텍스트 창 스타일 (크기 고정) */
+.fa-analysis-modal-content-right {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 500px;
+    height: 180px; /* 고정 높이 설정 */
+    overflow-y: auto; /* 내용이 많을 때 스크롤 가능 */
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    z-index: 1000;
+    font-family: "Noto Sans KR", sans-serif;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.fa-analysis-modal-content-right.show {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+}

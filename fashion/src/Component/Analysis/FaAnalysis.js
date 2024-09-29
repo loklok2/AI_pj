@@ -68,6 +68,7 @@ const FaAnalysis = () => {
                 body: formData,
             });
             const data = await response.json();
+            console.log("API 응답 데이터:", data);
 
             const { styleindex, recommendedProducts, captionResult } = data;
 
@@ -81,7 +82,7 @@ const FaAnalysis = () => {
             if (Array.isArray(recommendedProducts)) {
                 const updatedProducts = recommendedProducts.map(product => ({
                     ...product,
-                    imagePath: product.imagePath.replace("C:\\workspace_pj2\\back\\images\\", "http://localhost:8080/images/") 
+                    imagePath: `http://10.125.121.188:8080${product.imagePath}` // 이미지 경로 수정
                 }));
                 setRecommendedProducts(updatedProducts);
             } else {
@@ -108,7 +109,7 @@ const FaAnalysis = () => {
         if (loading) {
             const timer = setTimeout(() => {
                 setIsSurveyModalOpen(true);
-            }, 10000); // 10초 후에 모달창 나타나게 설정
+            }, 10000);
 
             return () => clearTimeout(timer); 
         }
@@ -142,7 +143,7 @@ const FaAnalysis = () => {
         setFeedbackOption(feedback);
         if (feedback === '불만족') {
             setIsSurveyModalOpen(false);
-            setIsFeedbackModalOpen(true); // 불만족일 경우 스타일 선택 창으로 이동
+            setIsFeedbackModalOpen(true);
         }
     };
 
@@ -157,7 +158,7 @@ const FaAnalysis = () => {
                 <p>정보를 알고 싶은 옷의 이미지를 이곳에 넣어 옷에 대한 정보를 확인해보세요.</p>
                 <div className="fa-analysis-unique-divider"></div>
             </div>
-
+    
             <div className="fa-analysis-unique-content">
                 <div className="fa-analysis-unique-upload-section">
                     <h2>옷 업로드</h2>
@@ -174,7 +175,7 @@ const FaAnalysis = () => {
                             style={{ cursor: 'pointer', fontSize: '18px', color: 'gray' }} 
                         />
                     </div>
-
+    
                     <div className="fa-analysis-unique-upload-box" onClick={handleClick} style={{ position: 'relative' }}>
                         {loading ? (
                             <FontAwesomeIcon icon={faSpinner} spin />
@@ -220,7 +221,47 @@ const FaAnalysis = () => {
                     </button>
                 </div>
             </div>
-
+    
+            {/* 분석 결과를 표시하는 부분 */}
+            {topStyles.length > 0 && (
+                <div className="fa-analysis-results">
+                    <h2>상위 스타일</h2>
+                    <ul>
+                        {topStyles.map((style, index) => (
+                            <li key={index}>{style}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+    
+            {captionResult && (
+                <div className="fa-analysis-caption">
+                    <h2>분석 설명</h2>
+                    <p>{captionResult}</p>
+                </div>
+            )}
+    
+            {recommendedProducts.length > 0 && (
+                <div className="fa-analysis-recommendations">
+                    <h2>추천 상품</h2>
+                    <div className="fa-recommended-products-grid">
+                        {recommendedProducts.map((product, index) => (
+                            <div key={product.productId} className="product-card">
+                                <img 
+                                    src={product.imagePath} 
+                                    alt={product.name} 
+                                    style={{ width: '100%', height: '150px', objectFit: 'contain' }}
+                                />
+                                <h3>{product.name}</h3>
+                                <p>{product.info}</p>
+                                <p>{product.price}원</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+    
+            {/* 모달 및 기타 UI 부분은 그대로 유지 */}
             {isModalOpen && (
                 <div className="fa-analysis-modal-content-right">
                     <h2>주의 사항</h2>
@@ -228,7 +269,7 @@ const FaAnalysis = () => {
                     <button onClick={toggleModal}>닫기</button>
                 </div>
             )}
-
+    
             {isSurveyModalOpen && (
                 <div className="fa-analysis-survey-modal-content-right">
                     <button className="close-button" onClick={toggleSurveyModal}>x</button>
@@ -242,7 +283,7 @@ const FaAnalysis = () => {
                     <button onClick={toggleSurveyModal} style={{ marginTop: '20px' }}>닫기</button>
                 </div>
             )}
-
+    
             {isFeedbackModalOpen && (
                 <div className="fa-analysis-feedback-modal-content-right">
                     <button className="close-button" onClick={() => setIsFeedbackModalOpen(false)}>x</button>

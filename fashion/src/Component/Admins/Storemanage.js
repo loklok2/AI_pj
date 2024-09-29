@@ -39,6 +39,13 @@ const Storemanage = () => {
   const [isYearChecked, setIsYearChecked] = useState(false);
   const [isMonthChecked, setIsMonthChecked] = useState(false);
   const [isDateChecked, setIsDateChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 날짜 포맷 함수
+  const formatDate = (date) => {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Intl.DateTimeFormat('ko-KR', options).format(date).replace(/\./g, '.'); // 형식 변경
+  };
 
 // 매장 목록 가져오기
 useEffect(() => {
@@ -82,30 +89,33 @@ const handleSalesSearch = async () => {
     // 선택된 매장의 storeId를 URL에 추가
     endpoint += `?storeId=${selectedStore}`;
 
+    // 특정 기간 조회가 선택된 경우
+    if (isDateChecked) {
+      // 특정기간 조회에 필요한 정보 추가
+      const fromYear = startDate.getFullYear();
+      const fromMonth = startDate.getMonth() + 1; // 월은 0부터 시작하므로 +1 필요
+      const fromDay = startDate.getDate();
+      const toYear = endDate.getFullYear();
+      const toMonth = endDate.getMonth() + 1;
+      const toDay = endDate.getDate();
+
+      // URL에 해당 기간의 연도, 월, 일 정보를 추가
+      endpoint += `&fromYear=${fromYear}&fromMonth=${fromMonth}&fromDay=${fromDay}&toYear=${toYear}&toMonth=${toMonth}&toDay=${toDay}`;
+    } 
     // 월별 조회가 선택된 경우
-    if (isMonthChecked) {
-      const fromMonth = startMonth; // 시작 월
-      const toMonth = endMonth;     // 종료 월
+    else if (isMonthChecked) {
+      const fromMonth = startMonth; // 선택된 시작 월
+      const toMonth = endMonth;     // 선택된 종료 월
 
-      // 특정 기간 조회도 선택된 경우
-      if (isDateChecked) {
-        // 입력받은 특정 기간의 날짜, 월, 연도 정보 설정
-        const fromYear = startYear;
-        const toYear = endYear;
-        const fromDay = startDay;
-        const toDay = endDay;
+      // 선택한 연도의 해당 월의 첫날과 마지막 날짜를 계산
+      const fromDay = 1;
+      const toDay = new Date(startYear, fromMonth, 0).getDate(); // 해당 월의 마지막 날짜
 
-        console.log("Start Date:", `${fromYear}-${fromMonth}-${fromDay}`);
-        console.log("End Date:", `${toYear}-${toMonth}-${toDay}`);
-
-        // URL에 해당 기간의 연도, 월, 일 정보를 추가
-        endpoint += `&fromYear=${fromYear}&fromMonth=${fromMonth}&fromDay=${fromDay}&toYear=${toYear}&toMonth=${toMonth}&toDay=${toDay}`;
-      } else {
-        // 특정 일자 없이 월 전체 조회인 경우
-        endpoint += `&fromYear=${startYear}&toYear=${startYear}&fromMonth=${startMonth}&toMonth=${startMonth}&fromDay=1&toDay=${new Date(startYear, startMonth, 0).getDate()}`;
-      }
-    } else {
-      // 월별 조회가 선택되지 않았을 경우 연도별 조회를 위한 기본 파라미터 추가
+      // URL에 해당 연도, 월, 일 정보를 추가
+      endpoint += `&fromYear=${startYear}&toYear=${startYear}&fromMonth=${fromMonth}&toMonth=${fromMonth}&fromDay=${fromDay}&toDay=${toDay}`;
+    } 
+    // 연도 조회만 선택된 경우
+    else {
       endpoint += `&fromYear=${startYear}&toYear=${startYear}`;
     }
 
@@ -222,25 +232,38 @@ const handleSalesSearch = async () => {
 
 const handleProductSearch = async () => {
   try {
+    setIsLoading(true); // 로딩 시작
     let endpoint = `http://10.125.121.188:8080/api/sales/top-products`;
+    const queryParams = [];
 
     if (isYearChecked) {
-      endpoint += `?year=${startYear}`;
+      queryParams.push(`year=${startYear}`);
     }
 
     if (isMonthChecked) {
-      endpoint += `&fromMonth=${startMonth}&toMonth=${endMonth}`;
+      const fromMonth = String(startMonth).padStart(2, '0');
+      const toMonth = String(startMonth).padStart(2, '0');
+      queryParams.push(`fromMonth=${fromMonth}`);
+      queryParams.push(`toMonth=${toMonth}`);
     }
 
     if (isDateChecked) {
-      endpoint += `&startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`;
+      const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+      const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+      queryParams.push(`startDate=${startDateStr}`);
+      queryParams.push(`endDate=${endDateStr}`);
     }
 
     if (selectedStore) {
-      endpoint += `&storeId=${selectedStore}`;
+      queryParams.push(`storeId=${selectedStore}`);
+    }
+
+    if (queryParams.length > 0) {
+      endpoint += `?${queryParams.join('&')}`;
     }
 
     console.log("상품 조회 API 요청 URL:", endpoint);
+
     const response = await fetch(endpoint, { method: 'GET' });
 
     if (!response.ok) {
@@ -273,48 +296,74 @@ const handleProductSearch = async () => {
     setProductDisplay(productList);
   } catch (error) {
     console.error('Error fetching product data:', error);
+  } finally {
+    setIsLoading(false); // 로딩 종료
   }
 };
 
-  const handleProductClick = async (productId) => {
-    try {
-        setActiveItem(productId);
+const handleProductClick = async (productId) => {
+  try {
+      setActiveItem(productId);
 
-        const response = await fetch(`http://10.125.121.188:8080/api/admin/recommend-products`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                year: startYear,
-                month: startMonth,
-                day: startDate.getDate(),
-                storeid: selectedStore,
-            }),
-        });
+      // API 요청 URL 설정
+      let endpoint = `http://10.125.121.188:8080/api/admin/recommend-products?year=${startYear}&month=${startMonth}`;
+      
+      if (startDate) {
+          endpoint += `&day=${startDate.getDate()}`;
+      }
+      if (selectedStore) {
+          endpoint += `&storeId=${selectedStore}`;
+      }
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch recommended products');
-        }
+      console.log("추천 아이템 API 요청 URL:", endpoint);
 
-        const recommendationData = await response.json();
-        console.log("Fetched Recommendation Data:", recommendationData);
+      const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+      });
 
-        const recommendedItems = Object.values(recommendationData.category).map((item, index) => (
-            <div key={index} className="recommended-item">
-                <a href={item.seller_url} target="_blank" rel="noopener noreferrer">
-                    <img src={item.pimgPath} alt={item.name} className="recommended-item-image" />
-                    <p className="recommended-item-name">{item.name}</p>
-                    <p className="recommended-item-price">가격: {item.price}원</p>
-                    <p className="recommended-item-reviews">리뷰 수: {item.review_count}</p>
-                </a>
-            </div>
-        ));
+      if (!response.ok) {
+          throw new Error('Failed to fetch recommended products');
+      }
 
-        setRelatedItems(recommendedItems);
-    } catch (error) {
-        console.error('Error fetching recommended products:', error);
-    }
+      const recommendationData = await response.json();
+      console.log("Fetched Recommendation Data:", recommendationData);
+
+      // recommendationData의 첫 번째 요소에서 category에 접근
+      const data = recommendationData[0];
+
+      if (!data || !data.category) {
+          console.error("Category data is missing:", data);
+          return;
+      }
+
+      // category의 항목들을 가져와 콘솔에 출력 및 렌더링
+      const recommendedItems = Object.entries(data.category).map(([key, item], index) => {
+          console.log(`Recommended Item ${index + 1}:`);
+          console.log(`Name: ${item.name}`);
+          console.log(`Image Path: ${item.pimgPath}`);
+          console.log(`Price: ${item.price}`);
+          console.log(`Review Count: ${item.review_count}`);
+          console.log(`Seller URL: ${item.seller_url}`);
+
+          return (
+              <div key={key} className="recommended-item">
+                  <a href={item.seller_url} target="_blank" rel="noopener noreferrer">
+                      <img src={item.pimgPath} alt={item.name} className="recommended-item-image" />
+                      <p className="recommended-item-name">{item.name}</p>
+                      <p className="recommended-item-price">가격: {item.price}원</p>
+                      <p className="recommended-item-reviews">리뷰 수: {item.review_count}</p>
+                  </a>
+              </div>
+          );
+      });
+
+      setRelatedItems(recommendedItems);
+  } catch (error) {
+      console.error('Error fetching recommended products:', error);
+  }
 };
 
   const handleReset = () => {
@@ -392,70 +441,25 @@ const handleProductSearch = async () => {
             특정기간
           </label>
 
-          <div className="date-input-container">
-  <input
-    type="number"
-    placeholder="연도"
-    value={startYear}
-    onChange={(e) => setStartYear(Number(e.target.value))}
-    className="storemanage-date-input"
-    disabled={!isDateChecked}
-  />
-  <input
-    type="number"
-    placeholder="월"
-    value={startMonth}
-    onChange={(e) => setStartMonth(Number(e.target.value))}
-    className="storemanage-date-input"
-    min="1"
-    max="12"
-    disabled={!isDateChecked}
-  />
-  <input
-    type="number"
-    placeholder="일"
-    value={startDay}
-    onChange={(e) => setStartDay(Number(e.target.value))}
-    className="storemanage-date-input"
-    min="1"
-    max="31"
-    disabled={!isDateChecked}
-  />
-</div>
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+            dateFormat="yyyy.MM.dd"
+            customInput={<CustomInput />}
+            placeholderText="시작 날짜" // 기본 안내 텍스트
+            disabled={!isDateChecked}
+          />
 
-<span> ~ </span>
+          <span> ~ </span>
 
-<div className="date-input-container">
-  <input
-    type="number"
-    placeholder="연도"
-    value={endYear}
-    onChange={(e) => setEndYear(Number(e.target.value))}
-    className="storemanage-date-input"
-    disabled={!isDateChecked}
-  />
-  <input
-    type="number"
-    placeholder="월"
-    value={endMonth}
-    onChange={(e) => setEndMonth(Number(e.target.value))}
-    className="storemanage-date-input"
-    min="1"
-    max="12"
-    disabled={!isDateChecked}
-  />
-  <input
-    type="number"
-    placeholder="일"
-    value={endDay}
-    onChange={(e) => setEndDay(Number(e.target.value))}
-    className="storemanage-date-input"
-    min="1"
-    max="31"
-    disabled={!isDateChecked}
-  />
-</div>
-
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            dateFormat="yyyy.MM.dd"
+            customInput={<CustomInput />}
+            placeholderText="종료 날짜" // 기본 안내 텍스트
+            disabled={!isDateChecked}
+          />
 
             <button className="storemanage-search-button" style={{ marginLeft: '10px' }} onClick={handleSalesSearch}>매출 조회</button>
             

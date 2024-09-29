@@ -176,20 +176,21 @@ const View = () => {
           </div>
         </div>
         <div className="view-qna-question-content">
-          {images.length > 0 && (
-            <div className="view-qna-images">
-              {images.map((img) => (
-                <img 
-                  key={img.qimgId}
-                  src={`http://10.125.121.188:8080${img.qimgPath}`} 
-                  alt={`이미지 ${img.qimgId}`} 
-                  className="post-image" 
-                />
-              ))}
-            </div>
-          )}
-          <p>{post.content}</p>
-        </div>
+            {images.length > 0 && (
+              <div className="view-qna-images">
+                {images.map((img) => (
+                  <img 
+                    key={img.qimgId}
+                    src={`http://10.125.121.188:8080${img.qimgPath}`} 
+                    alt={`이미지 ${img.qimgId}`} 
+                    className="post-image" 
+                  />
+                ))}
+              </div>
+            )}
+            {/* HTML 내용이 적용되도록 dangerouslySetInnerHTML 사용 */}
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          </div>
       </div>
 
       <div className="view-qna-comment-section">
