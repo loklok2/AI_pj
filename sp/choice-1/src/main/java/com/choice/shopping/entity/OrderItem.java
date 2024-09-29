@@ -3,7 +3,6 @@ package com.choice.shopping.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import com.choice.product.entity.Product;
-import com.choice.product.entity.ProductInventory;
 
 @Entity
 @Table(name = "order_items")

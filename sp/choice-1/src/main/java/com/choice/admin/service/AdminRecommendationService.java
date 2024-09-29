@@ -29,7 +29,7 @@ public class AdminRecommendationService {
     @Autowired
     private FlaskClientService flaskClientService;
 
-    public Map<String, Object> getRecommendedProducts(Integer year, Integer month, Integer day, Long storeId) {
+    public List<Map<String, Object>> getRecommendedProducts(Integer year, Integer month, Integer day, Long storeId) {
         LocalDate now = LocalDate.now();
         year = (year != null) ? year : now.getYear();
         month = (month != null) ? month : now.getMonthValue();

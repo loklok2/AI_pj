@@ -1,7 +1,6 @@
 package com.choice.shopping.entity;
 
 import com.choice.product.entity.Product;
-import com.choice.product.entity.ProductInventory;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
