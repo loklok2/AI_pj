@@ -11,7 +11,7 @@ import com.choice.auth.entity.Member;
 import com.choice.board.entity.Qboard;
 
 public interface QboardRepository extends JpaRepository<Qboard, Long> {
-    @Query("SELECT q FROM Qboard q LEFT JOIN FETCH q.comments WHERE q.qboardId = :id")
+    @Query("SELECT q FROM Qboard q LEFT JOIN FETCH q.comments WHERE q.qboardId =:id")
     Optional<Qboard> findByIdWithComments(@Param("id") Long id);
 
     List<Qboard> findByMember(Member member);

@@ -10,5 +10,6 @@ public class OrderRequsetDTO {
     private String recipientPhone;
     private String recipientAddress;
     private String recipientMessage;
+    private String postCode;
     private List<OrderItemDTO> orderItems;
 }

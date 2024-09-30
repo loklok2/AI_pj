@@ -1,21 +1,25 @@
 package com.choice.board.service;
 
-import com.choice.auth.entity.Member;
-import com.choice.auth.repository.MemberRepository;
-import com.choice.board.entity.Comment;
-import com.choice.board.entity.Qboard;
-import com.choice.board.repository.CommentRepository;
-import com.choice.board.repository.QboardRepository;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.choice.auth.entity.Member;
+import com.choice.auth.repository.MemberRepository;
+import com.choice.board.dto.CommentDTO;
+import com.choice.board.entity.Comment;
+import com.choice.board.entity.Qboard;
+import com.choice.board.repository.CommentRepository;
+import com.choice.board.repository.QboardRepository;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @Transactional
 // 댓글 서비스
 public class CommentService {
@@ -33,8 +37,10 @@ public class CommentService {
     public Comment createComment(Long qboardId, String username, String content) {
         Qboard qboard = qboardRepository.findById(qboardId)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+        log.info("qboard: {}", qboard);
         Member user = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        log.info("user: {}", user);
 
         Comment comment = new Comment();
         comment.setQboard(qboard); // 게시글 설정
@@ -83,5 +89,17 @@ public class CommentService {
         return memberRepository.findByUsername(username)
                 .map(member -> "ADMIN".equals(member.getRole()))
                 .orElse(false);
+    }
+
+    public CommentDTO convertToDTO(Comment comment) {
+        return CommentDTO.builder()
+                .commentId(comment.getCommentId())
+                .qboardId(comment.getQboard().getQboardId())
+                .userId(comment.getMember().getUserId())
+                .username(comment.getMember().getUsername())
+                .content(comment.getContent())
+                .createDate(comment.getCreateDate())
+                .editedDate(comment.getEditedDate())
+                .build();
     }
 }

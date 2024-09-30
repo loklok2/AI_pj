@@ -32,8 +32,8 @@ public class ShippingAddress {
     private String phone;
     private String deliveryInstructions;
 
-    @Column(name = "is_default")
-    private boolean isDefault;
+    @Column(name = "post_code")
+    private String postCode;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

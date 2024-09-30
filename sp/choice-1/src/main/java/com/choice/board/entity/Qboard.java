@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "qboard")
@@ -56,4 +57,7 @@ public class Qboard {
     // 댓글 엔티티와의 연관 관계
     @OneToMany(mappedBy = "qboard", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "qboard", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<QboardImg> images = new ArrayList<>();
 }

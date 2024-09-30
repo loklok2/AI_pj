@@ -30,7 +30,5 @@ public class CartItem {
 
     private Integer quantity; // 수량
 
-    private String sessionId; // 세션 ID
-
     private String size;
 }

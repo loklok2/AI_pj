@@ -39,24 +39,19 @@ public class CartController {
 
     // 장바구니 조회
     @GetMapping
-    public ResponseEntity<?> getCartItems(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
+    public ResponseEntity<?> getCartItems(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            CartSummaryDTO summary;
             if (userDetails != null) {
                 String username = userDetails.getUsername();
-                log.debug("Fetching cart items for authenticated user: {}", username);
                 Member member = memberRepository.findByUsername(username)
                         .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-                summary = cartService.getCartItemsUser(member.getUserId());
+                CartSummaryDTO cartSummary = cartService.getCartItemsUser(member.getUserId());
+                return new ResponseEntity<>(cartSummary, HttpStatus.OK);
             } else {
-                String sessionId = session.getId();
-                log.debug("Fetching cart items for session: {}", sessionId);
-                summary = cartService.getCartItemsSession(sessionId);
+                return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
             }
-            log.debug("Retrieved {} cart items", summary.getItems().size());
-            return new ResponseEntity<>(summary, HttpStatus.OK);
         } catch (Exception e) {
-            log.error("Error fetching cart items", e);
+            log.error("장바구니 아이템을 가져오는 중 오류가 발생했습니다", e);
             return new ResponseEntity<>("장바구니 아이템을 가져오는 중 오류가 발생했습니다: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -89,21 +84,6 @@ public class CartController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("상품 추가 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/merge")
-    public ResponseEntity<?> mergeCart(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
-        try {
-            if (userDetails == null) {
-                return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
-            }
-            Long userId = ((Member) userDetails).getUserId();
-            String sessionId = session.getId();
-            cartService.mergeCart(userId, sessionId);
-            return new ResponseEntity<>("장바구니가 성공적으로 병합되었습니다.", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("장바구니 병합 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

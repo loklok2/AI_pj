@@ -43,7 +43,7 @@ public class Orders {
     private String orderComment; // 주문 코멘트
 
     @Column(length = 100, name = "merchant_uid")
-    private String merchantUid;
+    private String merchantUid; // 결제 고유 번호
 
     @Column(name = "order_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime orderDate; // 주문 날짜

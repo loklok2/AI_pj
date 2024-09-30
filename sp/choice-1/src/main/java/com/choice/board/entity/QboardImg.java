@@ -2,7 +2,7 @@ package com.choice.board.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import lombok.ToString;
 
 @Entity
 @Table(name = "qboard_img")

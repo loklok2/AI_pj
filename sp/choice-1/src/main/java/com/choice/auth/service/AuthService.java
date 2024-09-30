@@ -2,6 +2,7 @@ package com.choice.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,11 +128,18 @@ public class AuthService {
         if (!member.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "이메일 인증이 완료되지 않았습니다.");
         }
+        // 토큰발급
+        Map<String, Object> accessTokenData = JWTUtil.getJWTWithExpiration(member.getUsername());
+        // 액세스 토큰과 만료 시간 정보 가져오기
+        String accessToken = (String) accessTokenData.get("token");
+        long accessExpiration = (long) accessTokenData.get("accessExpiration");
 
-        String accessToken = JWTUtil.getJWT(member.getUsername());
-        String refreshToken = JWTUtil.getRefreshToken(member.getUsername());
+        // 리프레시 토큰과 만료 시간 정보 가져오기
+        String refreshToken = (String) accessTokenData.get("refreshToken");
+        long refreshExpiration = (long) accessTokenData.get("refreshExpiration");
 
-        return new LoginResponseDTO(accessToken, refreshToken, member.getRole().toString(), member.getUserId(),
+        return new LoginResponseDTO(accessToken, accessExpiration, refreshToken, refreshExpiration,
+                member.getRole().toString(), member.getUserId(),
                 member.getUsername());
     }
 
@@ -206,19 +214,33 @@ public class AuthService {
     // 리프레시 토큰 재발급
     @Transactional
     public LoginResponseDTO refreshToken(String refreshToken) {
-        if (JWTUtil.isExpiredRefreshToken(refreshToken)) {
+        log.info("서비스에서 새로운 토큰 발급 로직 시작");
+        log.info("Received refresh token: {}", refreshToken);
+
+        String cleanRefreshToken = JWTUtil.getJWTSource(refreshToken);
+        log.info("Cleaned refresh token: {}", cleanRefreshToken);
+
+        if (!JWTUtil.isExpiredRefreshToken(cleanRefreshToken)) {
+            String username = JWTUtil.getClaim(cleanRefreshToken);
+            log.info("Username from refresh token: {}", username);
+            Member member = memberRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+            Map<String, Object> TokenData = JWTUtil.getJWTWithExpiration(member.getUsername());
+            String newAccessToken = (String) TokenData.get("token");
+            long accessExpiration = (long) TokenData.get("accessExpiration");
+            String newRefreshToken = (String) TokenData.get("refreshToken");
+            long refreshExpiration = (long) TokenData.get("refreshExpiration");
+
+            log.info("새로운 액세스 토큰: {}, 액세스 토큰 만료 시간: {}", newAccessToken, accessExpiration);
+            log.info("새로운 리프레시 토큰: {}, 리프레시 토큰 만료 시간: {}", newRefreshToken, refreshExpiration);
+
+            return new LoginResponseDTO(newAccessToken, accessExpiration, newRefreshToken, refreshExpiration,
+                    member.getRole().toString(), member.getUserId(), member.getUsername());
+        } else {
+            log.error("리프레시 토큰이 만료되었습니다.");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다.");
         }
-
-        String username = JWTUtil.getClaim(refreshToken);
-        Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."));
-
-        String newAccessToken = JWTUtil.getJWT(username);
-        String newRefreshToken = JWTUtil.getRefreshToken(username);
-
-        return new LoginResponseDTO(newAccessToken, newRefreshToken, member.getRole().toString(), member.getUserId(),
-                member.getUsername());
     }
 
     public List<ProductAllDTO> getLikedProductsByUserId(Long userId) {

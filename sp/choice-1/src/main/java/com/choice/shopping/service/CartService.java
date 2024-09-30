@@ -38,22 +38,10 @@ public class CartService {
                 log.debug("Fetching cart items for user ID: {}", userId);
                 List<Object[]> results = cartItemRepository.findCartSummaryByUserId(userId);
                 List<CartItemDTO> items = convertToCartItemDTOList(results);
-                Long total = items.isEmpty() ? 0L : ((Number) results.get(0)[8]).longValue();
+                Long total = items.stream().mapToLong(CartItemDTO::getTotalPrice).sum();
                 log.debug("Found {} cart items for user ID: {}", items.size(), userId);
                 return new CartSummaryDTO(items, total);
         }
-
-        public CartSummaryDTO getCartItemsSession(String sessionId) {
-                List<Object[]> results = cartItemRepository.findCartSummaryBySessionId(sessionId);
-                List<CartItemDTO> items = convertToCartItemDTOList(results);
-                Long total = items.isEmpty() ? 0L : ((Number) results.get(0)[8]).longValue();
-                return new CartSummaryDTO(items, total);
-        }
-
-        // public Long getCartTotal(Long userId) {
-        // List<Object[]> results = cartItemRepository.findCartSummaryByUserId(userId);
-        // return results.isEmpty() ? 0L : ((Number) results.get(0)[8]).longValue();
-        // }
 
         // 사용자의 장바구니 아이템 조회
         public List<CartItem> getCartItemsForUser(Long userId) {
@@ -138,47 +126,21 @@ public class CartService {
                                 .build();
         }
 
-        // 세션 ID를 사용하여 비로그인 사용자의 장바구니 아이템 조회
-        public List<Object[]> getCartItems(String sessionId) {
-                // 세션 ID를 사용하여 비로그인 사용자의 장바구니 아이템 조회
-                return cartItemRepository.findCartSummaryBySessionId(sessionId);
-        }
-
-        // 세션 장바구니를 사용자 장바구니로 병합
-        public void mergeCart(Long userId, String sessionId) {
-                List<Object[]> sessionCartItems = getCartItems(sessionId);
-                List<CartItemDTO> cartItemDTOs = convertToCartItemDTOList(sessionCartItems);
-                for (CartItemDTO cartItemDTO : cartItemDTOs) {
-                        Long productId = cartItemDTO.getProductId();
-                        Integer quantity = cartItemDTO.getQuantity();
-                        String size = cartItemDTO.getSize();
-                        addToCart(userId, productId, quantity, size);
-                }
-                // 세션 장바구니 비우기
-                clearSessionCart(sessionId);
-        }
-
-        // 세션 장바구니 비우기
-        private void clearSessionCart(String sessionId) {
-                // 세션 ID에 해당하는 장바구니 아이템 삭제
-                cartItemRepository.deleteBySessionId(sessionId);
-        }
-
         // 결과를 CartItemDTO 리스트로 변환
         private List<CartItemDTO> convertToCartItemDTOList(List<Object[]> results) {
+                // log.info("results: {}", results);
                 return results.stream().map(result -> {
                         CartItemDTO dto = new CartItemDTO();
-                        dto.setUserId(result[0] != null ? ((Number) result[0]).longValue() : null);
-                        dto.setSessionId((String) result[1]);
-                        dto.setCartItemId(((Number) result[2]).longValue());
-                        dto.setProductId(((Number) result[3]).longValue());
-                        dto.setProductName((String) result[4]);
-                        dto.setCategory((String) result[5]);
-                        dto.setQuantity(((Number) result[6]).intValue());
-                        dto.setPrice(((Number) result[7]).longValue());
-                        dto.setTotalPrice(((Number) result[8]).longValue());
-                        dto.setPimgPath((String) result[9]);
-                        dto.setSize((String) result[10]); // size 정보 추가
+                        dto.setUserId(result[0] != null ? Long.parseLong(result[0].toString()) : null);
+                        dto.setCartItemId(result[1] != null ? Long.parseLong(result[1].toString()) : null);
+                        dto.setProductId(result[2] != null ? Long.parseLong(result[2].toString()) : null);
+                        dto.setProductName((String) result[3]);
+                        dto.setCategory((String) result[4]);
+                        dto.setQuantity(result[5] != null ? Integer.parseInt(result[5].toString()) : null);
+                        dto.setPrice(result[6] != null ? Long.parseLong(result[6].toString()) : null);
+                        dto.setTotalPrice(result[7] != null ? Long.parseLong(result[7].toString()) : null);
+                        dto.setPimgPath((String) result[8]);
+                        dto.setSize((String) result[9]);
                         return dto;
                 }).collect(Collectors.toList());
         }

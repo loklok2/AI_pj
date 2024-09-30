@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.choice.board.dto.CommentDTO;
 import com.choice.board.entity.Comment;
 import com.choice.board.service.CommentService;
 
@@ -27,11 +28,13 @@ public class CommentController {
     private CommentService commentService;
 
     @PostMapping("/{qboardId}")
-    public ResponseEntity<?> createComment(@PathVariable Long qboardId, @RequestBody String content,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> createComment(@PathVariable("qboardId") Long qboardId, @RequestBody CommentDTO commentDTO,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Comment comment = commentService.createComment(qboardId, userDetails.getUsername(), content);
-            return new ResponseEntity<>(comment, HttpStatus.CREATED);
+            Comment comment = commentService.createComment(qboardId, userDetails.getUsername(),
+                    commentDTO.getContent());
+            CommentDTO createdCommentDTO = commentService.convertToDTO(comment);
+            return new ResponseEntity<>(createdCommentDTO, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("댓글 작성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -39,7 +42,7 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public ResponseEntity<?> updateComment(@PathVariable Long commentId, @RequestBody String content,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             Comment updatedComment = commentService.updateComment(commentId, userDetails.getUsername(), content);
             return new ResponseEntity<>(updatedComment, HttpStatus.OK);
@@ -49,7 +52,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId,
+            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             commentService.deleteComment(commentId, userDetails.getUsername());
             return new ResponseEntity<>("댓글이 성공적으로 삭제되었습니다.", HttpStatus.OK);

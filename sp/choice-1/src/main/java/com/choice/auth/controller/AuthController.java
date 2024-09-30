@@ -144,8 +144,10 @@ public class AuthController {
     @PostMapping("/refresh-token")
     // 토큰 재발급
     public ResponseEntity<?> refreshToken(@RequestBody String refreshToken) {
+        log.info("컨트롤러에서 리프레쉬 토큰 요청받음");
         try {
             LoginResponseDTO response = authService.refreshToken(refreshToken);
+            log.info("컨트롤러에서 새로운 토큰 발급 완료");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("토큰 재발급 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
