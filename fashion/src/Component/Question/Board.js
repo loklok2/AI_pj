@@ -95,6 +95,13 @@ const Board = () => {
     navigate('/login');
   };
 
+
+  useEffect(() => {
+    console.log('Is Logged In:', isLoggedIn);
+    console.log('User Role:', userRole);
+  }, [isLoggedIn, userRole]);
+
+  
   return (
     <div className="qna-board-container">
       <h2 className="qna-board-title">Q&A</h2>
@@ -145,7 +152,7 @@ const Board = () => {
                     )}
                     {item.title}
                   </td>
-                  <td>{item.member?.name || '알 수 없음'}</td>
+                  <td>{item.username.slice(0, -3) + '***' || '알 수 없음'}</td>
                   <td>{new Date(item.createDate).toLocaleDateString()}</td>
                 </tr>
               ))

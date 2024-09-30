@@ -16,7 +16,12 @@ const View = () => {
 
   useEffect(() => {
     // 게시글과 댓글 데이터를 함께 가져오기
-    fetch(`http://10.125.121.188:8080/api/qboards/${id}`)
+    console.log('현재 게시글 ID:', id); // ID 확인
+    fetch(`http://10.125.121.188:8080/api/qboards/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // 토큰 추가
+      },
+    })
       .then(response => {
         if (!response.ok) {
           throw new Error('게시글을 불러오는 데 실패했습니다.');
@@ -27,22 +32,10 @@ const View = () => {
         console.log('게시글 데이터:', data);
         setPost(data);
         setComments(data.comments || []); // 댓글 데이터를 설정
+        setImages(data.images || []); // 이미지 데이터를 설정
       })
       .catch(error => {
         console.error('Error fetching post and comments:', error);
-      });
-
-    // 이미지 데이터 가져오기
-    fetch(`http://10.125.121.188:8080/api/qboards/${id}/images`)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('이미지를 불러오는 데 실패했습니다.');
-        }
-        return response.json();
-      })
-      .then(data => setImages(data))
-      .catch(error => {
-        console.error('Error fetching images:', error);
       });
   }, [id]);
 
@@ -56,13 +49,18 @@ const View = () => {
       return;
     }
   
+    const commentData = { qboardId: id, userId: 21, content: comment };
+  
+    console.log('전송하는 댓글 데이터:', commentData);
+  
     // 댓글 추가 요청
-    fetch(`http://10.125.121.188:8080/api/comments`, {
+    fetch(`http://10.125.121.188:8080/api/comments/${id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // 토큰 추가
       },
-      body: JSON.stringify({ qboardId: id, content: comment }), // qboardId와 content 포함
+      body: JSON.stringify(commentData),
     })
       .then(response => {
         if (!response.ok) {
@@ -71,6 +69,7 @@ const View = () => {
         return response.json();
       })
       .then(newComment => {
+        console.log('서버로부터 응답 받은 댓글 데이터:', newComment);
         setComments([...comments, newComment]);
         setComment('');
       })
@@ -178,14 +177,18 @@ const View = () => {
         <div className="view-qna-question-content">
             {images.length > 0 && (
               <div className="view-qna-images">
-                {images.map((img) => (
-                  <img 
-                    key={img.qimgId}
-                    src={`http://10.125.121.188:8080${img.qimgPath}`} 
-                    alt={`이미지 ${img.qimgId}`} 
-                    className="post-image" 
-                  />
-                ))}
+                {images.length > 0 && (
+                  <div className="view-qna-images">
+                    {images.map((img) => (
+                      <img 
+                        key={img.id}  // 수정: qimgId → id
+                        src={`http://10.125.121.188:8080${img.imgPath}`}  // 수정: qimgPath → imgPath
+                        alt={`이미지 ${img.id}`} 
+                        className="post-image" 
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {/* HTML 내용이 적용되도록 dangerouslySetInnerHTML 사용 */}

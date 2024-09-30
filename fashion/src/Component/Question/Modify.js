@@ -9,8 +9,9 @@ const Modify = () => {
   const navigate = useNavigate();
   const quillRef = useRef(null);
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
+  const [boardType, setBoardType] = useState(''); // boardType 상태 설정
   const [files, setFiles] = useState([]); // 다중 파일을 위해 배열로 변경
+  const [deletedImageIds, setDeletedImageIds] = useState([]); // 삭제될 이미지 ID 목록
   const [quillInstance, setQuillInstance] = useState(null);
 
   useEffect(() => {
@@ -19,7 +20,8 @@ const Modify = () => {
       .then(response => response.json())
       .then(data => {
         setTitle(data.title);
-        setCategory(data.boardType);
+        setBoardType(data.boardType); // boardType 설정
+        
         if (quillRef.current) {
           const quill = new Quill(quillRef.current, {
             theme: 'snow',
@@ -42,7 +44,7 @@ const Modify = () => {
                     input.setAttribute('accept', 'image/*');
                     input.setAttribute('multiple', true);
                     input.click();
-
+  
                     input.onchange = () => {
                       const selectedFiles = Array.from(input.files);
                       if (selectedFiles.length > 0) {
@@ -62,8 +64,18 @@ const Modify = () => {
               },
             },
           });
+  
+          // 에디터에 게시글 내용 삽입
           quill.clipboard.dangerouslyPasteHTML(data.content);
           setQuillInstance(quill);
+  
+          // 첨부된 이미지 파일이 있으면 에디터에 추가
+          if (data.images && data.images.length > 0) {
+            data.images.forEach(img => {
+              const range = quill.getSelection(true); // 현재 위치를 가져옴
+              quill.insertEmbed(range.index, 'image', `http://10.125.121.188:8080${img.imgPath}`);
+            });
+          }
         }
       })
       .catch(error => console.error('게시글을 불러오는 중 오류가 발생했습니다.', error));
@@ -71,8 +83,8 @@ const Modify = () => {
 
   const handleSubmitClick = async () => {
     if (!quillInstance) {
-      console.error('Quill 에디터가 초기화되지 않았습니다.');
-      return;
+        console.error('Quill 에디터가 초기화되지 않았습니다.');
+        return;
     }
 
     let updatedContent = quillInstance.root.innerHTML;
@@ -80,67 +92,78 @@ const Modify = () => {
     // 이미지 태그를 찾아서 Base64로 변환하는 작업
     const images = quillInstance.root.querySelectorAll('img');
     const base64Promises = Array.from(images).map((img) => {
-      return new Promise((resolve, reject) => {
-        const src = img.getAttribute('src');
-
-        if (src.startsWith('data:image')) {
-          resolve();
-        } else {
-          fetch(src)
-            .then((response) => response.blob())
-            .then((blob) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                img.setAttribute('src', reader.result);
+        return new Promise((resolve, reject) => {
+            const src = img.getAttribute('src');
+            if (src.startsWith('data:image')) {
                 resolve();
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-        }
-      });
+            } else {
+                fetch(src)
+                    .then((response) => response.blob())
+                    .then((blob) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            img.setAttribute('src', reader.result);
+                            resolve();
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+            }
+        });
     });
 
     try {
-      await Promise.all(base64Promises);
-      updatedContent = quillInstance.root.innerHTML;
+        await Promise.all(base64Promises);
+        updatedContent = quillInstance.root.innerHTML;
     } catch (error) {
-      console.error('이미지 처리 중 오류 발생:', error);
-      alert('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-      return;
+        console.error('이미지 처리 중 오류 발생:', error);
+        alert('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+        return;
     }
 
-    const data = {
-      title: title,
-      content: updatedContent,
-      boardType: category,
-    };
+    // FormData 생성
+    const formData = new FormData();
+    formData.append(
+        'qboard',
+        new Blob(
+            [JSON.stringify({ title: title, content: updatedContent, boardType: boardType })],
+            { type: 'application/json' }
+        )
+    );
 
-    console.log('전송할 데이터:', data);
+    // 새로운 이미지가 있는 경우 추가
+    files.forEach((file) => formData.append('newImages', file));
+
+    // 전송 데이터 확인
+    for (let pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
+    }
+
+    console.log('Current accessToken:', localStorage.getItem('accessToken'));
 
     try {
-      const response = await fetch(`http://10.125.121.188:8080/api/qboards/${id}`, {
-        method: 'PUT', // PUT 메소드로 변경
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-        body: JSON.stringify(data),
-      });
+        const response = await fetch(`http://10.125.121.188:8080/api/qboards/${id}`, {
+            method: 'PUT',
+            headers: {
+                // 'Content-Type': 'multipart/form-data'는 명시하지 않아야 자동 설정됩니다.
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: formData, // FormData를 body로 전달
+        });
 
-      if (response.ok) {
-        alert('게시글이 수정되었습니다.');
-        navigate(`/qna/${id}`);
-      } else {
-        const errorData = await response.json();
-        console.error('Error response from server:', errorData);
-        alert('게시글 수정에 실패했습니다.');
-      }
+        if (response.ok) {
+            alert('게시글이 수정되었습니다.');
+            navigate(`/qna/${id}`);
+        } else {
+            const errorData = await response.json();
+            console.error('Error response from server:', errorData);
+            alert('게시글 수정에 실패했습니다.');
+        }
     } catch (error) {
-      console.error('게시글 수정 중 오류가 발생했습니다.', error);
-      alert('서버에 문제가 발생했습니다. 나중에 다시 시도해주세요.');
+        console.error('게시글 수정 중 오류가 발생했습니다.', error);
+        alert('서버에 문제가 발생했습니다. 나중에 다시 시도해주세요.');
     }
-  };
+};
 
   const handleCancelClick = () => {
     navigate('/qna');
@@ -181,8 +204,8 @@ const Modify = () => {
             <td>
               <select
                 className="modify-form-select"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={boardType} 
+                onChange={(e) => setBoardType(e.target.value)} 
               >
                 <option value="">카테고리를 선택하세요.</option>
                 <option value="ProductQnA">상품문의</option>
