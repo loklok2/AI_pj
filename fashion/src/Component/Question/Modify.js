@@ -121,34 +121,23 @@ const Modify = () => {
         return;
     }
 
-    // FormData 생성
-    const formData = new FormData();
-    formData.append(
-        'qboard',
-        new Blob(
-            [JSON.stringify({ title: title, content: updatedContent, boardType: boardType })],
-            { type: 'application/json' }
-        )
-    );
+    // JSON 데이터 생성
+    const data = {
+        title: title,
+        content: updatedContent,
+        boardType: boardType,
+    };
 
-    // 새로운 이미지가 있는 경우 추가
-    files.forEach((file) => formData.append('newImages', file));
-
-    // 전송 데이터 확인
-    for (let pair of formData.entries()) {
-        console.log(`${pair[0]}:`, pair[1]);
-    }
-
-    console.log('Current accessToken:', localStorage.getItem('accessToken'));
+    console.log('전송할 데이터:', data);
 
     try {
         const response = await fetch(`http://10.125.121.188:8080/api/qboards/${id}`, {
-            method: 'PUT',
+            method: 'PUT', // 변경 사항을 반영하기 위해 PATCH를 사용
             headers: {
-                // 'Content-Type': 'multipart/form-data'는 명시하지 않아야 자동 설정됩니다.
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
             },
-            body: formData, // FormData를 body로 전달
+            body: JSON.stringify(data),
         });
 
         if (response.ok) {
