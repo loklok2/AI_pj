@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.choice.auth.dto.EmailAvailabilityResponse;
 import com.choice.auth.dto.FindUsernameRequestDTO;
+import com.choice.auth.dto.FindUsernameResponseDTO;
 import com.choice.auth.dto.LoginRequestDTO;
 import com.choice.auth.dto.LoginResponseDTO;
 import com.choice.auth.dto.PasswordResetDTO;
@@ -108,17 +109,6 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/find-username")
-    // 아이디 찾기
-    public ResponseEntity<?> findUsername(@RequestBody FindUsernameRequestDTO requestDto) {
-        try {
-            String username = authService.findUsername(requestDto.getName(), requestDto.getEmail());
-            return new ResponseEntity<>("찾은 아이디: " + username, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>("아이디 찾기 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @PostMapping("/reset-password")
     // 비밀번호 재설정
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDTO requestDto) {
@@ -127,6 +117,18 @@ public class AuthController {
             return new ResponseEntity<>("비밀번호 재설정 링크가 이메일로 전송되었습니다.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("비밀번호 재설정 요청 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/find-username")
+    public ResponseEntity<?> findUsername(@RequestBody FindUsernameRequestDTO requestDto) {
+        try {
+            String username = authService.findUsername(requestDto.getName(), requestDto.getEmail());
+            FindUsernameResponseDTO responseDto = new FindUsernameResponseDTO();
+            responseDto.setUsername(username);
+            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("아이디 찾기 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

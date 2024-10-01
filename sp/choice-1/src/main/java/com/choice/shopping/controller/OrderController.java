@@ -35,11 +35,6 @@ public class OrderController {
     private final MemberRepository memberRepository;
     private final CartService cartService;
 
-    // @Value("${imp.key}")
-    // private String impKey;
-
-    // @Value("${imp.secret}")
-    // private String impSecret;
     // 나의 주문 목록조회
     @GetMapping("/my-orders")
     public ResponseEntity<List<OrderListResponseDTO>> getOrderList(@AuthenticationPrincipal UserDetails userDetails) {
@@ -69,6 +64,7 @@ public class OrderController {
         return ResponseEntity.ok(temporaryOrder);
     }
 
+    // 결제 완료
     @PostMapping("/done/{imp_uid}")
     public ResponseEntity<Object> completeOrder(@PathVariable("imp_uid") String imp_uid,
             @RequestBody PaymentsRequestDTO payload) {

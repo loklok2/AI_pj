@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ProductDetailDTO {
     private Long productId;
-    private String name;
+    private String productName;
     private String info;
     private Long price;
     private Long likeCount;
@@ -16,5 +16,5 @@ public class ProductDetailDTO {
     private String pimgName;
     private String pimgPath;
     private List<AttributeDTO> attributes;
-    private List<ProductRecommendationDTO> randomRecommendations;
+    private List<ProductRecommendationDTO> similarProducts;
 }

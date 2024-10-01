@@ -37,9 +37,9 @@ public class QboardMapper {
     }
 
     // Comment 엔티티 리스트를 CommentDTO 리스트로 변환
-    public List<CommentDTO> toCommentDtoList(List<Comment> comments) {
+    public List<CommentResponseDTO> toCommentDtoList(List<Comment> comments) {
         return comments.stream()
-                .map(comment -> CommentDTO.builder()
+                .map(comment -> CommentResponseDTO.builder()
                         .commentId(comment.getCommentId())
                         .qboardId(comment.getQboard().getQboardId())
                         .userId(comment.getMember().getUserId())

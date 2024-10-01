@@ -12,8 +12,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.choice.auth.entity.Member;
@@ -49,7 +54,7 @@ public class QboardService {
         Files.copy(imageFile.getInputStream(), filePath);
 
         // 저장된 이미지의 URL 반환
-        return "/qboard/" + newFileName;
+        return "/images/qboard/" + newFileName;
     }
 
     // Q&A 게시글 생성 로직
@@ -135,20 +140,17 @@ public class QboardService {
 
     @Transactional
     public void deleteQboard(Long id, String username) {
-        // 게시글 조회
         Qboard qboard = qboardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        // 사용자 정보 조회
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 게시글 작성자인지 또는 관리자인지 확인
         if (!qboard.getMember().getUsername().equals(username) && !member.getRole().equals("ADMIN")) {
             throw new RuntimeException("게시글을 삭제할 권한이 없습니다.");
         }
 
-        // 게시글 삭제
         qboardRepository.delete(qboard);
     }
+
 }

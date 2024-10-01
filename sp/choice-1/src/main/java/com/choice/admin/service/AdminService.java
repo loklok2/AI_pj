@@ -143,19 +143,7 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public DailySalesReportDTO getDailySalesReport(LocalDate date) {
-        List<Object[]> results = orderRepository.findDailySalesReport(date, date);
-        if (results.isEmpty()) {
-            return new DailySalesReportDTO(date, 0L, 0L);
-        }
-        Object[] result = results.get(0);
-        return new DailySalesReportDTO(
-                ((java.sql.Date) result[0]).toLocalDate(),
-                ((Number) result[1]).longValue(),
-                ((Number) result[2]).longValue());
-    }
-
-    public List<DailySalesReportDTO> getDailySalesReportRange(LocalDate startDate, LocalDate endDate) {
+    public List<DailySalesReportDTO> getDailySalesReport(LocalDate startDate, LocalDate endDate) {
         List<Object[]> results = orderRepository.findDailySalesReport(startDate, endDate);
         return results.stream()
                 .map(result -> new DailySalesReportDTO(
@@ -165,7 +153,6 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    // 월별 매출 조회
     public List<DailySalesReportDTO> getMonthlySalesReport(LocalDate startDate, LocalDate endDate) {
         List<Object[]> results = orderRepository.findMonthlySalesReport(startDate, endDate);
         return results.stream()

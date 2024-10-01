@@ -23,7 +23,6 @@ import com.choice.shopping.dto.CartItemDTO;
 import com.choice.shopping.dto.CartSummaryDTO;
 import com.choice.shopping.service.CartService;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

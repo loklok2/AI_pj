@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.choice.board.dto.CommentDTO;
-import com.choice.board.entity.Comment;
+import com.choice.board.dto.CommentRequestDTO;
+import com.choice.board.dto.CommentResponseDTO;
 import com.choice.board.service.CommentService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
@@ -28,31 +31,40 @@ public class CommentController {
     private CommentService commentService;
 
     @PostMapping("/{qboardId}")
-    public ResponseEntity<?> createComment(@PathVariable("qboardId") Long qboardId, @RequestBody CommentDTO commentDTO,
+    public ResponseEntity<?> createComment(@PathVariable("qboardId") Long qboardId,
+            @RequestBody CommentRequestDTO commentDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Comment comment = commentService.createComment(qboardId, userDetails.getUsername(),
-                    commentDTO.getContent());
-            CommentDTO createdCommentDTO = commentService.convertToDTO(comment);
-            return new ResponseEntity<>(createdCommentDTO, HttpStatus.CREATED);
+            if (userDetails != null) {
+                String username = userDetails.getUsername();
+                CommentResponseDTO createdCommentDTO = commentService.createComment(qboardId, username,
+                        commentDTO.getContent());
+                return new ResponseEntity<>(createdCommentDTO, HttpStatus.CREATED);
+            } else {
+                return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
+            }
         } catch (Exception e) {
             return new ResponseEntity<>("댓글 작성 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    // 댓글 수정
     @PutMapping("/{commentId}")
-    public ResponseEntity<?> updateComment(@PathVariable Long commentId, @RequestBody String content,
+    public ResponseEntity<?> updateComment(@PathVariable("commentId") Long commentId,
+            @RequestBody CommentRequestDTO commentDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            Comment updatedComment = commentService.updateComment(commentId, userDetails.getUsername(), content);
-            return new ResponseEntity<>(updatedComment, HttpStatus.OK);
+            CommentResponseDTO updatedCommentDTO = commentService.updateComment(commentId, userDetails.getUsername(),
+                    commentDTO.getContent());
+            return new ResponseEntity<>(updatedCommentDTO, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("댓글 수정 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    // 댓글 삭제
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long commentId,
+    public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             commentService.deleteComment(commentId, userDetails.getUsername());
@@ -62,10 +74,11 @@ public class CommentController {
         }
     }
 
+    // 댓글 목록 조회
     @GetMapping("/qboard/{qboardId}")
-    public ResponseEntity<?> getCommentsByQboardId(@PathVariable Long qboardId) {
+    public ResponseEntity<?> getCommentsByQboardId(@PathVariable("qboardId") Long qboardId) {
         try {
-            List<Comment> comments = commentService.getCommentsByQboardId(qboardId);
+            List<CommentResponseDTO> comments = commentService.getCommentsByQboardId(qboardId);
             return new ResponseEntity<>(comments, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("댓글 목록을 가져오는 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);

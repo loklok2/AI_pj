@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Entity
 @Table(name = "qboard")
@@ -46,6 +45,8 @@ public class Qboard {
     private BoardType boardType; // 게시판 유형
 
     private String title; // 게시글 제목
+
+    @Column(columnDefinition = "LONGTEXT")
     private String content; // 게시글 내용
 
     @Column(name = "create_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

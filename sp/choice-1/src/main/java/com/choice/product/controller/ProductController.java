@@ -62,10 +62,8 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductDetailDTO> getProductDetail(@PathVariable("id") Long id) {
         ProductDetailDTO product = productService.getProductDetail(id);
-        List<ProductRecommendationDTO> randomRecommendations = productService.getRandomProductsByCategory(
-                product.getCategory(),
-                id, 5);
-        product.setRandomRecommendations(randomRecommendations);
+        List<ProductRecommendationDTO> similarProducts = productService.getSimilarProducts(id);
+        product.setSimilarProducts(similarProducts);
         return ResponseEntity.ok(product);
     }
 

@@ -20,7 +20,9 @@ import com.choice.product.dto.ProductDetailDTO;
 import com.choice.product.dto.ProductRecommendationDTO;
 import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductImg;
+import com.choice.product.entity.SimilarProduct;
 import com.choice.product.repository.ProductRepository;
+import com.choice.product.repository.SimilarProductRepository;
 
 @Transactional
 @Service
@@ -34,6 +36,9 @@ public class ProductService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private SimilarProductRepository similarProductRepository;
 
     // 상품 전체 조회
     public Page<ProductAllDTO> getAllProducts(String category, Pageable pageable) {
@@ -72,7 +77,7 @@ public class ProductService {
         ProductDetailDTO dto = new ProductDetailDTO();
         // 기본 정보 설정
         dto.setProductId(product.getProductId());
-        dto.setName(product.getName());
+        dto.setProductName(product.getName());
         dto.setInfo(product.getInfo());
         dto.setPrice(product.getPrice());
         dto.setLikeCount(product.getLikeCount());
@@ -102,25 +107,25 @@ public class ProductService {
     }
 
     // 랜덤 추천 상품 조회
-    public List<ProductRecommendationDTO> getRandomProductsByCategory(String category, Long excludeProductId,
-            int limit) {
-        List<Product> products = productRepository.getrandomproductsbycategory(category, excludeProductId, limit);
-        return products.stream()
-                .map(this::convertToRecommendationDTO)
+    public List<ProductRecommendationDTO> getSimilarProducts(Long productId) {
+        List<SimilarProduct> similarProducts = similarProductRepository.findByProduct_ProductId(productId);
+        return similarProducts.stream()
+                .map(sp -> {
+                    Product similarProduct = sp.getSimilarProduct();
+                    return new ProductRecommendationDTO(
+                            similarProduct.getProductId(),
+                            similarProduct.getName(),
+                            similarProduct.getPrice(),
+                            getFirstImagePath(similarProduct));
+                })
                 .collect(Collectors.toList());
     }
 
-    private ProductRecommendationDTO convertToRecommendationDTO(Product product) {
-        ProductRecommendationDTO dto = new ProductRecommendationDTO();
-        dto.setProductId(product.getProductId());
-        dto.setName(product.getName());
-        dto.setPrice(product.getPrice());
-        if (!product.getImages().isEmpty()) {
-            ProductImg firstImage = product.getImages().iterator().next();
-            dto.setPimgName(firstImage.getPimgName());
-            dto.setPimgPath("/images/" + firstImage.getPimgPath() + "/" + firstImage.getPimgName());
-        }
-        return dto;
+    private String getFirstImagePath(Product product) {
+        return product.getImages().stream()
+                .findFirst()
+                .map(img -> "/images/" + img.getPimgPath() + "/" + img.getPimgName())
+                .orElse(null);
     }
 
     @Transactional

@@ -25,5 +25,5 @@ public class QboardDTO {
     private List<QboardImgDTO> images; // 게시글 이미지
     private LocalDateTime createDate; // 게시글 생성 날짜
     private LocalDateTime editedDate; // 게시글 수정 날짜
-    private List<CommentDTO> comments; // 댓글 목록
+    private List<CommentResponseDTO> comments; // 댓글 목록
 }

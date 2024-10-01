@@ -39,5 +39,4 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
         Optional<Orders> findByMerchantUid(String merchantUid);
 
         List<Orders> findByMemberUserIdOrderByOrderDateDesc(Long userId);
-
 }

@@ -32,7 +32,7 @@ public class AdminRecommendationController {
             log.info("recommendProducts 호출");
             List<Map<String, Object>> result = adminRecommendationService.getRecommendedProducts(year, month, day,
                     storeId);
-            // log.info("recommendProducts 결과: {}", result);
+            log.info("recommendProducts 결과: {}", result);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("추천 상품 조회 중 오류 발생", e);

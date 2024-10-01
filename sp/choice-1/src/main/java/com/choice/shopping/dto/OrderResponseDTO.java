@@ -4,9 +4,13 @@ import java.util.List;
 
 import com.choice.shopping.entity.Orders;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 // 주문 응답 DTO
 public class OrderResponseDTO {
     private Long orderId;

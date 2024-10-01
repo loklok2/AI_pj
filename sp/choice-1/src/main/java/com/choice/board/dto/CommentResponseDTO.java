@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDTO {
+public class CommentResponseDTO {
     private Long commentId;
     private Long qboardId;
     private Long userId;

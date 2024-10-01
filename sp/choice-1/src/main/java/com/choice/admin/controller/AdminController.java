@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,8 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+
+import com.choice.admin.dto.DailySalesReportDTO;
 import com.choice.admin.dto.InventoryDTO;
 import com.choice.admin.dto.OrderSummaryDTO;
 import com.choice.admin.dto.ProductDTO;
@@ -209,6 +214,32 @@ public class AdminController {
             return new ResponseEntity<>(percentages, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("카테고리별 판매율 조회 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/sales/daily")
+    public ResponseEntity<?> getDailySales(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            List<DailySalesReportDTO> salesData = adminService.getDailySalesReport(startDate, endDate);
+            return new ResponseEntity<>(salesData, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("일별 매출 조회 중 오류가 발생했습니다: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/sales/monthly")
+    public ResponseEntity<?> getMonthlySales(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            List<DailySalesReportDTO> salesData = adminService.getMonthlySalesReport(startDate, endDate);
+            return new ResponseEntity<>(salesData, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("월별 매출 조회 중 오류가 발생했습니다: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

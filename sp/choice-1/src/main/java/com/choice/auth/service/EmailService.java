@@ -20,7 +20,7 @@ public class EmailService {
     public void sendVerificationEmail(String to, String token) {
         String subject = "회원가입 이메일 인증";
         String content = "<p>회원가입을 완료하려면 다음 링크를 클릭하세요:</p>"
-                + "<a href=\"http://localhost:8080/api/auth/verify?token=" + token + "\">이메일 인증</a>";
+                + "<a href=\"http://101.125.121.188:8080/api/auth/verify?token=" + token + "\">이메일 인증</a>";
         sendEmail(to, subject, content);
     }
 
@@ -28,7 +28,7 @@ public class EmailService {
     public void sendPasswordResetEmail(String to, String token) {
         String subject = "비밀번호 재설정";
         String content = "<p>비밀번호를 재설정하려면 다음 링크를 클릭하세요:</p>"
-                + "<a href=\"http://localhost:8080/api/auth/reset-password?token=" + token + "\">비밀번호 재설정</a>";
+                + "<a href=\"http://10.125.121.181:3000/reset-password?token=" + token + "\">비밀번호 재설정</a>";
         sendEmail(to, subject, content);
     }
 
