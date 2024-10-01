@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useRef, useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faCircleXmark, faRotateRight, faCircleInfo, faFaceSmile, faFaceMeh, faFaceFrown } from '@fortawesome/free-solid-svg-icons'; 
@@ -21,6 +22,7 @@ const styleOptions = [
 const FaAnalysis = () => {
     const fileInputRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate(); // 페이지 이동 함수
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [topStyles, setTopStyles] = useState([]); 
@@ -31,9 +33,15 @@ const FaAnalysis = () => {
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
     const [feedbackOption, setFeedbackOption] = useState(null);
     const [selectedStyles, setSelectedStyles] = useState([]);
+    const [showRecommendedProducts, setShowRecommendedProducts] = useState(false);
 
     const handleClick = () => {
         fileInputRef.current.click();
+    };
+
+     // 유사 상품 클릭 이벤트 핸들러
+     const handleProductClick = (productId) => {
+        navigate(`/product/${productId}`); // 상품 상세 페이지로 이동
     };
 
     const handleImageChange = (e) => {
@@ -82,7 +90,7 @@ const FaAnalysis = () => {
             if (Array.isArray(recommendedProducts)) {
                 const updatedProducts = recommendedProducts.map(product => ({
                     ...product,
-                    imagePath: `http://10.125.121.188:8080${product.imagePath}` // 이미지 경로 수정
+                    imagePath: `http://10.125.121.188:8080${product.imagePath}`
                 }));
                 setRecommendedProducts(updatedProducts);
             } else {
@@ -96,6 +104,12 @@ const FaAnalysis = () => {
                 console.error('설명 결과가 유효하지 않습니다:', captionResult);
                 alert('설명 결과를 받지 못했습니다.');
             }
+
+             // 분석 완료 후 10초 지연
+            setTimeout(() => {
+                setIsSurveyModalOpen(true);
+            }, 10000); // 10초 후에 만족도 조사 모달 표시
+
 
         } catch (error) {
             console.error('분석 중 오류 발생:', error);
@@ -159,23 +173,25 @@ const FaAnalysis = () => {
                 <div className="fa-analysis-unique-divider"></div>
             </div>
     
-            <div className="fa-analysis-unique-content">
-                <div className="fa-analysis-unique-upload-section">
-                    <h2>옷 업로드</h2>
+            <div className="fa-analysis-unique-content" style={{ display: 'flex' }}>
+                    {/* 옷 업로드 부분 */}
+                    <div className="fa-analysis-unique-upload-section" style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <h2>옷 업로드</h2>
+                            <FontAwesomeIcon 
+                                icon={faCircleInfo} 
+                                onClick={toggleModal} 
+                                style={{ cursor: 'pointer', fontSize: '18px', color: 'gray', marginLeft: '10px', marginTop: '10px' }} 
+                            />
+                        </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <p style={{ margin: 0 }}>* 명확한 사진을 업로드 해주세요.</p>
-                        <FontAwesomeIcon 
-                            icon={faCircleInfo} 
-                            onClick={toggleModal} 
-                            style={{ cursor: 'pointer', fontSize: '18px', color: 'gray', marginRight: '400px' }} 
-                        />
                         <FontAwesomeIcon 
                             icon={faRotateRight} 
                             onClick={handleReload} 
                             style={{ cursor: 'pointer', fontSize: '18px', color: 'gray' }} 
                         />
                     </div>
-    
                     <div className="fa-analysis-unique-upload-box" onClick={handleClick} style={{ position: 'relative' }}>
                         {loading ? (
                             <FontAwesomeIcon icon={faSpinner} spin />
@@ -220,33 +236,65 @@ const FaAnalysis = () => {
                         {loading ? "분석 중..." : "분석하기"}
                     </button>
                 </div>
+
+                {/* 상위 스타일 설명 부분 */}
+                    {topStyles.length > 0 && (
+                        <div className="fa-analysis-results" style={{ flex: 1, marginLeft: '20px' }}>
+                            {/* 분석 설명을 상위 스타일보다 위에 배치 */}
+                            {captionResult && (
+                                <div className="fa-analysis-caption" style={{ marginBottom: '10px', marginTop: '100px' }}> {/* 간격 조정 */}
+                                    <h2>분석 설명</h2>
+                                    <p>{captionResult}</p>
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <h2 style={{ marginTop: '30px', textAlign: 'center' }}>스타일</h2>
+                                <ul style={{ 
+                                    listStyle: 'none', 
+                                    padding: 0, 
+                                    fontSize: '30px', 
+                                    display: 'flex', 
+                                    flexDirection: 'row', 
+                                    justifyContent: 'center', 
+                                    gap: '20px'  // 각 항목 사이의 간격
+                                }}>
+                                    {topStyles.map((style, index) => (
+                                        <li key={index} style={{ margin: '10px' }}>{`#${style}`}</li>  // '#' 추가
+                                    ))}
+                                </ul>
+                            </div>
+                       
+
+                            {/* 관련 스타일 더보기 링크 추가 */}
+                            <div style={{ textAlign: 'right', marginTop: '50px' }}>
+                                <span 
+                                    onClick={() => setShowRecommendedProducts(!showRecommendedProducts)} 
+                                    style={{ 
+                                        backgroundColor: 'transparent', 
+                                        border: 'none', 
+                                        color: 'black',  /* 검정색으로 변경 */
+                                        cursor: 'pointer', 
+                                        padding: '0', 
+                                        fontSize: '20px',
+                                        fontWeight: 'bold', /* 버튼 텍스트 강조 */
+                                        outline: 'none' 
+                                    }}
+                                >
+                                    관련 스타일 더보기 &gt;
+                                </span>
+                            </div>
+                        </div>
+                    )}
             </div>
-    
-            {/* 분석 결과를 표시하는 부분 */}
-            {topStyles.length > 0 && (
-                <div className="fa-analysis-results">
-                    <h2>상위 스타일</h2>
-                    <ul>
-                        {topStyles.map((style, index) => (
-                            <li key={index}>{style}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-    
-            {captionResult && (
-                <div className="fa-analysis-caption">
-                    <h2>분석 설명</h2>
-                    <p>{captionResult}</p>
-                </div>
-            )}
-    
-            {recommendedProducts.length > 0 && (
-                <div className="fa-analysis-recommendations">
-                    <h2>추천 상품</h2>
-                    <div className="fa-recommended-products-grid">
-                        {recommendedProducts.map((product, index) => (
-                            <div key={product.productId} className="product-card">
+
+          {/* 유사 상품 표시 부분 */}
+          {showRecommendedProducts && recommendedProducts.length > 0 && (
+                <div className="fa-analysis-recommendations" style={{ marginTop: '20px' }}>
+                    <h2>유사 상품</h2>
+                    <div className="fa-recommended-products-grid-horizontal">
+                        {recommendedProducts.slice(0, 5).map((product) => (
+                            <div key={product.productId} className="product-card-horizontal" onClick={() => handleProductClick(product.productId)}>
                                 <img 
                                     src={product.imagePath} 
                                     alt={product.name} 
@@ -260,8 +308,8 @@ const FaAnalysis = () => {
                     </div>
                 </div>
             )}
-    
-            {/* 모달 및 기타 UI 부분은 그대로 유지 */}
+
+            {/* 모달 부분 */}
             {isModalOpen && (
                 <div className="fa-analysis-modal-content-right">
                     <h2>주의 사항</h2>

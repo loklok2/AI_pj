@@ -40,6 +40,9 @@ const Storemanage = () => {
   const [isMonthChecked, setIsMonthChecked] = useState(false);
   const [isDateChecked, setIsDateChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showProductSearch, setShowProductSearch] = useState(false);
+  const [storeName, setStoreName] = useState('');
+  const [selectedStoreName, setSelectedStoreName] = useState('');
 
   // 날짜 포맷 함수
   const formatDate = (date) => {
@@ -75,10 +78,13 @@ useEffect(() => {
   fetchStores();
 }, [startYear]);
 
+
 const handleSalesSearch = async () => {
   try {
     // 기본 매출 조회 API URL 설정
     let endpoint = `http://10.125.121.188:8080/api/sales/store-sales`;
+
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
 
     // 매장이 선택되지 않은 경우 경고 메시지를 출력하고 함수 종료
     if (!selectedStore) {
@@ -214,6 +220,9 @@ const handleSalesSearch = async () => {
       }
     }
 
+    
+    
+
     // 차트 데이터가 없는 경우 경고 메시지 출력 후 함수 종료
     if (chartDataList.length === 0) {
       console.warn('선택한 기간에 대한 매출 데이터가 없습니다.');
@@ -334,10 +343,10 @@ const handleProductClick = async (productId) => {
       // recommendationData의 첫 번째 요소에서 category에 접근
       const data = recommendationData[0];
 
-      if (!data || !data.category) {
-          console.error("Category data is missing:", data);
-          return;
-      }
+      // if (!data || !data.category) {
+      //     console.error("Category data is missing:", data);
+      //     return;
+      // }
 
       // category의 항목들을 가져와 콘솔에 출력 및 렌더링
       const recommendedItems = Object.entries(data.category).map(([key, item], index) => {
@@ -370,6 +379,8 @@ const handleProductClick = async (productId) => {
     window.location.reload();
   };
 
+
+  
   return (
     <div>
       <Admheader />
@@ -378,15 +389,23 @@ const handleProductClick = async (productId) => {
         <p className="storemanage-welcome-text">이 페이지는 관리자만 이용 가능합니다.</p>
 
         <div>
-          <p className="storemanage-search-title">매장 조회</p>
-          <div className="storemanage-search-section">
-          <select className="storemanage-dropdown wide" value={selectedStore} onChange={(e) => setSelectedStore(e.target.value)}>
-          <option value="">매장 선택</option>
-
-          {storeList.map((store) => (
-            <option key={store.storeId} value={store.storeId}>{store.storeName}</option>
-          ))}
-        </select>
+        <p className="storemanage-search-title">매장 조회</p>
+        <div className="storemanage-search-section">
+        <select
+            className="storemanage-dropdown wide"
+            value={selectedStore}
+            onChange={(e) => {
+              const storeId = e.target.value;
+              const store = storeList.find(s => s.storeId === storeId);
+              setSelectedStore(storeId);
+              setSelectedStoreName(store ? store.storeName : ''); // 매장 이름을 상태에 저장
+            }}
+          >
+            <option value="">매장 선택</option>
+            {storeList.map((store) => (
+              <option key={store.storeId} value={store.storeId}>{store.storeName}</option>
+            ))}
+          </select>
 
             <label>
               <input
@@ -469,16 +488,40 @@ const handleProductClick = async (productId) => {
           </div>
         </div>
 
+        
+
+
         {chartDataList.length > 0 && (
           <div className={`storemanage-sales-charts ${chartDataList.length === 1 ? 'storemanage-single-chart' : ''}`}>
             {chartDataList.map((chartData, index) => (
               <div className="storemanage-sales-chart" key={index}>
-                <h3>{chartData.datasets[0].label || '매장 매출 차트'}</h3>
-                <Line
+                <h6>{chartData.datasets[0].label || '매장 매출 차트'}</h6>
+                  <Line
                   data={chartData}
                   options={{
                     maintainAspectRatio: false,
                     responsive: true,
+                    scales: {
+                      y: {
+                        ticks: {
+                          font: {
+                            size: 8 // Y축 라벨의 글자 크기 설정
+                          }
+                        }
+                      }
+                    },
+                    plugins: {
+                      title: {
+                        display: true,
+                        padding: {
+                          top: 10,
+                          bottom: 30
+                        },
+                        font: {
+                          size: 8 // 타이틀의 글자 크기
+                        }
+                      }
+                    }
                   }}
                 />
               </div>
@@ -486,9 +529,14 @@ const handleProductClick = async (productId) => {
           </div>
         )}
 
-        <div className="product-display-section">
-          {productDisplay}
-        </div>
+      {showProductSearch && (
+              <div className="product-display-section">
+                <h2 className="product-display-title">상품 조회</h2>
+                <div className="product-items-container">
+                  {productDisplay}
+                </div>
+              </div>
+            )}
 
         {activeItem !== null && (
           <div>

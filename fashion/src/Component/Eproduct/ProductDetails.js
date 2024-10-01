@@ -2,22 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../../CSS/ProductDetails.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { faHeart as solidHeart, faHeart as regularHeart, faAngleRight, faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // 페이지 이동 함수
   const [product, setProduct] = useState(null);
   const [liked, setLiked] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('S');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  
 
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false); // 관리자 상태 추가
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const totalItems = 15; // AI 추천 아이템의 총 개수
+  const itemsPerPage = 5; // 페이지당 아이템 수
+
+  const aiItems = Array.from({ length: totalItems }, (_, index) => ({
+    title: `AI Item ${index + 1}`,
+    price: (Math.random() * 100000).toFixed(0)
+  }));
+
+       // 현재 페이지에 기반하여 표시할 아이템 계산
+       const startIndex = currentPage * itemsPerPage;
+       const endIndex = startIndex + itemsPerPage;
+       const itemsToDisplay = aiItems.slice(startIndex, endIndex);
+     
+       // 페이지 변경 처리 함수
+       const nextPage = () => {
+         if (startIndex + itemsPerPage < totalItems) {
+           setCurrentPage(currentPage + 1);
+         }
+       };
+
+       const prevPage = () => {
+        if (currentPage > 0) {
+          setCurrentPage(currentPage - 1);
+        }
+      };
+    
+  
 
   useEffect(() => {
     window.scrollTo(0, 0); // 페이지 이동 시 스크롤을 맨 위로 이동
@@ -59,6 +88,8 @@ const ProductDetails = () => {
   if (!product) {
     return <div>해당 제품을 찾을 수 없습니다.</div>;
   }
+
+  
 
   const toggleLike = (e) => {
     e.stopPropagation();
@@ -201,17 +232,29 @@ const ProductDetails = () => {
       </div>
 
       {/* AI 추천 영역 추가 */}
-      <div className="product-details-page-ai-recommendation">
-        <hr />
-        <p><strong>AI 추천</strong></p>
-        <div className="ai-recommendation-shapes">
-          {[...Array(5)].map((_, index) => (
-            <div key={index} className="shape-placeholder-wrapper">
-              <div className="shape-placeholder"></div>
-              <p className="item-title">AI Item {index + 1}</p>
-              <p className="item-price">{(Math.random() * 100000).toFixed(0)}원</p>
+      <div className="product-details-wrapper">
+        <div className="product-details-page-ai-recommendation">
+          <hr />
+          <p><strong>AI 추천</strong></p>
+          <div className="ai-recommendation-container">
+            {currentPage > 0 && (
+              <FontAwesomeIcon icon={faAngleLeft} onClick={prevPage} className="pagination-arrow left-arrow" />
+            )}
+
+            <div className="ai-recommendation-shapes">
+              {itemsToDisplay.map((item, index) => (
+                <div key={index} className="shape-placeholder-wrapper">
+                  <div className="shape-placeholder"></div>
+                  <p className="item-title">{item.title}</p>
+                  <p className="item-price">{item.price}원</p>
+                </div>
+              ))}
             </div>
-          ))}
+
+            {currentPage < Math.ceil(totalItems / itemsPerPage) - 1 && (
+              <FontAwesomeIcon icon={faAngleRight} onClick={nextPage} className="pagination-arrow right-arrow" />
+            )}
+          </div>
         </div>
       </div>
 

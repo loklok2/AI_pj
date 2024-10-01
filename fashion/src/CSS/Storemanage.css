@@ -162,9 +162,8 @@
   }
 
 .product-display-section {
-    display: flex;
     flex-wrap: wrap; /* 그리드 형태 유지 */
-    gap: 10px; /* 아이템 간격 추가 */
+    gap: 50px; /* 아이템 간격 추가 */
     justify-content: flex-start;
   }
 
@@ -219,9 +218,115 @@
 .product-list {
     display: flex;
     justify-content: center;
+    gap: 50px; /* 아이템 사이의 간격 */
 }
 
+/* 추천 아이템 컨테이너 오른쪽 정렬 */
 .related-items-list {
     display: flex;
+    justify-content: flex-start; /* 아이템들을 오른쪽 정렬 */
+    flex-wrap: wrap; /* 여러 줄로 아이템이 표시될 경우 */
+    gap: 30px; /* 아이템 사이의 간격 */
+}
+
+  /* 추천 상품 이미지 고정 크기 */
+.recommended-item {
+    display: inline-block;
+    width: 150px; /* 원하는 이미지 고정 크기 */
+    margin: 10px;
+    text-align: left; /* 텍스트 왼쪽 정렬 */
+}
+
+.recommended-item img {
+    width: 150px; /* 이미지 고정 가로 크기 */
+    height: 150px; /* 이미지 고정 세로 크기 */
+    object-fit: cover; /* 이미지 크기 고정 시 비율 유지 */
+    border-radius: 3px; /* 원하는 경우 모서리 둥글게 */
+}
+
+/* 추천 상품 글자 스타일 */
+.recommended-item-name,
+.recommended-item-price,
+.recommended-item-reviews {
+    color: #575757; /* 글자 색상 검은색 */
+    font-size: 14px; /* 폰트 사이즈 조절 */
+    margin: 3px 0; /* 간격 조절 */
+    text-align: center; /* 가운데 정렬 */
+}
+
+/* 링크의 밑줄 제거 및 스타일 조정 */
+.recommended-item a {
+    text-decoration: none; /* 밑줄 제거 */
+    color: inherit; /* 부모 요소의 색상 상속 */
+}
+
+.recommended-item a:hover {
+    color: #333; /* 마우스 오버 시 색상 변경 */
+}
+/* 추천 상품 이름의 폰트 크기 조절 */
+.recommended-item-name {
+    font-size: 16px; /* 원하는 크기로 조정 */
+    color: #000; /* 글자 색상 검은색 */
+    margin: 5px 0; /* 간격 조절 */
+    text-align: center;
+}
+
+/* 상품 이미지 고정 크기 */
+.product-item {
+    display: inline-block;
+    width: 150px; /* 원하는 이미지 고정 크기 */
+    margin: 10px;
+    text-align: center;
+}
+
+.product-image-container {
+    width: 150px; /* 이미지 고정 가로 크기 */
+    height: 150px; /* 이미지 고정 세로 크기 */
+    display: flex;
+    align-items: center;
     justify-content: center;
-  }
+    border-radius: 3px; /* 원하는 경우 모서리 둥글게 */
+}
+
+.product-image {
+    width: 100%; /* 이미지 고정 크기에 맞추어 조정 */
+    height: 100%;
+    object-fit: cover; /* 이미지 크기 고정 시 비율 유지 */
+    border-radius: 3px; /* 원하는 경우 모서리 둥글게 */
+}
+
+.product-image-placeholder {
+    width: 100%; 
+    height: 100%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+}
+
+.product-name {
+    font-size: 16px; /* 상품 이름의 폰트 크기 조절 */
+    color: #000; /* 글자 색상 검은색 */
+    margin: 5px 0; /* 간격 조절 */
+}
+
+.product-quantity {
+    font-size: 14px; /* 판매량 등 다른 텍스트 크기 조절 */
+    color: #888888; /* 글자 색상 검은색 */
+}
+
+.product-display-title {
+    font-size: 20px; /* 원하는 폰트 크기 */
+    margin-top: 30px; /* 위쪽 마진 */
+    margin-bottom: 10px; /* 아래쪽 마진 */
+    color: #000; /* 글자 색상 */
+}
+
+.product-items-container {
+    display: flex;
+    flex-wrap: wrap; /* 아이템들이 여러 줄로 표시되도록 함 */
+    gap: 30px; /* 아이템 사이의 간격 */
+    justify-content: flex-start; /* 왼쪽 정렬 */
+    margin-top: 10px; /* 상품 조회 타이틀과 아이템들 사이의 간격을 조정 */
+}

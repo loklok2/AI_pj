@@ -34,7 +34,11 @@ const Managers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://10.125.121.188:8080/api/admin/members');
+      const response = await fetch('http://10.125.121.188:8080/api/admin/members', {
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzI3NzYyODgxfQ.5mdUGU-IdAynLiZDPb5D-eFUHfTy8bQ5B4gb-WKXUZ0',
+        },
+      });
       const data = await response.json();
       setUsers(data);
     } catch (error) {

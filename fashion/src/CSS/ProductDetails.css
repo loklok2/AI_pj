@@ -241,3 +241,50 @@ hr {
   font-size: 14px;
   color: gray;
 }
+
+/* AI 추천 섹션 전체를 감싸는 컨테이너 스타일 */
+.ai-recommendation-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* AI 추천 아이템들을 표시하는 영역 스타일 */
+.ai-recommendation-shapes {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1; /* 중앙의 아이템 목록이 양쪽 아이콘 사이의 공간을 최대로 차지하도록 함 */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+  padding: 0 50px; /* 좌우 패딩으로 아이콘과의 간격 조정 */
+}
+
+/* 페이지 이동 아이콘 스타일 */
+.pagination-arrow {
+  cursor: pointer;
+  font-size: 24px; /* 아이콘 크기 */
+  width: 30px; /* 아이콘 영역의 너비 설정 */
+  color: #333; /* 아이콘 색상 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.ai-recommendation-container {
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: space-between; /* 양쪽에 공간을 두고 내용을 정렬 */
+}
+
+.ai-recommendation-shapes {
+  flex-grow: 1; /* 가운데 아이템 목록이 가능한 공간을 모두 차지하도록 설정 */
+  display: flex;
+  justify-content: center;
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+}
+
+.pagination-arrow {
+  font-size: 24px; /* 아이콘 크기 조정 */
+  cursor: pointer; /* 클릭 가능하게 설정 */
+}

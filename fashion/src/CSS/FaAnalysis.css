@@ -32,18 +32,78 @@
     font-family: "Noto Sans KR", sans-serif;
 }
 
+/* 전체 레이아웃: Flex를 사용하여 왼쪽과 오른쪽 섹션을 배치 */
 .fa-analysis-unique-content {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-top: 20px;
+    gap: 20px; /* 왼쪽과 오른쪽 사이의 간격 조정 */
     font-family: "Noto Sans KR", sans-serif;
 }
+
 
 .fa-analysis-unique-upload-section {
     width: 45%;
     text-align: left;
     font-family: "Noto Sans KR", sans-serif;
+}
+
+/* 오른쪽 분석 결과 섹션 스타일 */
+.fa-analysis-results-section {
+    width: 45%; /* 오른쪽 섹션의 너비를 왼쪽과 맞춰줌 */
+    text-align: left;
+}
+
+.fa-analysis-results h2{
+    margin-top: 100px;
+}
+
+/* CSS 코드: fa-analysis-recommendations 클래스에 대한 수정 */
+.fa-recommended-products-grid-horizontal {
+    display: flex;
+    justify-content: space-between; /* 아이템 간의 균등 간격 조절 */
+    flex-wrap: wrap; /* 아이템이 5개를 넘을 경우 자동 줄바꿈 */
+    gap: 10px; /* 아이템 간의 간격 */
+}
+
+.fa-analysis-recommendations h2{
+    margin-top: 50PX;
+    text-align: left; /* 글자를 오른쪽으로 정렬 */
+    margin-left: 20px; /* 오른쪽 여백 추가하여 조금 더 이동 */
+    margin-bottom: 20px;
+}
+
+/* CSS 코드: 더 큰 이미지 크기를 적용 */
+.product-card-horizontal {
+    flex: 1;
+    min-width: 200px; /* 각 제품 카드의 최소 너비를 조정 */
+    max-width: 15px; /* 각 제품 카드의 최대 너비를 조정 */
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    text-align: center;
+    
+}
+
+.product-card-horizontal h3 {
+    font-size: 18px; /* 원하는 글자 크기로 설정 */
+    margin: 15px 0; /* 위아래 여백 조정 */
+}
+
+.product-card-horizontal img {
+    width: 100%; 
+    height: 200px; /* 이미지 높이를 더 크게 조정 */
+    object-fit: contain; /* 이미지 비율 유지 */
+}
+
+.fa-recommended-products-grid-horizontal .product-card-horizontal {
+    margin-right: 8px; /* 간격을 8px로 조정 */
+    padding: 16px; /* 카드 내부 패딩 조정 */
+}
+
+/* 마지막 카드의 마진 제거 */
+.fa-recommended-products-grid-horizontal .product-card-horizontal:last-child {
+    margin-right: 0;
 }
 
 .fa-analysis-unique-upload-section h2 {

@@ -2,58 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
-import '../../CSS/Writing.css';
+import '../../CSS/Writing.css'; 
 
 const Writing = () => {
   const quillRef = useRef(null);
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [boardType, setBoardType] = useState('');
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); 
   const [quillInstance, setQuillInstance] = useState(null);
 
   useEffect(() => {
-    const handleImageUpload = () => {
-      const input = document.createElement('input');
-      input.setAttribute('type', 'file');
-      input.setAttribute('accept', 'image/*');
-      input.click();
-
-      input.onchange = async () => {
-        const file = input.files[0];
-        const formData = new FormData();
-        formData.append('image', file);
-
-        try {
-          // 이미지 업로드 요청
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/qboards/uploadImage`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Bearer 토큰 형식으로 권장
-            },
-            body: formData,
-          });
-        
-          if (response.ok) {
-            const result = await response.json(); // JSON 응답을 파싱
-            const imageUrl = process.env.REACT_APP_URL + result.imageUrl; // 서버로부터 받은 이미지 URL
-            console.log(imageUrl);
-            if (imageUrl) {
-              const editor = quillRef.current.getEditor();
-              const range = editor.getSelection();
-              editor.insertEmbed(range.index, 'image', imageUrl); // Quill 에디터에 이미지 삽입
-            } else {
-              console.error('이미지 URL을 받을 수 없습니다.');
-            }
-          } else {
-            console.error('이미지 업로드에 실패했습니다.');
-          }
-        } catch (error) {
-          console.error('Image upload failed', error);
-        }
-        
-      };
-    }
     if (quillRef.current) {
       const quill = new Quill(quillRef.current, {
         theme: 'snow',
@@ -70,22 +29,33 @@ const Writing = () => {
               ['clean']
             ],
             handlers: {
-              image: handleImageUpload, // 이미지 버튼 클릭 시 실행되는 핸들러
+              image: () => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                input.setAttribute('multiple', true);
+                input.click();
+
+                input.onchange = () => {
+                  const selectedFiles = Array.from(input.files);
+                  if (selectedFiles.length > 0) {
+                    setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+                    selectedFiles.forEach((file) => {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const range = quill.getSelection();
+                        quill.insertEmbed(range.index, 'image', reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                  }
+                };
+              },
             },
           },
         },
       });
       setQuillInstance(quill);
-      quill.on('text-change', () => {
-        const editorContent = quill.root.innerHTML.trim();
-        if (editorContent === '<p><br></p>' || editorContent === '') {
-          // 빈 내용일 때 placeholder가 다시 보이도록 설정
-          quill.root.setAttribute('data-placeholder', '내용을 입력하세요...');
-        } else {
-          // 내용이 있으면 placeholder 제거
-          quill.root.removeAttribute('data-placeholder');
-        }
-      });
     }
   }, []);
 
@@ -94,20 +64,20 @@ const Writing = () => {
       console.error('Quill 인스턴스가 초기화되지 않았습니다.');
       return;
     }
-
+  
     let content = quillInstance.root.innerHTML;
-
+  
     if (!title || !content.trim() || !boardType) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
-
+  
     // 이미지 태그를 찾아서 Base64로 변환하는 작업
     const images = quillInstance.root.querySelectorAll('img');
     const base64Promises = Array.from(images).map((img) => {
       return new Promise((resolve, reject) => {
         const src = img.getAttribute('src');
-
+  
         // 이미지가 이미 base64 형식인 경우 건너뜀
         if (src.startsWith('data:image')) {
           resolve();
@@ -126,7 +96,7 @@ const Writing = () => {
         }
       });
     });
-
+  
     // 모든 이미지 처리가 끝나면 content 업데이트
     try {
       await Promise.all(base64Promises);
@@ -136,16 +106,16 @@ const Writing = () => {
       alert('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
       return;
     }
-
+  
     // JSON 데이터 생성
     const data = {
       title: title,
       content: content,
       boardType: boardType,
     };
-
+  
     console.log('전송할 데이터:', data);
-
+  
     try {
       const response = await fetch('http://10.125.121.188:8080/api/qboards', {
         method: 'POST',
@@ -155,7 +125,7 @@ const Writing = () => {
         },
         body: JSON.stringify(data),
       });
-
+    
       if (response.ok) {
         alert('게시글이 작성되었습니다.');
         navigate('/qna');
@@ -195,9 +165,9 @@ const Writing = () => {
           <tr>
             <th>제목</th>
             <td>
-              <input
-                type="text"
-                placeholder="제목을 입력하세요."
+              <input 
+                type="text" 
+                placeholder="제목을 입력하세요." 
                 className="writing-form-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -207,7 +177,7 @@ const Writing = () => {
           <tr>
             <th>카테고리</th>
             <td>
-              <select
+              <select 
                 className="writing-form-select"
                 value={boardType}
                 onChange={(e) => setBoardType(e.target.value)}
@@ -231,9 +201,9 @@ const Writing = () => {
                 <button className="file-select-button" onClick={() => document.getElementById('file-upload').click()}>
                   파일 선택
                 </button>
-                <input
+                <input 
                   id="file-upload"
-                  type="file"
+                  type="file" 
                   className="writing-form-file-input"
                   multiple
                   onChange={handleFileChange}
