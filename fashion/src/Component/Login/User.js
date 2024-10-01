@@ -26,6 +26,7 @@ const User = () => {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log("찾은 아이디:", data.username); // 콘솔에 아이디 출력
                 // 아이디 찾기 성공 후 아이디 찾기 완료 페이지로 이동하면서 username 데이터 전달
                 navigate('/userfind', { state: { username: data.username } });
             } else {

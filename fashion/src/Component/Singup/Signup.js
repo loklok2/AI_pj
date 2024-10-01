@@ -48,11 +48,20 @@ const Signup = () => {
     // 백엔드 회원가입 API 호출
     const handleSignup = async () => {
         try {
-            // 백엔드로 보낼 데이터 생성
-            const signupData = {
-                ...formData,
-                residentRegistrationNumber: formData.residentRegistrationNumber // 'birthDate'를 'residentRegistrationNumber'로 변경
+             // 백엔드로 보낼 데이터 생성, 주민등록번호 앞 6자리 + 뒷자리 첫 숫자
+             const signupData = {
+                username: formData.username,
+                password: formData.password,
+                name: formData.name,
+                email: formData.email,
+                residentRegistrationNumber: formData.residentRegistrationNumber.slice(0, 6) + formData.residentRegistrationNumber[6], // 앞 6자리 + 뒷자리 첫 숫자
+                address: formData.address,
+                address: formData.address,
+                phone: formData.phone,
+                style: formData.style
             };
+
+            console.log("회원가입 데이터:", signupData); // 콘솔에 데이터 출력
 
             const response = await fetch('http://10.125.121.188:8080/api/auth/signup', {
                 method: 'POST',
@@ -81,7 +90,7 @@ const Signup = () => {
             if (response.ok) {
                 alert(`${field === 'username' ? '아이디' : '이메일'} 중복 확인 완료`);
             } else {
-                alert(`${field === 'username' ? '아이디' : '이메일'}이 이미 사용 중입니다.`);
+                alert(`${field === 'username' ? '아이디' : '이메일'}가 이미 사용 중입니다.`);
             }
         } catch (error) {
             alert('중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -252,7 +261,7 @@ const Signup = () => {
                     <div className="modal-content">
                         <h3>이메일 인증을 보냈습니다.</h3>
                         <p>인증 후 로그인을 이용 해주세요.</p>
-                        <button className="close-button" onClick={handleCloseModal}>닫기</button>
+                        <button className="si-close-button" onClick={handleCloseModal}>닫기</button>
                     </div>
                 </div>
             )}
