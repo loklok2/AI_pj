@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { ko } from 'date-fns/locale'; // 한국어 로케일 import
 import { Line, Doughnut } from 'react-chartjs-2';
 import Admheader from '../Admins/Admheader';
 
@@ -40,8 +40,8 @@ const Manager = () => {
   const [orderList, setOrderList] = useState([]);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [chartType, setChartType] = useState('realtime');
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
   const [visibleOrders, setVisibleOrders] = useState(5);
   const [sortedData, setSortedData] = useState([]);
   const [filteredData, setFilteredData] = useState({
@@ -75,31 +75,70 @@ const Manager = () => {
     }],
   });
 
-  const realTimeData = {
-    labels: ['9월 1일', '9월 2일', '9월 3일', '9월 4일', '9월 5일', '9월 6일', '9월 7일', '9월 8일', '9월 9일'],
-    datasets: [
-      {
-        label: '일별 매출',
-        data: [200, 250, 220, 320, 200, 450, 380, 500, 420],
-        fill: false,
-        borderColor: 'rgba(75,192,192,1)',
-        tension: 0.1,
-      },
-    ],
+
+ // 일별 매출 조회 함수 수정
+const fetchDailySales = async () => {
+  const startDate = '2023-10-03';
+  const endDate = '2024-10-02';
+  const url = `http://10.125.121.188:8080/api/admin/sales/daily?startDate=${startDate}&endDate=${endDate}`;
+
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      const data = await response.json();
+      const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const recentData = sortedData.slice(-7);
+
+      setFilteredData({
+        labels: recentData.map(item => format(new Date(item.date), 'MM/dd')),
+        datasets: [{
+          label: '일별 매출',
+          data: recentData.map(item => item.totalSales),
+          borderColor: 'rgba(75,192,192,1)',
+          tension: 0.1,
+        }]
+      });
+    } else {
+      console.error('Failed to fetch daily sales:', response.statusText);
+    }
+  } catch (error) {
+    console.error('API 호출 중 에러 발생:', error);
+  }
+};
+
+  const fetchMonthlySales = async () => {
+    const startDate = '2024-01-01';
+    const endDate = '2024-12-31';
+    const url = `http://10.125.121.188:8080/api/admin/sales/monthly?startDate=${startDate}&endDate=${endDate}`;
+  
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        setFilteredData({
+          labels: data.map(item => format(new Date(item.date), 'MMMM', { locale: ko })), // 한국어 로케일 적용
+          datasets: [{
+            label: '월별 누적 매출',
+            data: data.map(item => item.totalSales),
+            borderColor: 'rgba(255,99,132,1)',
+            tension: 0.1,
+          }]
+        });
+      } else {
+        console.error('월별 매출 데이터를 가져오는데 실패했습니다:', response.statusText);
+      }
+    } catch (error) {
+      console.error('월별 매출 데이터 조회 중 오류 발생:', error);
+    }
   };
 
-  const cumulativeData = {
-    labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월'],
-    datasets: [
-      {
-        label: '월별 누적 매출',
-        data: [200, 700, 2450, 1970, 2470, 3000, 2700, 4500, 3200],
-        fill: false,
-        borderColor: 'rgba(255,99,132,1)',
-        tension: 0.1,
-      },
-    ],
-  };
+  useEffect(() => {
+    if (chartType === 'realtime' && startDate && endDate) {
+      fetchDailySales();
+    } else if (chartType === 'cumulative' && startDate && endDate) {
+      fetchMonthlySales();
+    }
+  }, [chartType, startDate, endDate]);
 
   const doughnutOptions = {
     plugins: {
@@ -393,18 +432,43 @@ const fetchOrders = async () => {
     alert('저장되었습니다.');
   };
 
-  const handleSearchClick = () => {
-    console.log("조회 시작 날짜: ", startDate ? format(startDate, 'yyyy.MM.dd') : "선택 안 됨");
-    console.log("조회 종료 날짜: ", endDate ? format(endDate, 'yyyy.MM.dd') : "선택 안 됨");
+  const handleSearchClick = async () => {
+    if (startDate && endDate) {
+      const formattedStartDate = format(startDate, 'yyyy-MM-dd');
+      const formattedEndDate = format(endDate, 'yyyy-MM-dd');
+      const apiUrl = `http://10.125.121.188:8080/api/admin/sales/daily?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+  
+      console.log(`API 요청 URL: ${apiUrl}`);
+  
+      try {
+        const response = await fetch(apiUrl);
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log("API로부터 받은 데이터:", data);
+  
+          // 가져온 데이터를 그대로 설정
+          setFilteredData({
+            labels: data.map(item => format(new Date(item.date), 'MM/dd')),
+            datasets: [{
+              label: '일별 매출',
+              data: data.map(item => item.totalSales),
+              borderColor: 'rgba(75,192,192,1)',
+              tension: 0.1,
+            }]
+          });
+        } else {
+          console.error('데이터 요청에 실패했습니다:', response.statusText);
+        }
+      } catch (error) {
+        console.error('데이터 요청 중 오류 발생:', error);
+      }
+    } else {
+      console.warn('시작 날짜와 종료 날짜를 모두 선택하세요.');
+    }
   };
 
-  useEffect(() => {
-    if (chartType === 'realtime') {
-      setFilteredData(realTimeData);
-    } else {
-      setFilteredData(cumulativeData);
-    }
-  }, [chartType]);
+
 
   // Checkbox 선택/해제 함수 추가
 const handleCheckboxChange = (orderId) => {

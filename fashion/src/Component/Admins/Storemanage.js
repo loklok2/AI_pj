@@ -40,7 +40,7 @@ const Storemanage = () => {
   const [isMonthChecked, setIsMonthChecked] = useState(false);
   const [isDateChecked, setIsDateChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showProductSearch, setShowProductSearch] = useState(false);
+  const [showProductSearch, setShowProductSearch] = useState(true);
   const [storeName, setStoreName] = useState('');
   const [selectedStoreName, setSelectedStoreName] = useState('');
 
