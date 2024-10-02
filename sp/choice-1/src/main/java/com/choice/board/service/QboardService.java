@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.choice.auth.entity.Member;
+import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
 import com.choice.board.dto.QboardDTO;
 import com.choice.board.dto.QboardMapper;
@@ -146,7 +147,7 @@ public class QboardService {
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        if (!qboard.getMember().getUsername().equals(username) && !member.getRole().equals("ADMIN")) {
+        if (!qboard.getMember().getUsername().equals(username) && !member.getRole().equals(Role.ADMIN)) {
             throw new RuntimeException("게시글을 삭제할 권한이 없습니다.");
         }
 

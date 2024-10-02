@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors;
 import com.choice.auth.entity.Member;
+import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
 import com.choice.board.dto.CommentResponseDTO;
 import com.choice.board.entity.Comment;
@@ -84,7 +85,7 @@ public class CommentService {
 
     private boolean isAdmin(String username) {
         return memberRepository.findByUsername(username)
-                .map(member -> "ADMIN".equals(member.getRole()))
+                .map(member -> Role.ADMIN.equals(member.getRole()))
                 .orElse(false);
     }
 

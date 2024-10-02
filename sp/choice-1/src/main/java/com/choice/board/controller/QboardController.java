@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.choice.auth.entity.Member;
+import com.choice.auth.entity.Role;
 import com.choice.auth.repository.MemberRepository;
 import com.choice.board.dto.QboardDTO;
 import com.choice.board.service.QboardService;
@@ -81,7 +82,7 @@ public class QboardController {
             QboardDTO qboard = qboardService.getQboardWithComments(id);
 
             // 관리자이거나 게시글 작성자인 경우에만 조회 가능
-            if (member.getRole().equals("ADMIN") || qboard.getUserId().equals(member.getUserId())) {
+            if (member.getRole().equals(Role.ADMIN) || qboard.getUserId().equals(member.getUserId())) {
                 return new ResponseEntity<>(qboard, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
@@ -100,7 +101,7 @@ public class QboardController {
             }
             Member member = memberRepository.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            if (!member.getRole().equals("ADMIN")) {
+            if (!member.getRole().equals(Role.ADMIN)) {
                 return new ResponseEntity<>("관리자만 접근 가능합니다.", HttpStatus.FORBIDDEN);
             }
             List<QboardDTO> qboards = qboardService.getAllQboards();

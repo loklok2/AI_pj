@@ -107,7 +107,7 @@ public class AdminController {
 
     // 회원 삭제
     @DeleteMapping("/members/{id}")
-    public ResponseEntity<?> deleteMember(@PathVariable Long id) {
+    public ResponseEntity<?> deleteMember(@PathVariable("id") Long id) {
         try {
             adminService.deleteMember(id); // 회원 삭제 메서드 호출
             return new ResponseEntity<>("회원이 성공적으로 삭제되었습니다.", HttpStatus.OK);
@@ -120,7 +120,7 @@ public class AdminController {
 
     // 게시글 삭제
     @DeleteMapping("/qboards/{id}")
-    public ResponseEntity<?> deleteQboard(@PathVariable Long id) {
+    public ResponseEntity<?> deleteQboard(@PathVariable("id") Long id) {
         try {
             adminService.deleteQboard(id); // 게시글 삭제 메서드 호출
             return new ResponseEntity<>("게시글이 성공적으로 삭제되었습니다.", HttpStatus.OK);
@@ -200,7 +200,7 @@ public class AdminController {
 
     // 주문 취소
     @PutMapping("/orders/{id}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable Long id) {
+    public ResponseEntity<?> cancelOrder(@PathVariable("id") Long id) {
         try {
             Orders cancelledOrder = adminService.cancelOrder(id); // 주문 취소 메서드 호출
             return new ResponseEntity<>(cancelledOrder, HttpStatus.OK);

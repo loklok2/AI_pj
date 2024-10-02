@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,7 +71,7 @@ public class AuthController {
 
     // 아이디 중복 확인
     @GetMapping("/check-username")
-    public ResponseEntity<?> checkUsernameAvailability(@RequestParam String username) {
+    public ResponseEntity<?> checkUsernameAvailability(@RequestParam("username") String username) {
         try {
             boolean isAvailable = authService.isUsernameAvailable(username);
             return ResponseEntity.ok(new UsernameAvailabilityResponse(isAvailable));
@@ -82,7 +83,7 @@ public class AuthController {
 
     // 이메일 중복 확인
     @GetMapping("/check-email")
-    public ResponseEntity<?> checkEmailAvailability(@RequestParam String email) {
+    public ResponseEntity<?> checkEmailAvailability(@RequestParam("email") String email) {
         try {
             boolean isAvailable = authService.isEmailAvailable(email);
             return ResponseEntity.ok(new EmailAvailabilityResponse(isAvailable));
@@ -100,7 +101,8 @@ public class AuthController {
             String actualToken = JWTUtil.getJWTSource(token);
             boolean verified = authService.verifyEmail(actualToken);
             if (verified) {
-                return new ResponseEntity<>("이메일 인증이 완료되었습니다.", HttpStatus.OK);
+                return new ResponseEntity<>("<h1>이메일 인증이 완료되었습니다.</h1><p>로그인 페이지로 이동하세요:</p>"
+                        + "<a href=\"http://10.125.121.187:3000/login\">로그인</a>", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("이메일 인증에 실패했습니다.", HttpStatus.BAD_REQUEST);
             }

@@ -60,24 +60,29 @@ public class CartController {
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestBody List<CartItemDTO> cartItemsDTO,
             @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("장바구니 아이템 추가 요청 받음");
         try {
             if (userDetails == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
             }
+            log.info("로그인 성공");
             String username = userDetails.getUsername();
             Member member = memberRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             Long userId = member.getUserId();
-
+            log.info("사용자 아이디 찾음");
             // 여러 CartItemDTO를 처리
             List<CartItemDTO> addedItems = new ArrayList<>();
+
             for (CartItemDTO cartItemDTO : cartItemsDTO) {
+                log.info(cartItemDTO.toString());
                 Long productId = cartItemDTO.getProductId();
                 Integer quantity = cartItemDTO.getQuantity();
                 String size = cartItemDTO.getSize();
                 CartItemDTO addedItem = cartService.addToCart(userId, productId, quantity, size);
                 addedItems.add(addedItem);
             }
+            log.info("장바구니 아이템 추가 완료");
 
             return ResponseEntity.ok(addedItems);
         } catch (Exception e) {

@@ -24,6 +24,8 @@ import com.choice.product.dto.ProductAllDTO;
 import com.choice.product.entity.Product;
 import com.choice.product.entity.ProductImg;
 import com.choice.product.repository.ProductRepository;
+import com.choice.shopping.entity.Cart;
+import com.choice.shopping.repository.CartRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
+    @Autowired
+    private CartRepository cartRepository;
     @Autowired
     private ProductRepository productRepository;
 
@@ -161,6 +165,10 @@ public class AuthService {
                     });
             member.setEnabled(true);
             memberRepository.save(member);
+
+            Cart cart = new Cart();
+            cart.setMember(member);
+            cartRepository.save(cart);
             log.info("Email verified successfully for user: {}", username);
             return true;
         } catch (Exception e) {

@@ -30,11 +30,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .authorizeHttpRequests(authorize -> authorize
                         // .requestMatchers("/api/admin/**", "/api/sale/**",
-                        // "/api/visitors/**").hasRole("ADMIN")
+                        // "/api/visitors/**")
+                        // .authenticated()
                         // .requestMatchers("/api/comment/**", "/orders/**",
-                        // "/qboard/**").authenticated()
-                        // .requestMatchers("/api/auth/**", "/api/cart/**",
-                        // "/api/product/**").permitAll()
+                        // "/qboard/**")
+                        // .authenticated()
                         .anyRequest().permitAll()) // 그 외 요청은 모두 허용
                 .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
                 // .oauth2Login(oauth2 -> oauth2.successHandler(successHandler)) // OAuth2 로그인
