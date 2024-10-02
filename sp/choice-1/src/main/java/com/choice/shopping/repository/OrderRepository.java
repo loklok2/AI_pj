@@ -28,15 +28,15 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
         @Query(nativeQuery = true, value = "SELECT * FROM category_sales_percentage")
         List<Object[]> findCategorySalesPercentage();
 
+        Optional<Orders> findByMerchantUid(String merchantUid);
+
+        List<Orders> findByMemberUserIdOrderByOrderDateDesc(Long userId);
+
         @Query("SELECT DISTINCT o FROM Orders o " +
                         "LEFT JOIN FETCH o.member " +
                         "LEFT JOIN FETCH o.orderItems oi " +
                         "LEFT JOIN FETCH oi.product p " +
-                        "LEFT JOIN FETCH p.images " +
+                        "LEFT JOIN FETCH o.shippingAddress " +
                         "ORDER BY o.orderDate DESC")
         List<Orders> findAllWithDetails();
-
-        Optional<Orders> findByMerchantUid(String merchantUid);
-
-        List<Orders> findByMemberUserIdOrderByOrderDateDesc(Long userId);
 }

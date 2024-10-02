@@ -34,6 +34,9 @@ import com.choice.product.repository.ProductRepository;
 import com.choice.shopping.entity.Orders;
 import com.choice.shopping.repository.OrderRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @Transactional
 public class AdminService {
@@ -99,6 +102,7 @@ public class AdminService {
     }
 
     public List<ProductDTO> getAllProductDTOs() {
+        log.info("상품 목록 조회 메서드 호출");
         return productRepository.findAll().stream()
                 .map(this::convertToProductDTO)
                 .collect(Collectors.toList());
@@ -135,8 +139,8 @@ public class AdminService {
         productRepository.deleteById(productId);
     }
 
-    // 주문 정보 조회
-    public List<OrderSummaryDTO> getAllOrders() {
+    @Transactional(readOnly = true)
+    public List<OrderSummaryDTO> getAllOrdersWithDetails() {
         List<Orders> orders = orderRepository.findAllWithDetails();
         return orders.stream()
                 .map(this::convertToOrderSummaryDTO)
@@ -156,10 +160,20 @@ public class AdminService {
     public List<DailySalesReportDTO> getMonthlySalesReport(LocalDate startDate, LocalDate endDate) {
         List<Object[]> results = orderRepository.findMonthlySalesReport(startDate, endDate);
         return results.stream()
-                .map(result -> new DailySalesReportDTO(
-                        ((java.sql.Date) result[0]).toLocalDate(),
-                        ((Number) result[1]).longValue(),
-                        ((Number) result[2]).longValue()))
+                .map(result -> {
+                    LocalDate date;
+                    if (result[0] instanceof String) {
+                        date = LocalDate.parse((String) result[0]);
+                    } else if (result[0] instanceof java.sql.Date) {
+                        date = ((java.sql.Date) result[0]).toLocalDate();
+                    } else {
+                        throw new IllegalArgumentException("Unexpected date type: " + result[0].getClass());
+                    }
+                    return new DailySalesReportDTO(
+                            date,
+                            ((Number) result[1]).longValue(),
+                            ((Number) result[2]).longValue());
+                })
                 .collect(Collectors.toList());
     }
 
@@ -220,9 +234,11 @@ public class AdminService {
                 .mapToLong(item -> item.getPrice() * item.getQuantity())
                 .sum();
 
+        String username = order.getMember() != null ? order.getMember().getUsername() : "알 수 없음";
+
         return new OrderSummaryDTO(
                 order.getOrderId(),
-                order.getMember().getUsername(),
+                username,
                 order.getOrderDate(),
                 totalAmount,
                 order.getOrderStatus());

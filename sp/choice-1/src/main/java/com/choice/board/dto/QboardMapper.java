@@ -20,7 +20,6 @@ public class QboardMapper {
                 .boardType(qboard.getBoardType())
                 .title(qboard.getTitle())
                 .content(qboard.getContent())
-                .images(toImageDtoList(qboard.getImages())) // 이미지 리스트를 DTO로 변환
                 .createDate(qboard.getCreateDate())
                 .editedDate(qboard.getEditedDate())
                 .comments(toCommentDtoList(qboard.getComments())) // 댓글 리스트를 DTO로 변환
