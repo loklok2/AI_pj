@@ -54,10 +54,15 @@ const Storemanage = () => {
 useEffect(() => {
   const fetchStores = async () => {
     try {
+      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // 토큰을 Authorization 헤더에 추가
+      };
       // 새로운 API 엔드포인트 URL
       let endpoint = `http://10.125.121.188:8080/api/sales/store-sales?fromYear=${startYear}`;
 
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, { headers });
 
       if (!response.ok) {
         throw new Error('Failed to fetch store list');
@@ -85,6 +90,11 @@ const handleSalesSearch = async () => {
     let endpoint = `http://10.125.121.188:8080/api/sales/store-sales`;
 
     const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // 토큰을 Authorization 헤더에 추가
+    };
 
     // 매장이 선택되지 않은 경우 경고 메시지를 출력하고 함수 종료
     if (!selectedStore) {
@@ -129,7 +139,10 @@ const handleSalesSearch = async () => {
     console.log("매출 조회 API 요청 URL:", endpoint);
 
     // 매출 데이터를 조회하기 위한 API 요청
-    const response = await fetch(endpoint, { method: 'GET' });
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: headers
+    });
 
     // 응답이 성공적이지 않을 경우 에러 메시지 출력 및 예외 발생
     if (!response.ok) {
@@ -219,8 +232,6 @@ const handleSalesSearch = async () => {
         console.warn('월별 매출 데이터가 없습니다.');
       }
     }
-
-    
     
 
     // 차트 데이터가 없는 경우 경고 메시지 출력 후 함수 종료
@@ -312,6 +323,7 @@ const handleProductSearch = async () => {
 
 const handleProductClick = async (productId) => {
   try {
+      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
       setActiveItem(productId);
 
       // API 요청 URL 설정
@@ -330,6 +342,7 @@ const handleProductClick = async (productId) => {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` // 토큰을 Authorization 헤더에 추가
           },
       });
 

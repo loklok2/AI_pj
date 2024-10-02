@@ -130,8 +130,18 @@ const fetchProducts = async () => {
 
   const handleDeletePosts = async () => {
     try {
-      await Promise.all(selectedPosts.map(id => fetch(`http://10.125.121.188:8080/api/admin/qboards/${id}`, { method: 'DELETE' })));
-      setPosts(posts.filter(post => !selectedPosts.includes(post.qboardId)));
+      await Promise.all(
+        selectedPosts.map(id =>
+          fetch(`http://10.125.121.188:8080/api/admin/qboards/${id}`, {
+            method: 'DELETE'
+          })
+        )
+      );
+  
+      // posts 배열에서 선택된 게시물 ID를 제외하고 새 배열 생성
+      const updatedPosts = posts.filter(post => !selectedPosts.includes(post.id));
+  
+      setPosts(updatedPosts);
       setSelectedPosts([]);
     } catch (error) {
       console.error('Error deleting posts:', error);
