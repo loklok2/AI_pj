@@ -1,10 +1,12 @@
+.gitignore 
+
 checkpoint/
 data/
 output/
 db/csv
 web/
 no_use/
-
+run/web/public/images
 __pycache__/
 
 

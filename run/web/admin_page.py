@@ -24,6 +24,7 @@ searcher = MultiFeatureStyleSearcher()
 
 def crawl_image(keyword, save_folder, item_nums):
     keyword = keyword[0]
+    print(keyword)
     crawler_thread = CrawlerThread(keyword, save_folder, item_nums)
     crawler_thread.start()
     crawler_thread.join()  # 스레드가 완료될 때까지 기다림
