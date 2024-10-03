@@ -136,20 +136,17 @@ def style_search():
     # 예측 수행
     style_result = style_predictor.predict(image)
     recom_result = style_searcher.get_similar_images_json(image)
-    url = 'http://10.125.121.182:5000/upload'
-    print("캡션 시작")
-        # 외부 API로 이미지 파일을 POST로 전송
-    url = 'http://10.125.121.182:5000/upload'
     
-    # 이미지 파일을 바이트로 변환하여 전송
-    image_io = io.BytesIO()
-    image.save(image_io, format='JPEG')
-    image_io.seek(0)
-    
-    files = {'file': ('image.jpg', image_io, 'image/jpeg')}
-    
+    # image_caption    
+    # print("캡션 시작")
+    # caption_url = 'http://10.125.121.182:5000/upload'
     # 파일을 포함한 POST 요청
-    # caption_result = requests.post(url, files=files)
+    # image_io = io.BytesIO()
+    # image.save(image_io, format='JPEG')
+    # image_io.seek(0)
+    # files = {'file': ('image.jpg', image_io, 'image/jpeg')}
+    # caption_result = requests.post(caption_url, files=files)
+    
     result = {
         'style_result': style_result,
         'recom_result': recom_result,
