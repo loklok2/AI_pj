@@ -14,4 +14,5 @@ flask
 flask-cors
 streamlit
 koreanize-matplotlib
+rembg
 

@@ -88,6 +88,7 @@ def admin_search():
     if request.data:
         try:
             data = json.loads(request.data)
+            print(data)
         except json.JSONDecodeError:
             return jsonify({"error": "유효하지 않은 JSON 데이터입니다."}), 400
         
@@ -138,19 +139,19 @@ def style_search():
     recom_result = style_searcher.get_similar_images_json(image)
     
     # image_caption    
-    # print("캡션 시작")
-    # caption_url = 'http://10.125.121.182:5000/upload'
+    print("캡션 시작")
+    caption_url = 'http://10.125.121.182:5000/upload'
     # 파일을 포함한 POST 요청
-    # image_io = io.BytesIO()
-    # image.save(image_io, format='JPEG')
-    # image_io.seek(0)
-    # files = {'file': ('image.jpg', image_io, 'image/jpeg')}
-    # caption_result = requests.post(caption_url, files=files)
+    image_io = io.BytesIO()
+    image.save(image_io, format='JPEG')
+    image_io.seek(0)
+    files = {'file': ('image.jpg', image_io, 'image/jpeg')}
+    caption_result = requests.post(caption_url, files=files)
     
     result = {
         'style_result': style_result,
         'recom_result': recom_result,
-        # 'caption_result': caption_result.json().get('translated', 'N/A')
+        'caption_result': caption_result.json().get('translated', 'N/A')
     }
     
     return jsonify(result)
