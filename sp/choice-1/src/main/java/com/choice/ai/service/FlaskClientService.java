@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.choice.ai.dto.AiAnalysisResponse;
+import com.choice.product.dto.ProductDetailDTO;
 
 @Service
 public class FlaskClientService {
@@ -55,19 +56,9 @@ public class FlaskClientService {
         }
     }
 
-    // public Map<String, Object> getAdminRecommendations(List<Map<String, Object>>
-    // productDataList) {
-    // String url = flaskServerUrl + "/admin_search";
-    // ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-    // url,
-    // HttpMethod.POST,
-    // new HttpEntity<>(productDataList),
-    // new ParameterizedTypeReference<Map<String, Object>>() {
-    // });
-    // return response.getBody();
-    // }
     public List<Map<String, Object>> getAdminRecommendations(List<Map<String, Object>> productDataList) {
         String url = flaskServerUrl + "/admin_search";
+
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,

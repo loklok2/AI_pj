@@ -146,6 +146,7 @@ public class QboardController {
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             // 서비스에서 게시글 삭제
+            
             qboardService.deleteQboard(id, userDetails.getUsername());
             return new ResponseEntity<>("게시글이 성공적으로 삭제되었습니다.", HttpStatus.OK);
         } catch (RuntimeException e) {

@@ -15,7 +15,9 @@ import com.choice.product.repository.ProductRepository;
 import com.choice.store.repository.StoresSalesRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 public class StoresSalesService {
@@ -67,6 +69,7 @@ public class StoresSalesService {
             }
             map.put("pimgPath", imagePath);
 
+            log.info("map: {}", map.toString());
             return map;
         }).collect(Collectors.toList());
     }

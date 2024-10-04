@@ -16,6 +16,9 @@ import com.choice.product.entity.ProductImg;
 import com.choice.product.repository.ProductRepository;
 import com.choice.store.repository.StoresSalesRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Transactional
 @Service
 public class AdminRecommendationService {
@@ -36,7 +39,7 @@ public class AdminRecommendationService {
         day = (day != null) ? day : now.getDayOfMonth();
 
         List<Object[]> topSellingProducts = storesSalesRepository.getTopSellingProducts(year, month, day, storeId);
-
+        log.info("topSellingProducts: {}", topSellingProducts.toString());
         List<Map<String, Object>> productDataList = topSellingProducts.stream()
                 .map(obj -> {
                     Long productId = ((Number) obj[0]).longValue();

@@ -163,6 +163,9 @@ public class OrderService {
     public OrderDetailDTO getOrderDetail(Long orderId) {
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+        List<OrderItemDTO> orderItems = order.getOrderItems().stream()
+                .map(this::convertToOrderItemListDTO)
+                .collect(Collectors.toList());
         return OrderDetailDTO.builder()
                 .orderId(order.getOrderId())
                 .recipientName(order.getShippingAddress().getRecipientName())
@@ -170,6 +173,7 @@ public class OrderService {
                 .recipientAddress(order.getShippingAddress().getAddress())
                 .recipientMessage(order.getOrderComment())
                 .orderDate(order.getOrderDate().toString())
+                .orderItems(orderItems)
                 .build();
     }
 }
