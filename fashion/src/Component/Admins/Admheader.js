@@ -4,8 +4,6 @@ import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom'; // 페이지 이동을 위한 useNavigate 훅 사용
 import '../../CSS/Admheader.css';
 
-//관리자 페이지 - 헤더
-
 const Admheader = () => {
   const navigate = useNavigate();
 
@@ -53,17 +51,17 @@ const Admheader = () => {
           <ul>
             <li>
               <a href="/manager">
-                 대시보드
+                대시보드
               </a>
             </li>
             <li>
               <a href="/storemanage">
-                 매장관리
+                매장관리
               </a>
             </li>
             <li>
               <a href="/managers">
-                 기타관리
+                기타관리
               </a>
             </li>
           </ul>

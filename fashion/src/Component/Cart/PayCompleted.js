@@ -7,13 +7,12 @@ const PayCompleted = () => {
   const [orderNumber, setOrderNumber] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
 
-  useEffect(() => {
-    // 주문번호를 sessionStorage에서 가져옴
-    const storedOrderInfo = JSON.parse(sessionStorage.getItem('orderInfo'));
-    if (storedOrderInfo && storedOrderInfo.orderNumber) {
-      setOrderNumber(storedOrderInfo.orderNumber); // 저장된 주문번호를 사용
-    }
 
+  useEffect(() => {
+    // TODO
+    if( sessionStorage.getItem('orderId')){
+      setOrderNumber(sessionStorage.getItem('orderId'))
+    }
     // 총 결제 금액을 sessionStorage에서 가져옴
     const storedTotalPrice = sessionStorage.getItem('totalPrice');
     if (storedTotalPrice) {
@@ -22,10 +21,11 @@ const PayCompleted = () => {
   }, []);
 
   const handleOrderCheck = () => {
-    navigate('/order');
+    navigate(`/order/${sessionStorage.getItem('orderId')}`);
   };
 
   const handleMainPage = () => {
+    sessionStorage.clear()
     navigate('/products'); // 메인 페이지로 이동
   };
 

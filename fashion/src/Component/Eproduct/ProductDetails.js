@@ -1,67 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import '../../CSS/ProductDetails.css'; 
+import '../../CSS/ProductDetails.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as solidHeart, faHeart as regularHeart, faAngleRight, faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { fetchAPI } from '../../hook/api';
+import ReactGA from 'react-ga4';
+import ProductDetailsPageAIRecommendation from './ProductDetailsPageAIRecommendation';
 
 const ProductDetails = () => {
-  const { id } = useParams();
-  const navigate = useNavigate(); // 페이지 이동 함수
+  const { id: productId } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [liked, setLiked] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState('S');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  
-
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false); // 관리자 상태 추가
 
-  const [currentPage, setCurrentPage] = useState(0);
-  const totalItems = 15; // AI 추천 아이템의 총 개수
-  const itemsPerPage = 5; // 페이지당 아이템 수
-
-  const aiItems = Array.from({ length: totalItems }, (_, index) => ({
-    title: `AI Item ${index + 1}`,
-    price: (Math.random() * 100000).toFixed(0)
-  }));
-
-       // 현재 페이지에 기반하여 표시할 아이템 계산
-       const startIndex = currentPage * itemsPerPage;
-       const endIndex = startIndex + itemsPerPage;
-       const itemsToDisplay = aiItems.slice(startIndex, endIndex);
-     
-       // 페이지 변경 처리 함수
-       const nextPage = () => {
-         if (startIndex + itemsPerPage < totalItems) {
-           setCurrentPage(currentPage + 1);
-         }
-       };
-
-       const prevPage = () => {
-        if (currentPage > 0) {
-          setCurrentPage(currentPage - 1);
-        }
-      };
-    
-  
-
-  useEffect(() => {
-    window.scrollTo(0, 0); // 페이지 이동 시 스크롤을 맨 위로 이동
-  }, []);
-
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await fetch(`http://10.125.121.188:8080/api/products/${id}`);
-        if (!response.ok) {
-          throw new Error('상품 정보를 가져오는데 실패했습니다');
-        }
-        const data = await response.json();
+        const data = await fetchAPI(`/products/${productId}`);
         setProduct(data);
-
+        console.log(data)
         // 찜 목록에 있는지 확인
         const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
         const isLiked = storedWishlist.some(item => item.productId === data.productId);
@@ -73,40 +38,72 @@ const ProductDetails = () => {
 
     fetchProductDetails();
 
-    const guestLogin = sessionStorage.getItem('guestLogin') === 'true';
-    const userLoggedIn = sessionStorage.getItem('userLoggedIn') === 'true';
+    const guestLogin = localStorage.getItem('username') === 'GUEST';
+    const userLoggedIn = localStorage.getItem('accessToken') !== null;
     const userRole = localStorage.getItem('role'); // role 정보 가져오기
 
     setIsGuest(guestLogin);
     setIsLoggedIn(userLoggedIn);
+    setIsAdmin(userRole === 'ADMIN');
+  }, [productId]);
+  
 
-    if (userRole === 'ADMIN') {
-      setIsAdmin(true); // 관리자 상태 설정
+
+  const postCart = async (endpoint, data) => {
+    try {
+      const response = await fetchAPI(`/cart${endpoint}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
     }
-  }, [id]);
+  };
+  const generateTransactionId = () => {
+    return `txn_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+  };
+  // GA
+  const trackBeginCheckout = (products, total) => {
+    // 자동 생성된 transactionId
+    const transactionId = generateTransactionId();
+    sessionStorage.setItem('transactionId',transactionId)
+    const items = products.map((product) => ({
+      item_id: product.productId,
+      item_name: product.productName,
+      item_category: product.category,
+      price: product.price,
+      quantity: quantity,
+    }));
+    ReactGA.event("begin_checkout", {
+      transaction_id: transactionId,
+      affiliation: "Trend Flow", // 매장 이름
+      value: total,
+      currency: 'KRW',
+      shipping: 0,
+      items: items,
+    });
+  };
 
   if (!product) {
     return <div>해당 제품을 찾을 수 없습니다.</div>;
   }
 
-  
-
-  const toggleLike = (e) => {
+  const handleLike = async (e) => {
     e.stopPropagation();
     if (!isGuest && !isLoggedIn) {
       setShowLoginModal(true);
       return;
     }
-
-    const storedWishlist = JSON.parse(sessionStorage.getItem('wishlistItems')) || [];
-    if (liked) {
-      const updatedWishlist = storedWishlist.filter(item => item.productId !== product.productId);
-      sessionStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-    } else {
-      storedWishlist.push(product);
-      sessionStorage.setItem('wishlistItems', JSON.stringify(storedWishlist));
+    try {
+      const response = await fetchAPI(`/products/${productId}/toggle-like`, {
+        method: 'POST',
+      });
+      setLiked(!liked);
+    } catch (error) {
+      console.error('좋아요 처리 실패:', error);
     }
-    setLiked(!liked);
   };
 
   const handleQuantityChange = (newQuantity) => {
@@ -120,19 +117,40 @@ const ProductDetails = () => {
       setShowLoginModal(true);
       return;
     }
-
-    const cartItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
-    const existingItem = cartItems.find(item => item.productId === product.productId);
-
-    if (existingItem) {
-      existingItem.quantity += quantity;
-      existingItem.size = size;
-    } else {
-      cartItems.push({ ...product, quantity, size });
+    if (isGuest) {
+      const cartItems = JSON.parse(sessionStorage.getItem('cartItems')) || [];
+      const existingItem = cartItems.find(item => item.productId === product.productId);
+      if (existingItem) {
+        existingItem.quantity += quantity;
+        existingItem.size = size;
+      } else {
+        cartItems.push({ ...product, productId, quantity, size });
+      }
+      sessionStorage.setItem('cartItems', JSON.stringify(cartItems));
+      setIsModalOpen(true);
+    } else { // 회원일 때는 DB에 요청보내기
+      const cartItem = [{ productId: productId, quantity: quantity, size: size, }]; // 서버에 보낼 데이터
+      console.log("cartItem",cartItem)
+      postCart('/add', cartItem)
+        .then((response) => {
+          console.log(response)
+          setIsModalOpen(true);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
     }
-
-    sessionStorage.setItem('cartItems', JSON.stringify(cartItems));
-    setIsModalOpen(true);
+    // GA 장바구니 추가 트래킹
+    ReactGA.event('add_to_cart', {
+      items: [{
+        item_id: product.productId,
+        item_name: product.productName,
+        item_category: product.category,
+        price: product.price,
+        quantity: product.quantity,
+        currency: "KRW",        // 통화 코드
+      }],
+    });
   };
 
   const handleBuyNow = () => {
@@ -143,6 +161,9 @@ const ProductDetails = () => {
 
     const selectedItem = [{ ...product, quantity, size }];
     sessionStorage.setItem('selectedItems', JSON.stringify(selectedItem));
+    // GA 구매 트래킹
+    const total = product.price * quantity;  // 총 금액 계산
+    trackBeginCheckout(selectedItem, total)
     navigate('/payment');
   };
 
@@ -160,20 +181,20 @@ const ProductDetails = () => {
   };
 
   // 이미지 URL 생성
-  const imageUrl = product.images && product.images.length > 0
-    ? `http://10.125.121.188:8080${product.images[0]}`
-    : 'default-image-path.jpg'; 
+  const imageUrl = product.pimgPath && product.pimgPath.length > 0
+    ? `${process.env.REACT_APP_URL}${product.pimgPath}`
+    : 'default-image-path.jpg';
 
   return (
     <div className="product-details-wrapper">
       <div className="product-details-page">
         <div className="product-details-page-image">
-          <img src={imageUrl} alt={product.name} className="product-image" />
+          <img src={imageUrl} alt={product.productName} className="product-image" />
         </div>
         <div className="product-details-page-info">
           <div className="product-title">
-            <h2>{product.name}</h2>
-            <div className="wishlist-icon" onClick={toggleLike}>
+            <h2>{product.productName}</h2>
+            <div className="wishlist-icon" onClick={handleLike}>
               <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} style={{ color: liked ? '#FA5858' : 'black' }} />
             </div>
           </div>
@@ -207,7 +228,7 @@ const ProductDetails = () => {
                 value={quantity}
                 min="1"
                 onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
-                style={{ textAlign: 'center' }} 
+                style={{ textAlign: 'center' }}
               />
               <button onClick={() => handleQuantityChange(quantity + 1)}>+</button>
             </div>
@@ -232,31 +253,7 @@ const ProductDetails = () => {
       </div>
 
       {/* AI 추천 영역 추가 */}
-      <div className="product-details-wrapper">
-        <div className="product-details-page-ai-recommendation">
-          <hr />
-          <p><strong>AI 추천</strong></p>
-          <div className="ai-recommendation-container">
-            {currentPage > 0 && (
-              <FontAwesomeIcon icon={faAngleLeft} onClick={prevPage} className="pagination-arrow left-arrow" />
-            )}
-
-            <div className="ai-recommendation-shapes">
-              {itemsToDisplay.map((item, index) => (
-                <div key={index} className="shape-placeholder-wrapper">
-                  <div className="shape-placeholder"></div>
-                  <p className="item-title">{item.title}</p>
-                  <p className="item-price">{item.price}원</p>
-                </div>
-              ))}
-            </div>
-
-            {currentPage < Math.ceil(totalItems / itemsPerPage) - 1 && (
-              <FontAwesomeIcon icon={faAngleRight} onClick={nextPage} className="pagination-arrow right-arrow" />
-            )}
-          </div>
-        </div>
-      </div>
+      <ProductDetailsPageAIRecommendation product={product}/>
 
       {/* 배송 정보 */}
       <div className="product-details-page-additional-infos">

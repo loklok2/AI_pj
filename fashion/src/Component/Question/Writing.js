@@ -1,95 +1,104 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReactQuill from "react-quill";
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import '../../CSS/Writing.css';
+import { fetchAPI } from '../../hook/api'; // API 호출하는 함수
 
 const Writing = () => {
-  const quillRef = useRef(null);
+  const quillRef = useRef(null); // Quill 에디터를 담을 ref
+  const quillInstanceRef = useRef(null); // Quill 인스턴스를 관리할 ref
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [boardType, setBoardType] = useState('');
   const [files, setFiles] = useState([]);
-  const [quillInstance, setQuillInstance] = useState(null);
 
-  useEffect(() => {
-    const handleImageUpload = () => {
-      const input = document.createElement('input');
-      input.setAttribute('type', 'file');
-      input.setAttribute('accept', 'image/*');
-      input.click();
+  // 이미지 업로드 핸들러
+  const handleImageUpload = () => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
 
-      input.onchange = async () => {
-        const file = input.files[0];
-        const formData = new FormData();
-        formData.append('image', file);
+    input.onchange = async () => {
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('image', file);
 
-        try {
-          // 이미지 업로드 요청
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/qboards/uploadImage`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Bearer 토큰 형식으로 권장
-            },
-            body: formData,
-          });
-        
-          if (response.ok) {
-            const result = await response.json(); // JSON 응답을 파싱
-            const imageUrl = process.env.REACT_APP_URL + result.imageUrl; // 서버로부터 받은 이미지 URL
-            console.log(imageUrl);
-            if (imageUrl) {
-              const editor = quillRef.current.getEditor();
-              const range = editor.getSelection();
-              editor.insertEmbed(range.index, 'image', imageUrl); // Quill 에디터에 이미지 삽입
-            } else {
-              console.error('이미지 URL을 받을 수 없습니다.');
-            }
-          } else {
-            console.error('이미지 업로드에 실패했습니다.');
-          }
-        } catch (error) {
-          console.error('Image upload failed', error);
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/qboards/uploadImage`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            Authorization: localStorage.getItem('accessToken'), // 인증 토큰
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload image. Status: ${response.status}`);
         }
-        
-      };
-    }
-    if (quillRef.current) {
+
+        const imageUrl = await response.text(); // 서버에서 받은 이미지 URL
+        const imgURL = process.env.REACT_APP_URL +imageUrl
+        console.log('Image upload successful:', imageUrl);
+
+        // quillInstance가 초기화된 경우에만 삽입
+        if (quillInstanceRef.current) {
+          const range = quillInstanceRef.current.getSelection(); // 현재 커서 위치 가져오기
+          if (range) {
+            quillInstanceRef.current.insertEmbed(range.index, 'image', imgURL); // 이미지 URL 삽입
+          } else {
+            console.error('Quill 인스턴스의 커서 위치를 가져올 수 없습니다.');
+          }
+        } else {
+          console.error('Quill 인스턴스가 아직 초기화되지 않았습니다.');
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        alert('이미지 업로드 중 오류가 발생했습니다.');
+      }
+    };
+  };
+
+  // Quill 에디터 초기화
+  useEffect(() => {
+    if (!quillInstanceRef.current && quillRef.current) {
       const quill = new Quill(quillRef.current, {
         theme: 'snow',
         placeholder: '내용을 입력하세요...',
         modules: {
           toolbar: {
             container: [
-              [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
+              [{ header: [1, 2, 3, 4, 5, 6, false] }],
               [{ list: 'ordered' }, { list: 'bullet' }],
               ['bold', 'italic', 'underline', 'strike'],
               [{ align: [] }],
               [{ color: [] }, { background: [] }],
-              ['link', 'image', 'video'],
+              ['link', 'image'],
               ['clean']
             ],
             handlers: {
-              image: handleImageUpload, // 이미지 버튼 클릭 시 실행되는 핸들러
+              image: handleImageUpload, // 이미지 업로드 핸들러 추가
             },
           },
         },
       });
-      setQuillInstance(quill);
-      quill.on('text-change', () => {
-        const editorContent = quill.root.innerHTML.trim();
-        if (editorContent === '<p><br></p>' || editorContent === '') {
-          // 빈 내용일 때 placeholder가 다시 보이도록 설정
-          quill.root.setAttribute('data-placeholder', '내용을 입력하세요...');
-        } else {
-          // 내용이 있으면 placeholder 제거
-          quill.root.removeAttribute('data-placeholder');
-        }
-      });
+      quillInstanceRef.current = quill; // Quill 인스턴스를 ref에 저장
     }
+
+    // cleanup: 페이지가 사라질 때 Quill 인스턴스를 정리
+    return () => {
+      if (quillInstanceRef.current) {
+        quillInstanceRef.current = null; // Quill 인스턴스 해제
+      }
+    };
   }, []);
 
+  // 게시글 작성 버튼 클릭 핸들러
   const handleSubmitClick = async () => {
+    const quillInstance = quillInstanceRef.current; // ref에서 Quill 인스턴스 가져오기
+
     if (!quillInstance) {
       console.error('Quill 인스턴스가 초기화되지 않았습니다.');
       return;
@@ -102,65 +111,23 @@ const Writing = () => {
       return;
     }
 
-    // 이미지 태그를 찾아서 Base64로 변환하는 작업
-    const images = quillInstance.root.querySelectorAll('img');
-    const base64Promises = Array.from(images).map((img) => {
-      return new Promise((resolve, reject) => {
-        const src = img.getAttribute('src');
-
-        // 이미지가 이미 base64 형식인 경우 건너뜀
-        if (src.startsWith('data:image')) {
-          resolve();
-        } else {
-          fetch(src)
-            .then((response) => response.blob())
-            .then((blob) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                img.setAttribute('src', reader.result);
-                resolve();
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-        }
-      });
-    });
-
-    // 모든 이미지 처리가 끝나면 content 업데이트
-    try {
-      await Promise.all(base64Promises);
-      content = quillInstance.root.innerHTML;
-    } catch (error) {
-      console.error('이미지 처리 중 오류 발생:', error);
-      alert('이미지 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
-      return;
-    }
-
-    // JSON 데이터 생성
-    const data = {
+    const qboardContent = {
       title: title,
       content: content,
       boardType: boardType,
     };
 
-    console.log('전송할 데이터:', data);
-
     try {
-      const response = await fetch('http://10.125.121.188:8080/api/qboards', {
+      console.log(qboardContent)
+      const data = await fetchAPI('/qboards/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify(data),
+        body: JSON.stringify(qboardContent),
       });
-
-      if (response.ok) {
+      if (data) {
         alert('게시글이 작성되었습니다.');
         navigate('/qna');
       } else {
-        const errorData = await response.json();
+        const errorData = await data;
         console.error('Error response from server:', errorData);
         alert('게시글 작성에 실패했습니다.');
       }
@@ -169,16 +136,18 @@ const Writing = () => {
       alert('서버에 문제가 발생했습니다. 나중에 다시 시도해주세요.');
     }
   };
+
   const handleCancelClick = () => {
     navigate('/qna');
   };
 
-  // 이미지 눌러진 순간. <= 이미지 업로드 api 연결 해야함
+  // 파일 선택 핸들러
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
   };
 
+  // 파일 삭제 핸들러
   const handleRemoveFile = (index) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
@@ -224,7 +193,7 @@ const Writing = () => {
               <div ref={quillRef} className="writing-form-editor" />
             </td>
           </tr>
-          <tr>
+          {/* <tr>
             <th>첨부파일</th>
             <td style={{ display: "flex", alignItems: "center" }}>
               <div className="custom-file-input">
@@ -249,7 +218,7 @@ const Writing = () => {
                 ))}
               </div>
             </td>
-          </tr>
+          </tr> */}
         </tbody>
       </table>
 

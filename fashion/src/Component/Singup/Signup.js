@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Signup.css';
+import AddressInput from '../Payment/AddressInput ';
+
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -18,6 +20,24 @@ const Signup = () => {
     const [maskedBack, setMaskedBack] = useState(''); // 마스킹된 뒷자리 값
     const [realBack, setRealBack] = useState(''); // 실제 뒷자리 값
     const [errorMessage, setErrorMessage] = useState(''); // 에러 메시지 상태 관리
+    const [address, setAddress] = useState(''); // 주소
+    const [postcode, setPostcode] = useState(''); // 우편번호
+    const [detailedAddress, setDetailedAddress] = useState(''); // 상세주소 (새로 추가)
+
+    const onSearchClick = () => {
+        console.log(window.daum)
+        console.log(window.daum.Postcode)
+        if (!window.daum || !window.daum.Postcode) {
+            alert('주소 검색 서비스를 불러올 수 없습니다. 나중에 다시 시도해주세요.');
+            return;
+        }
+        new window.daum.Postcode({
+            oncomplete: function (data) {
+                setAddress(data.address);
+                setPostcode(data.zonecode);
+            },
+        }).open();
+    };
 
     // 입력 값 상태 변경
     const handleChange = (e) => {
@@ -48,15 +68,14 @@ const Signup = () => {
     // 백엔드 회원가입 API 호출
     const handleSignup = async () => {
         try {
-             // 백엔드로 보낼 데이터 생성, 주민등록번호 앞 6자리 + 뒷자리 첫 숫자
-             const signupData = {
+            // 백엔드로 보낼 데이터 생성, 주민등록번호 앞 6자리 + 뒷자리 첫 숫자
+            const signupData = {
                 username: formData.username,
                 password: formData.password,
                 name: formData.name,
                 email: formData.email,
                 residentRegistrationNumber: formData.residentRegistrationNumber.slice(0, 6) + formData.residentRegistrationNumber[6], // 앞 6자리 + 뒷자리 첫 숫자
-                address: formData.address,
-                address: formData.address,
+                address: address+detailedAddress,
                 phone: formData.phone,
                 style: formData.style
             };
@@ -85,15 +104,20 @@ const Signup = () => {
 
     const handleDuplicateCheck = async (field, value) => {
         // 중복 확인 로직 처리
-        try {
-            const response = await fetch(`http://10.125.121.188:8080/api/auth/check-duplicate?field=${field}&value=${value}`);
-            if (response.ok) {
-                alert(`${field === 'username' ? '아이디' : '이메일'} 중복 확인 완료`);
-            } else {
-                alert(`${field === 'username' ? '아이디' : '이메일'}가 이미 사용 중입니다.`);
+        if (value.length > 0){
+            try {
+                const url = field === '이름' ? `${process.env.REACT_APP_API_URL}/auth/check-username?username=` : `${process.env.REACT_APP_API_URL}/auth/check-email?email=`
+                const response = await fetch(`${url}${value}`)
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log(data)
+                    alert(`${data.available ? `${value}는 사용 가능한 ${field}입니다.` : `${value}은 이미 사용중입니다.`}`);
+                }
+            } catch (error) {
+                alert('중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
             }
-        } catch (error) {
-            alert('중복 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+        }else{
+            alert(`${value}는 사용할 수 없습니다.`)
         }
     };
 
@@ -101,6 +125,7 @@ const Signup = () => {
         setIsModalOpen(false);
         navigate('/login'); // 로그인 화면으로 이동
     };
+
 
     return (
         <div className="signup-container">
@@ -135,9 +160,9 @@ const Signup = () => {
                         value={formData.username}
                         onChange={handleChange}
                     />
-                    <button 
-                        className="inline-button" 
-                        onClick={() => handleDuplicateCheck('username', formData.username)}>
+                    <button
+                        className="inline-button"
+                        onClick={() => handleDuplicateCheck('이름', formData.username)}>
                         중복 확인
                     </button>
                 </div>
@@ -166,9 +191,9 @@ const Signup = () => {
                         value={formData.email}
                         onChange={handleChange}
                     />
-                    <button 
-                        className="inline-button" 
-                        onClick={() => handleDuplicateCheck('email', formData.email)}>
+                    <button
+                        className="inline-button"
+                        onClick={() => handleDuplicateCheck('이메일', formData.email)}>
                         중복 확인
                     </button>
                 </div>
@@ -189,15 +214,44 @@ const Signup = () => {
                 {/* 주소 입력 필드 */}
                 <div className="form-group">
                     <label htmlFor="address" className="form-label">주소</label>
+
                     <input
-                        id="address"
-                        className="form-input"
+                        id='address'
                         type="text"
-                        placeholder="주소를 입력해주세요."
-                        value={formData.address}
-                        onChange={handleChange}
+                        className="form-input short-input"
+                        placeholder="우편번호"
+                        value={postcode}
+                        readOnly // 우편번호는 주소 검색으로만 입력되도록 설정
+                        onClick={onSearchClick}
+                    />
+                    <button type="button" className="inline-button"
+                        onClick={onSearchClick}>
+                        주소 찾기
+                    </button>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="address" className="form-label"></label>
+                    <input
+                        type="text"
+                        className="form-input"
+                        placeholder="도로명 주소"
+                        value={address}
+                        readOnly // 도로명 주소도 검색을 통해서만 입력되도록 설정
+                        onClick={onSearchClick}
+                    />
+
+                </div>
+                <div className="form-group">
+                <label htmlFor="address" className="form-label"></label>
+                    <input
+                        type="text"
+                        className="form-input"
+                        placeholder="상세주소"
+                        value={detailedAddress}
+                        onChange={(e) => setDetailedAddress(e.target.value)} // 상세 주소 입력값 저장
                     />
                 </div>
+
 
                 {/* 주민등록번호 입력 필드 */}
                 <div className="form-group">
@@ -216,7 +270,7 @@ const Signup = () => {
                         <input
                             id="birthMonthDay"
                             className="form-input"
-                            type="text"  
+                            type="text"
                             placeholder="뒤 7자리"
                             value={maskedBack}
                             onChange={(e) => handleIdChange(e, 'back')}

@@ -9,22 +9,13 @@ export const useToggleLike = (wishlist, setWishlist, productList, setProductList
 
     // API 호출로 찜 상태를 변경
     if (localStorage.getItem('accessToken')) {
-      const url = `${process.env.REACT_APP_API_URL}/products/${productId}/toggle-like`;
+      const url = `/products/${productId}/toggle-like`;
       const accessToken = localStorage.getItem('accessToken');
 
       try {
-        const response = await fetch(url, {
+        await fetchAPI(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': accessToken,
-          },
         });
-        if (!response.ok) {
-          const errorMessage = `Failed to fetch: ${url}, Status: ${response.status}, ${response.statusText}`;
-          console.error(errorMessage);
-          throw new Error(errorMessage);
-        }
       } catch (error) {
         console.error('API 호출 실패:', error.message || error);
         throw error;
@@ -53,4 +44,3 @@ export const useToggleLike = (wishlist, setWishlist, productList, setProductList
 
   return { toggleLike };
 };
-

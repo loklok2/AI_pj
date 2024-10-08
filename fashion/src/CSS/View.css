@@ -5,7 +5,10 @@
     font-family: 'Noto Sans KR', sans-serif;
     background-color: #f9f9f9;
 }
-
+.quill-content img{
+    width: 80%;
+    height: auto;
+}
 .view-qna-title {
     font-size: 30px;
     font-weight: bold;

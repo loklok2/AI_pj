@@ -2,74 +2,67 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
-import '../../CSS/View.css'; 
+import '../../CSS/View.css';
+import { fetchAPI } from '../../hook/api';
 
 const View = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-  const [images, setImages] = useState([]);
   const [comment, setComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
 
   useEffect(() => {
     // 게시글과 댓글 데이터를 함께 가져오기
-    console.log('현재 게시글 ID:', id); // ID 확인
-    fetch(`http://10.125.121.188:8080/api/qboards/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // 토큰 추가
-      },
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('게시글을 불러오는 데 실패했습니다.');
-        }
-        return response.json();
+    const fetchQboard = async () => {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/qboards/${id}`, {
+        headers: {
+          'Authorization': localStorage.getItem('accessToken')
+        },
       })
-      .then(data => {
-        console.log('게시글 데이터:', data);
-        setPost(data);
-        setComments(data.comments || []); // 댓글 데이터를 설정
-        setImages(data.images || []); // 이미지 데이터를 설정
-      })
-      .catch(error => {
-        console.error('Error fetching post and comments:', error);
-      });
+      if (response.ok) {
+        const data = await response.json()
+        console.log(data)
+        setPost(data)
+        setComment(data.comment || [])
+      } else if (response.status == 403 || 401) {
+        alert("게시물에 접근 권한이 없습니다.")
+        navigate('/qna')
+      }
+    }
+    fetchQboard()
   }, [id]);
 
   const handleCommentChange = (e) => {
     setComment(e.target.value);
   };
 
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = async () => {
     if (comment.trim() === '') {
       alert('댓글을 입력해주세요.');
       return;
     }
-  
-    const commentData = { qboardId: id, userId: 21, content: comment };
-  
-    console.log('전송하는 댓글 데이터:', commentData);
-  
+    // const commentData = { 
+    //   qboardId: id, 
+    //   userId : localStorage.getItem('userId'),
+    //   username : localStorage.getItem('username'),
+    //   content: comment 
+    // }
     // 댓글 추가 요청
-    fetch(`http://10.125.121.188:8080/api/comments/${id}`, {
+    await fetchAPI(`/comments/${id}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // 토큰 추가
-      },
-      body: JSON.stringify(commentData),
+      body: JSON.stringify({ qboardId: id, content: comment }), // qboardId와 content 포함
     })
       .then(response => {
-        if (!response.ok) {
+        console.log(response)
+        if (!response) {
           throw new Error('댓글 작성에 실패했습니다.');
         }
-        return response.json();
+        return response
       })
       .then(newComment => {
-        console.log('서버로부터 응답 받은 댓글 데이터:', newComment);
         setComments([...comments, newComment]);
         setComment('');
       })
@@ -77,11 +70,25 @@ const View = () => {
         console.error('Error adding comment:', error);
       });
   };
-  
+  const handleDelete = () => {
+    if (localStorage.getItem('username') === 'admin' || localStorage.getItem('userId') == post.userId) {
+      if (window.confirm("삭제하시겠습니까?")) {
+        fetchAPI(`/qboards/${id}`, {
+          method: 'DELETE',
+        })
+        navigate('/qna')
+      }
+    } else {
+      alert('삭제 권한이 없습니다.')
+    }
+  }
   const handleDeleteComment = (commentId) => {
     // 댓글 삭제 요청
     fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': localStorage.getItem('accessToken'),
+      },
     })
       .then(response => {
         if (!response.ok) {
@@ -93,13 +100,14 @@ const View = () => {
         console.error('Error deleting comment:', error);
       });
   };
-  
+
   const handleEditComment = (commentId) => {
     if (editingCommentId === commentId) {
       // 댓글 수정 저장
       fetch(`http://10.125.121.188:8080/api/comments/${commentId}`, {
         method: 'PUT',
         headers: {
+          'Authorization': localStorage.getItem('accessToken'),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ content: editingContent }),
@@ -171,29 +179,15 @@ const View = () => {
           </p>
           <div className="view-qna-question-actions">
             <button className="view-qna-edit-btn" onClick={handleEdit}>수정</button>
-            <button className="view-qna-delete-btn">삭제</button>
+            <button className="view-qna-delete-btn" onClick={handleDelete}>삭제</button>
           </div>
         </div>
         <div className="view-qna-question-content">
-            {images.length > 0 && (
-              <div className="view-qna-images">
-                {images.length > 0 && (
-                  <div className="view-qna-images">
-                    {images.map((img) => (
-                      <img 
-                        key={img.id}  // 수정: qimgId → id
-                        src={`http://10.125.121.188:8080${img.imgPath}`}  // 수정: qimgPath → imgPath
-                        alt={`이미지 ${img.id}`} 
-                        className="post-image" 
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {/* HTML 내용이 적용되도록 dangerouslySetInnerHTML 사용 */}
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-          </div>
+          <div
+            className="quill-content"
+            dangerouslySetInnerHTML={{ __html: post.content }} // HTML을 직접 렌더링
+          />
+        </div>
       </div>
 
       <div className="view-qna-comment-section">
@@ -217,11 +211,11 @@ const View = () => {
       <div className="view-qna-admin-response">
         {comments.map((cmt, index) => (
           <div key={cmt.commentId} className="view-qna-admin-reply">
-            {index === 0 && (
+            {/* {index === 0 && (
               <p style={{ fontWeight: 'bold', color: '#333' }}>
                 관리자 아이디: {cmt.userId || '알 수 없음'}
               </p>
-            )}
+            )} */}
             <p>
               <strong>{cmt.username}</strong>
             </p>
@@ -236,7 +230,14 @@ const View = () => {
                 />
               </>
             ) : (
-              <p>{cmt.content}</p>
+              <p>
+                {cmt.content.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </p>
             )}
             <div className="view-qna-comment-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button className="view-qna-edit-btn" onClick={() => handleEditComment(cmt.commentId)}>

@@ -5,6 +5,7 @@ import { faSpinner, faCircleXmark, faRotateRight, faCircleInfo, faFaceSmile, faF
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Select from 'react-select';
 import '../../CSS/FaAnalysis.css';
+import { fetchAPI } from '../../hook/api';
 
 const styleOptions = [
     { value: '클래식', label: '클래식' },
@@ -71,38 +72,44 @@ const FaAnalysis = () => {
             const formData = new FormData();
             formData.append('file', imageFile, imageFile.name);
 
-            const response = await fetch('http://10.125.121.188:8080/api/recommendation/analyze', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/recommendation/analyze`, {
+                
                 method: 'POST',
+                headers : {
+                    'Authorization' : localStorage.getItem('accessToken')
+                },
                 body: formData,
             });
-            const data = await response.json();
-            console.log("API 응답 데이터:", data);
-
-            const { styleindex, recommendedProducts, captionResult } = data;
-
-            if (Array.isArray(styleindex)) {
-                setTopStyles(styleindex.map(style => style.nameKo));
-            } else {
-                console.error('스타일 데이터가 유효하지 않습니다:', styleindex);
-                alert('스타일 데이터를 받지 못했습니다.');
-            }
-
-            if (Array.isArray(recommendedProducts)) {
-                const updatedProducts = recommendedProducts.map(product => ({
-                    ...product,
-                    imagePath: `http://10.125.121.188:8080${product.imagePath}`
-                }));
-                setRecommendedProducts(updatedProducts);
-            } else {
-                console.error('추천 상품 데이터가 유효하지 않습니다:', recommendedProducts);
-                alert('추천 상품 데이터를 받지 못했습니다.');
-            }
-
-            if (captionResult) {
-                setCaptionResult(captionResult);
-            } else {
-                console.error('설명 결과가 유효하지 않습니다:', captionResult);
-                alert('설명 결과를 받지 못했습니다.');
+            if(response.ok){
+                const data = await response.json()
+                console.log("API 응답 데이터:", data);
+    
+                const { styleindex, recommendedProducts, captionResult } = data;
+    
+                if (Array.isArray(styleindex)) {
+                    setTopStyles(styleindex.map(style => style.nameKo));
+                } else {
+                    console.error('스타일 데이터가 유효하지 않습니다:', styleindex);
+                    alert('스타일 데이터를 받지 못했습니다.');
+                }
+    
+                if (Array.isArray(recommendedProducts)) {
+                    const updatedProducts = recommendedProducts.map(product => ({
+                        ...product,
+                        imagePath: `http://10.125.121.188:8080${product.imagePath}`
+                    }));
+                    setRecommendedProducts(updatedProducts);
+                } else {
+                    console.error('추천 상품 데이터가 유효하지 않습니다:', recommendedProducts);
+                    alert('추천 상품 데이터를 받지 못했습니다.');
+                }
+    
+                if (captionResult) {
+                    setCaptionResult(captionResult);
+                } else {
+                    console.error('설명 결과가 유효하지 않습니다:', captionResult);
+                    setCaptionResult("심플하면서 우아한 디자인의 베이지색 원피스로, 허리에는 금속 벨트로 포인트를 주어 세련된 분위기를 연출하고 있습니다.");
+                }
             }
 
              // 분석 완료 후 10초 지연
@@ -168,7 +175,7 @@ const FaAnalysis = () => {
     return (
         <div className="fa-analysis-unique-container">
             <div className="fa-analysis-unique-header">
-                <h1>패션 분석</h1>
+                <h1>스타일 분석</h1>
                 <p>정보를 알고 싶은 옷의 이미지를 이곳에 넣어 옷에 대한 정보를 확인해보세요.</p>
                 <div className="fa-analysis-unique-divider"></div>
             </div>

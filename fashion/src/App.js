@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Header from './Component/Mainpage/Header';
 import Footer from './Component/Mainpage/Footer';
 import Signup from './Component/Singup/Signup';
@@ -23,10 +23,10 @@ import Order from './Component/MyPage/Order';
 import MyOrder from './Component/MyPage/MyOrder';
 import Product from './Component/Eproduct/Product';
 import ProductDetails from './Component/Eproduct/ProductDetails';
-import Manager from './Component/MyPage/Manager';
+import Manager from './Component/Admins/ManagerMain';
 import Admheader from './Component/Admins/Admheader';
-import Home from "./Component/Mainpage/Home";
-import Managers from './Component/Admins/Managers';
+import Home from './Component/Mainpage/Home';
+import Managers from './Component/Admins/EtcManager';
 import Storemanage from './Component/Admins/Storemanage';
 import FloatingCircle from './Component/Mainpage/FloatingCircle';
 import AnotherFloatingCircle from './Component/Mainpage/AnotherFloatingCircle';
@@ -36,21 +36,20 @@ const TrackPageView = () => {
     const location = useLocation();
 
     useEffect(() => {
-        // 라우트가 변경될 때마다 GA에 페이지뷰를 보내는 로직
         ReactGA.send({ hitType: 'pageview', page: location.pathname });
     }, [location]);
 
-    return null; // 컴포넌트를 렌더링할 필요는 없기 때문에 null을 반환
+    return null;
 };
 
 function App() {
     const location = useLocation();
     const noHeaderFooterRoutes = ['/admin', '/manager', '/managers', '/storemanage'];
-    const userRole = localStorage.getItem('role'); // 로그인 유저의 role 정보를 가져옵니다.
 
     useEffect(() => {
         ReactGA.initialize(process.env.REACT_APP_GA_TRACKING_ID);
     }, []);
+
 
     return (
         <div>
@@ -76,7 +75,7 @@ function App() {
                     <Route path="/cart" element={<Baskets />} />
                     <Route path="/payment" element={<Payment />} />
                     <Route path="/paycompleted" element={<PayCompleted />} />
-                    <Route path="/order" element={<Order />} />
+                    <Route path="/order/:id" element={<Order />} />
                     <Route path="/myorder" element={<MyOrder />} />
                     <Route path="/products" element={<Product />} />
                     <Route path="/product/:id" element={<ProductDetails />} />
@@ -90,7 +89,7 @@ function App() {
             {!noHeaderFooterRoutes.includes(location.pathname) && (
                 <>
                     <AnotherFloatingCircle />
-                    {userRole === 'ADMIN' && <FloatingCircle />}
+                    {localStorage.getItem('username') === 'admin' && <FloatingCircle />}
                 </>
             )}
         </div>

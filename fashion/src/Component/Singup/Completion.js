@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../../CSS/Completion.css';
 
+
 const Completion = () => {
     const navigate = useNavigate();
     const location = useLocation();

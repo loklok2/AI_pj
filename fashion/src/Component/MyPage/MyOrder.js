@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ko from 'date-fns/locale/ko';
 import '../../CSS/MyOrder.css';
+import { fetchAPI } from '../../hook/api';
 
 registerLocale('ko', ko);
 
@@ -18,31 +20,43 @@ const MyOrder = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [visibleOrdersCount, setVisibleOrdersCount] = useState(5);
-
-  const [userRole, setUserRole] = useState(''); 
+  const [userRole, setUserRole] = useState('');
   const [isGuest, setIsGuest] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // sessionStorage에서 주문 데이터 불러오기
-    const storedOrderItems = JSON.parse(sessionStorage.getItem('orderItems')) || [];
-    const orderInfo = JSON.parse(sessionStorage.getItem('orderInfo')) || {};
-    const orderNumber = orderInfo.orderNumber || 'N/A';
-    const orderDate = orderInfo.orderDate || new Date().toLocaleDateString();
-    const orderStatus = '배송 중';
+    // orderInfo 대신 API에서 데이터 불러오기
+    const fetchMyOrder = async () => {
+      try {
+        const data = await fetchAPI(`/orders/my-orders`);
 
-    const formattedOrders = storedOrderItems.map((item, index) => ({
-      id: orderNumber + '-' + (index + 1),
-      product: item.name,
-      price: `${(item.price * item.quantity).toLocaleString()}원`, // 숫자를 그대로 사용하여 금액 계산
-      date: orderDate,
-      status: orderStatus,
-      size: item.size,
-      quantity: item.quantity,
-    }));
+        console.log(data)
 
-    setOrders(formattedOrders);
-    setFilteredOrders(formattedOrders);
+        // orderInfo 데이터 가정
+        const formattedOrders = data.flatMap((order, orderIndex) =>
+          order.orderItems.map((item, itemIndex) => ({
+            id: order.orderId + '-' + (itemIndex + 1), // 각 주문의 고유 id 생성
+            orderId : order.orderId,
+            pimgPath: process.env.REACT_APP_URL + item.pimgPath,
+            productId: item.productId,
+            product: item.productName, // 제품 이름
+            price: `${(item.price * item.quantity).toLocaleString()}원`, // 총 가격 계산
+            date: new Date(order.orderDate).toLocaleDateString(), // 주문 날짜 포맷
+            status: order.orderStatus, // 주문 상태
+            size: item.size || 'N/A', // 사이즈 (데이터가 없으므로 N/A로 기본값 설정)
+            quantity: item.quantity // 제품 수량
+          }))
+        );
+
+        setOrders(formattedOrders);
+        setFilteredOrders(formattedOrders);
+      } catch (error) {
+        console.error('주문 정보를 가져오는데 실패했습니다:', error);
+      }
+    };
+
+    fetchMyOrder();
 
     // 로그인 상태 및 역할 체크
     const accessToken = localStorage.getItem('accessToken');
@@ -57,6 +71,19 @@ const MyOrder = () => {
       setUserRole('GUEST');
     }
   }, []);
+
+  const handleProductClick = (orderId) => {
+    navigate(`/order/${orderId}`);
+    // ReactGA.event("view_item", {
+    //   items: [{
+    //     item_id: product.productId,
+    //     item_name: product.name,
+    //     item_category: product.category,
+    //     price: product.price,
+    //   }],
+    // });
+  };
+
 
   const handleSearch = () => {
     const lowerCasedSearchTerm = searchTerm.toLowerCase();
@@ -196,8 +223,8 @@ const MyOrder = () => {
                 <td>{order.id}</td>
                 <td>
                   <div className="myorder-product-info">
-                    <div className="myorder-product-img-placeholder"></div>
-                    <div className="myorder-text">
+                    <img className="myorder-product-img-placeholder" src={order.pimgPath}></img>
+                    <div className="myorder-text" onClick={() => handleProductClick(order.orderId)}>
                       <p>{order.product}</p>
                       <p>사이즈: {order.size}</p>
                       <p>수량: {order.quantity}개</p>

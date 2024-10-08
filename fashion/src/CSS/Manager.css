@@ -328,3 +328,8 @@ outline: none; /* 선택 시 테두리 제거 */
   color: white;
 }
 
+a {
+  color: white; /* 링크의 색상을 부모 요소의 색상과 동일하게 설정 */
+  text-decoration: none; /* 밑줄 제거 */
+  font-family: "Noto Sans KR", sans-serif;
+}

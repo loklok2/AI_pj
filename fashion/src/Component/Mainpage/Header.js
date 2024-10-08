@@ -26,9 +26,8 @@ const Header = () => {
     setIsGuest(false);
     setUsername(''); // 유저 이름 초기화
     setRole(''); // 역할 초기화
-    sessionStorage.removeItem('guestLogin'); // 로그아웃 시 비회원 상태 제거
-    localStorage.removeItem('username'); // 로그아웃 시 username 제거
-    localStorage.removeItem('role'); // 로그아웃 시 role 제거
+    localStorage.clear()
+    sessionStorage.clear()
     navigate('/'); // 로그아웃 후 홈으로 이동
   };
 
@@ -43,7 +42,7 @@ const Header = () => {
         <nav className="sub-menu">
           <ul>
             <li><Link to="/products">전체상품</Link></li>
-            <li><Link to="/analysis">패션 분석</Link></li>
+            <li><Link to="/analysis">스타일 분석</Link></li>
           </ul>
         </nav>
       </div>
@@ -70,7 +69,7 @@ const Header = () => {
             </>
           )}
           <li><Link to="/qna">Q&A</Link></li>
-          <li><Link to="/mypage">마이페이지</Link></li>
+          {localStorage.getItem('username') == 'admin' ? <li><Link to="/manager">마이페이지</Link></li> : <li><Link to="/mypage">마이페이지</Link></li>}
           <li><Link to="/cart">장바구니</Link></li>
         </ul>
       </nav>

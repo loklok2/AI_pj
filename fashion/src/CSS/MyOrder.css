@@ -88,6 +88,8 @@
   margin-right: 5px;
 }
 
+
+
 .input-with-icon .myorder-input {
   width: 450px; /* 시작 날짜와 종료 날짜 입력 칸만 넓게 설정 */
 }
@@ -188,7 +190,7 @@
 .input-with-icon {
   position: relative;
   display: inline-block;
-  width: 320px;
+  width: 180px;
 }
 
 .input-with-icon input {
@@ -205,11 +207,11 @@
 }
 
 .react-datepicker-wrapper {
-  width: 100%;
+  width: 150px;
 }
 
 .react-datepicker__input-container input {
-  width: 100%;
+  width: 150px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;

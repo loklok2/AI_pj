@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Payment.css';
+import { fetchAPI } from '../../hook/api';
+import AddressInput from '../Payment/AddressInput ';
+import usePayment from '../Payment/usePayment';
+import ReactGA from 'react-ga4';
 
 const Payment = () => {
   const navigate = useNavigate();
+  const { handlePayment } = usePayment(); // 커스텀 훅 사용
 
   // 주문 상품 목록 상태 관리
   const [orderItems, setOrderItems] = useState([]);
@@ -11,75 +16,116 @@ const Payment = () => {
   // 주소와 요청 사항 상태 관리
   const [recipientName, setRecipientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(''); // 주소
+  const [postcode, setPostcode] = useState(''); // 우편번호
+  const [detailedAddress, setDetailedAddress] = useState(''); // 상세주소 (새로 추가)
   const [request, setRequest] = useState('');
 
-  // 경고 메시지 상태 관리 (초기에는 false로 설정)
+
+  // 경고 메시지 상태 관리
   const [recipientError, setRecipientError] = useState(false);
   const [phoneError, setPhoneError] = useState(false);
   const [addressError, setAddressError] = useState(false);
 
+  // 각 필드의 ref 생성
+  const recipientNameRef = useRef(null);
+  const phoneNumberRef = useRef(null);
+  const addressRef = useRef(null);
+
+  // 카카오 주소 API 호출 함수
+  const handleAddressSearch = () => {
+    new window.daum.Postcode({
+      oncomplete: function (data) {
+        // 검색된 주소 정보를 설정
+        setAddress(data.address); // 주소 설정
+        setPostcode(data.zonecode);   // 우편번호 설정
+      },
+    }).open();
+  };
+  
+  const postOrder = async (endpoint, data) => {
+    try {
+      // fetchAPI를 활용하여 POST 요청
+      const responseData = await fetchAPI(`orders${endpoint}`, {
+        method: 'POST',
+        body: JSON.stringify(data), // 데이터를 JSON 문자열로 변환
+      });
+      return responseData;
+    } catch (error) {
+      console.error('Error during order submission:', error);
+      throw error; // 필요에 따라 에러 처리
+    }
+  };
+
   // sessionStorage에서 선택된 상품 데이터를 가져와서 주문 목록에 저장
   useEffect(() => {
     const selectedItems = JSON.parse(sessionStorage.getItem('selectedItems')) || [];
+    ReactGA.event('add_shipping_info')
     setOrderItems(selectedItems);
   }, []);
 
-  // 주문 번호 생성 함수
-  const generateOrderNumber = () => {
-    return Math.floor(10000 + Math.random() * 90000).toString(); // 5자리 랜덤 숫자 생성
+  // 휴대폰 번호 유효성 검사
+  const isValidPhoneNumber = (number) => {
+    const phoneRegex = /^\d{11}$/; // 11자리 숫자만 허용
+    return phoneRegex.test(number);
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePhoneNumberChange = (e) => {
+    const input = e.target.value.replace(/\D/g, ''); // 숫자가 아닌 값은 제거
+    setPhoneNumber(input);
+  };
+
+  const handlePaymentSubmit = async () => {
     let valid = true;
 
-    // 유효성 검사: 필수 입력 항목 체크
+    // 입력 유효성 검사 로직
     if (recipientName === '') {
       setRecipientError(true);
+      recipientNameRef.current?.focus();
       valid = false;
+      return;
     } else {
       setRecipientError(false);
     }
 
-    if (phoneNumber === '') {
+    if (phoneNumber === '' || !isValidPhoneNumber(phoneNumber)) {
       setPhoneError(true);
+      phoneNumberRef.current?.focus();
       valid = false;
+      return;
     } else {
       setPhoneError(false);
     }
 
     if (address === '') {
       setAddressError(true);
+      addressRef.current?.focus();
       valid = false;
+      return;
     } else {
       setAddressError(false);
     }
-
-    // 모든 입력이 유효할 경우 결제 완료 페이지로 이동
     if (valid) {
       const totalPrice = calculateTotalPrice();
-      const orderDate = new Date().toLocaleDateString();
-
-      // 주문 번호 생성
-      const orderNumber = generateOrderNumber();
-
       const orderInfo = {
-        orderNumber,
-        recipientName,
-        phoneNumber,
-        address,
-        request,
-        userId: 'mockUser',
-        orderDate,
+        recipientName: recipientName,
+        recipientPhone: phoneNumber,
+        recipientAddress: `${address}, ${detailedAddress}`,
+        recipientMessage: request,
+        orderItems: orderItems,
+        postCode : postcode
       };
-
-      // sessionStorage에 데이터 저장
-      sessionStorage.setItem('orderInfo', JSON.stringify(orderInfo));
-      sessionStorage.setItem('orderItems', JSON.stringify(orderItems));
-      sessionStorage.setItem('totalPrice', totalPrice);
-
-      // 결제 완료 페이지로 이동
-      navigate('/paycompleted');
+      try {
+        const completedOrder = await postOrder('/create', orderInfo);
+        console.log("요청 직후",completedOrder)
+        sessionStorage.setItem('orderId', completedOrder.orderId);
+        sessionStorage.setItem('totalPrice', totalPrice);
+        
+        // 분리된 결제 처리 함수 호출
+        await handlePayment(completedOrder);
+      } catch (error) {
+        console.error('Error processing order:', error);
+      }
     }
   };
 
@@ -87,12 +133,8 @@ const Payment = () => {
     navigate('/cart');
   };
 
-  const handleNewAddress = () => {
-    setAddress('');
-  };
-
   const handleRemoveItem = (productId) => {
-    const updatedItems = orderItems.filter(item => item.productId !== productId);
+    const updatedItems = orderItems.filter((item) => item.productId !== productId);
     setOrderItems(updatedItems);
     sessionStorage.setItem('selectedItems', JSON.stringify(updatedItems));
   };
@@ -100,9 +142,11 @@ const Payment = () => {
   const calculateTotalPrice = () => {
     return orderItems.reduce((acc, item) => {
       const price = item.price || 0;
-      return acc + (price * item.quantity);
+      return acc + price * item.quantity;
     }, 0);
   };
+
+
 
   return (
     <div className="payment-page-container">
@@ -116,9 +160,9 @@ const Payment = () => {
           orderItems.map((item) => (
             <div key={item.productId} className="payment-order-item">
               <div className="payment-order-item-image-placeholder">
-                {item.images && item.images.length > 0 ? (
+                {item.pimgPath && item.pimgPath.length > 0 ? (
                   <img
-                    src={`http://10.125.121.188:8080${item.images[0]}`}
+                    src={`${process.env.REACT_APP_URL}${item.pimgPath}`}
                     alt={item.name}
                     className="payment-order-item-image"
                     onError={(e) => (e.target.src = '/images/default-placeholder.png')}
@@ -155,6 +199,7 @@ const Payment = () => {
         <h3>주문자</h3>
         <input
           type="text"
+          ref={recipientNameRef} // ref 추가
           className={`payment-input-fields ${recipientError ? 'input-error' : ''}`}
           placeholder={recipientError ? '주문자명을 입력해주세요.' : '주문자명을 입력하세요.'}
           value={recipientName}
@@ -164,30 +209,31 @@ const Payment = () => {
         <h3>휴대폰 번호</h3>
         <input
           type="tel"
+          ref={phoneNumberRef} // ref 추가
           className={`payment-input-fields ${phoneError ? 'input-error' : ''}`}
-          placeholder={phoneError ? '휴대폰 번호를 입력해주세요.' : '휴대폰 번호를 입력하세요.'}
+          placeholder={phoneError ? '휴대폰 번호를 올바르게 입력해주세요.' : "01012341234"}
           value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          onChange={handlePhoneNumberChange} // 숫자만 입력되도록 수정된 핸들러 적용
         />
 
-        <h3>주소</h3>
-        <input
-          type="text"
-          className={`payment-input-fields ${addressError ? 'input-error' : ''}`}
-          placeholder={addressError ? '주소를 입력해주세요.' : '주소를 입력하세요.'}
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-        />
 
-        <button className="add-address-btn" onClick={handleNewAddress}>새로운 주소 입력</button>
+        {/* 주소 입력 컴포넌트 */}
+        <AddressInput
+          address={address}
+          postcode={postcode}
+          detailedAddress={detailedAddress}
+          onSearchClick={handleAddressSearch}
+          setDetailedAddress={setDetailedAddress}
+        />
       </div>
+
 
       {/* 주문 요청 사항 */}
       <div className="payment-request-info">
         <h2>주문 요청 사항</h2>
-        <select 
-          className="payment-input-fields" 
-          value={request} 
+        <select
+          className="payment-input-fields"
+          value={request}
           onChange={(e) => setRequest(e.target.value)}
         >
           <option value="">요청 사항을 선택하세요.</option>
@@ -199,37 +245,33 @@ const Payment = () => {
           <option value="직접 입력">직접 입력</option>
         </select>
         {request === '직접 입력' && (
-          <input 
-            type="text" 
-            className="payment-input-fields" 
-            placeholder="요청 사항을 직접 입력하세요." 
-            value={request} 
-            onChange={(e) => setRequest(e.target.value)} 
+          <input
+            type="text"
+            className="payment-input-fields"
+            placeholder="요청 사항을 직접 입력하세요."
+            value={request}
+            onChange={(e) => setRequest(e.target.value)}
           />
         )}
       </div>
 
-      {/* 결제 수단 */}
+      {/* 결제 수단
       <div className="payment-method-info">
         <h2>결제 수단</h2>
         <div className="payment-method-options">
           <div className="payment-method-option">신용카드</div>
-          <div className="payment-method-option">가상계좌</div>
-          <div className="payment-method-option">휴대폰 결제</div>
-          <div className="payment-method-option">토스 페이</div>
-          <div className="payment-method-option">카카오 페이</div>
+          <div className="payment-method-option">토스페이</div>
+          <div className="payment-method-option">카카오페이</div>
+          <div className="payment-method-option">네이버페이</div>
+          <div className="payment-method-option">무통장입금</div>
         </div>
-      </div>
+      </div> */}
 
       {/* 최종 결제 금액 */}
       <div className="payment-summary-info">
         <div className="payment-summary-item">
           <span>상품 가격</span>
           <span>{calculateTotalPrice().toLocaleString()}원</span>
-        </div>
-        <div className="payment-summary-item">
-          <span>배송비</span>
-          <span>무료 배송</span>
         </div>
         <div className="payment-summary-total">
           <span>총 결제 금액</span>
@@ -243,6 +285,7 @@ const Payment = () => {
         <button className="payment-submit-btn" onClick={handlePaymentSubmit}>
           결제하기
         </button>
+
       </div>
     </div>
   );

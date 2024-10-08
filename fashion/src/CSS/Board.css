@@ -113,8 +113,3 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
-
-.blurred {
-  filter: blur(3px);
-  pointer-events: none;
-}
